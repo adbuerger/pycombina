@@ -1,9 +1,13 @@
 import heapq
 cimport numpy as np
 from time import time
+import numpy
+import cython
 
 # http://stackoverflow.com/questions/18938065/iterating-over-arrays-in-cython-is-list-faster-than-np-array
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def bnb_jung(np.float64_t[::1] b_opt, int sigma_max):
 
     cdef int N_disc = b_opt.size
@@ -21,6 +25,21 @@ def bnb_jung(np.float64_t[::1] b_opt, int sigma_max):
     cdef float priority_k = 0
 
     cdef int sigma_k = 0
+
+    cdef np.ndarray[np.float64_t, ndim=1] b_opt_pk_true = \
+        numpy.empty(N_disc, dtype=numpy.float64)
+    cdef np.ndarray[np.float64_t, ndim=1] b_opt_pk_false = \
+        numpy.empty(N_disc, dtype=numpy.float64)
+
+    # b_opt_pk_true[N_disc-1] = b_opt[N_disc-1] - 1
+    # b_opt_pk_false[N_disc-1] = b_opt[N_disc-1]
+
+    # cdef int i = 0
+
+    # for i in range(N_disc-1, 0, -1):
+
+    #     b_opt_pk_true[i] = b_opt_pk_true[i+1] + b_opt[i] - 1
+    #     b_opt_pk_false[i] = b_opt_pk_false[i+1] + b_opt[i]
 
     # The following is crucial for runtime!
     # -->
@@ -47,7 +66,7 @@ def bnb_jung(np.float64_t[::1] b_opt, int sigma_max):
 
         # Store results in dict for fast access
 
-        q_selected[a[2]] = (a[-2], a[4])
+        q_selected[a[2]] = (a[5], a[4])
 
         if (a[1] == N_disc):
 
@@ -59,7 +78,7 @@ def bnb_jung(np.float64_t[::1] b_opt, int sigma_max):
 
             t_start_reconstruction = time()
 
-            b_opt_bin = [a_final[-2]]
+            b_opt_bin = [a_final[5]]
             k_prev = a_final[4]
 
             while k_prev != -1:
@@ -71,12 +90,14 @@ def bnb_jung(np.float64_t[::1] b_opt, int sigma_max):
 
             duration_reconstruction = time() - t_start_reconstruction
 
-            b_opt_bin = b_opt_bin[::-1]
-            b_opt_bin += [b_opt_bin[-1]] * (N_disc - len(b_opt_bin))
+            b_opt_bin = numpy.flip(b_opt_bin,0).tolist()
+            b_opt_bin += [b_opt_bin[len(b_opt_bin)-1]] * (N_disc - len(b_opt_bin))
 
             print "Duration reconstruction: " + str(duration_reconstruction) +  " s"
 
-            return b_opt_bin
+            print k
+
+            return b_opt_bin, a[3]
 
 
         for p_k in range(2):
@@ -89,6 +110,14 @@ def bnb_jung(np.float64_t[::1] b_opt, int sigma_max):
             sigma_k = a[6] + abs(a[5] - p_k)
 
             if sigma_k == sigma_max:
+
+                # if p_k == 1:
+
+                #     eta_k += b_opt_pk_true[d_k+1]
+
+                # else:
+
+                #     eta_k += b_opt_pk_false[d_k+1]                    
 
                 for i in range(d_k+1, N_disc):
 
