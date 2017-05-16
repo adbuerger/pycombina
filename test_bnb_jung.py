@@ -4,9 +4,8 @@ import psutil
 import os
 from time import time
 
-import line_profiler
-
-import pstats, cProfile
+# import line_profiler
+# import pstats, cProfile
 
 # @profile
 def call_bnb_for_profile(b_opt, n_b, sigma_max):
@@ -21,16 +20,14 @@ sigma_max = 4
 
 b_opt_bin = call_bnb_for_profile(b_opt, n_b, sigma_max)
 
-
-
 #Print profiling statistics using the `line_profiler` API
 # profile = line_profiler.LineProfiler(call_bnb_for_profile)
-# profile.runcall(call_bnb_for_profile, b_opt, sigma_max)
+# profile.runcall(call_bnb_for_profile, b_opt, n_b, sigma_max)
 # profile.print_stats()
 
-# process = psutil.Process(os.getpid())
+process = psutil.Process(os.getpid())
 
-# # return the memory usage in MB
-# mem = process.memory_info()[0] / float(2 ** 20)
+# return the memory usage in MB
+mem = process.memory_info()[0] / float(2 ** 20)
 
-# print "Memory used: " + str(mem) + " MB"
+print "Memory used: " + str(mem) + " MB"
