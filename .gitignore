@@ -4,3 +4,4 @@
 build/
 .ipynb_checkpoints/
 *.o
+previous_approaches/
