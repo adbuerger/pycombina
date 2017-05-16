@@ -138,6 +138,8 @@ void bnb_jung(bnb_input *bnb_data_init, bnb_output *bnb_output_data){
 
     t_end = clock();
 
+    cout << setprecision(15) << "\n\n -- Branch and bound for relaxed integer controls -- \n\n";
+
     cout << setprecision(15) << "Duration preparation phase: " << double(t_end - t_start) / CLOCKS_PER_SEC << " s\n\n";
 
 
