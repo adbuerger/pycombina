@@ -5,3 +5,5 @@ build/
 .ipynb_checkpoints/
 *.o
 previous_approaches/
+bnb_jung.egg-info/
+
