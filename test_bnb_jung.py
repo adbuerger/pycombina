@@ -30,4 +30,4 @@ process = psutil.Process(os.getpid())
 # return the memory usage in MB
 mem = process.memory_info()[0] / float(2 ** 20)
 
-print "Memory used: " + str(mem) + " MB"
+# print "Memory used: " + str(mem) + " MB"
