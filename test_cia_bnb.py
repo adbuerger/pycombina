@@ -1,16 +1,14 @@
-import numpy as np
-from bnb_jung import run_bnb_jung
+from cia_bnb import run_cia_bnb
 import psutil
 import os
-from time import time
 
 # import line_profiler
 # import pstats, cProfile
 
 # @profile
-def call_bnb_for_profile(b_opt, n_b, sigma_max):
+def call_bnb_for_profiling(b_opt, n_b, sigma_max):
 
-    b_opt_bin = run_bnb_jung(b_opt, n_b, sigma_max)
+    b_opt_bin = run_cia_bnb(b_opt, n_b, sigma_max)
 
     return b_opt_bin
 
@@ -18,7 +16,7 @@ b_opt = [9.164991131439303e-08, 9.164989910069793e-08, 9.164986964110127e-08, 9.
 n_b = len(b_opt)
 sigma_max = 4
 
-b_opt_bin = call_bnb_for_profile(b_opt, n_b, sigma_max)
+b_opt_bin = call_bnb_for_profiling(b_opt, n_b, sigma_max)
 
 #Print profiling statistics using the `line_profiler` API
 # profile = line_profiler.LineProfiler(call_bnb_for_profile)
@@ -29,5 +27,4 @@ process = psutil.Process(os.getpid())
 
 # return the memory usage in MB
 mem = process.memory_info()[0] / float(2 ** 20)
-
 # print "Memory used: " + str(mem) + " MB"

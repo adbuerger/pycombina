@@ -68,7 +68,7 @@ struct compare_nodes{
 };
 
 
-void bnb_jung(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
+void cia_bnb(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
 
     int i;
 
@@ -250,7 +250,7 @@ void bnb_jung(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
 };
 
 
-static PyObject* py_run_bnb_jung(PyObject* self, PyObject* args){
+static PyObject* py_run_cia_bnb(PyObject* self, PyObject* args){
 
     PyObject *b_init_py;
     PyObject *b_py;
@@ -276,7 +276,7 @@ static PyObject* py_run_bnb_jung(PyObject* self, PyObject* args){
 
     bnb_output_data.b_data = new int[n_b];
 
-    bnb_jung(bnb_input_data, &bnb_output_data);
+    cia_bnb(bnb_input_data, &bnb_output_data);
 
 
     PyObject *b_opt_py = PyList_New(n_b);
@@ -294,14 +294,14 @@ static PyObject* py_run_bnb_jung(PyObject* self, PyObject* args){
 
 }
 
-static PyMethodDef bnbJungModule_methods[] = {
-  {"run_bnb_jung", py_run_bnb_jung, METH_VARARGS},
+static PyMethodDef ciaBnbModule_methods[] = {
+  {"run_cia_bnb", py_run_cia_bnb, METH_VARARGS},
   {NULL, NULL}
 };
 
 
-extern "C" void initbnb_jung(void)
+extern "C" void initcia_bnb(void)
 {
-  (void) Py_InitModule("bnb_jung", bnbJungModule_methods);
+  (void) Py_InitModule("cia_bnb", ciaBnbModule_methods);
 }
 
