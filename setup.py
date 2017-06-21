@@ -3,19 +3,19 @@ from distutils.core import Extension
 
 bnb_module = Extension(
 
-        'bnb_jung', 
+        'cia_bnb', 
         extra_compile_args=['-O3'],
-        sources = ["bnb_jung.cpp"]
+        sources = ["cia_bnb.cpp"]
     )
 
 setup(
 
-    name='bnb_jung',
+    name='cia_bnb',
     version='0.1',
 
-    author='Adrian Buerger',
-    author_email='adrian.buerger@hs-karlsruhe.de',
+    author='Adrian Buerger, Clemens Zeile',
+    author_email='adrian.buerger@hs-karlsruhe.de, clemens.zeile@ovgu.de',
     
-    ext_modules=[Extension('bnb_jung', ['bnb_jung.cpp'])]
+    ext_modules=[Extension('cia_bnb', ['cia_bnb.cpp'])]
 
     )
