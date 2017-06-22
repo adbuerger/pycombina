@@ -97,13 +97,13 @@ void cia_bnb(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
     double delta_b_opt_p_k_true [bnb_data_init.n_b];
     double delta_b_opt_p_k_false [bnb_data_init.n_b];
 
-    cout << setprecision(15) << "\n----------------------------------------------------\n";
-    cout << setprecision(15) << "|                                                  |\n";
-    cout << setprecision(15) << "| Convex Integral Approximation - Branch and Bound |\n";
-    cout << setprecision(15) << "|                                                  |\n";
-    cout << setprecision(15) << "----------------------------------------------------\n";
+    cout << setprecision(15) << "\n-----------------------------------------------------------\n";
+    cout << setprecision(15) << "|                                                         |\n";
+    cout << setprecision(15) << "| Combinatorial Integral Approximation - Branch and Bound |\n";
+    cout << setprecision(15) << "|                                                         |\n";
+    cout << setprecision(15) << "-----------------------------------------------------------\n";
 
-    cout << setprecision(15) << "\nRunning Convex Integral Approximation ...\n";
+    cout << setprecision(15) << "\nRunning Combinatorial Integral Approximation ...\n";
 
 
     cout << setprecision(15) << "\n- Running preparation phase ...\n";
@@ -212,7 +212,7 @@ void cia_bnb(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
 
             cout << setprecision(15) << "  Retrieving finished after " << double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
         
-            cout << setprecision(15) << "\nConvex Integral Approximation finished.\n\n";
+            cout << setprecision(15) << "\nCombinatorial Integral Approximation finished.\n\n";
         
             break;
         }

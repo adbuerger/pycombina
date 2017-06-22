@@ -1,5 +1,5 @@
-Convex Integral Approximation using Branch and Bound
-====================================================
+Combinatorial Integral Approximation using Branch and Bound
+===========================================================
 
 How to install
 --------------
