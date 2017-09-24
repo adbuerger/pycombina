@@ -5,5 +5,5 @@ build/
 .ipynb_checkpoints/
 *.o
 previous_approaches/
-cia_bnb.egg-info/
+cia.egg-info/
 
