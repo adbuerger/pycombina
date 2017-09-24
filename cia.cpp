@@ -1,3 +1,5 @@
+#include <cia.hpp>
+
 #include <Python.h>
 
 #include <queue>
@@ -12,63 +14,28 @@
 
 using namespace std;
 
-struct bnb_input{
+bool node_comparison::operator()(const node& node_1, const node& node_2){
 
-    double *b_data;
-    int n_b;
-    int sigma_max;
+    if (node_1.priority != node_2.priority){
 
-};
+        return node_1.priority > node_2.priority;
+    }
 
-struct bnb_output{
+    else{
 
-    int *b_data;
-    int eta;
-    int k;
+        if (node_1.d != node_2.d) {
 
-};
-
-
-struct node{
-
-    double priority;
-    int d;
-    int k;
-
-    double eta;
-    int k_prev;
-    
-    int p;
-    int sigma;
-
-};
-
-
-struct compare_nodes{
-
-    bool operator()(const node& node_1, const node& node_2){
-
-        if (node_1.priority != node_2.priority){
-
-            return node_1.priority > node_2.priority;
+            return node_1.d < node_2.d;
         }
-
         else{
 
-            if (node_1.d != node_2.d) {
-
-                return node_1.d < node_2.d;
-            }
-            else{
-
-                return node_1.k > node_2.k;
-            }
+            return node_1.k > node_2.k;
         }
     }
-};
+}
 
 
-void cia_bnb(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
+void cia(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
 
     int i;
 
@@ -119,7 +86,7 @@ void cia_bnb(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
     }
 
 
-    priority_queue<node, vector<node>, compare_nodes > q;
+    priority_queue<node, vector<node>, node_comparison> q;
 
     map<int, node> q_selected;
     map<int, node>::iterator it_q_selected;
@@ -250,7 +217,7 @@ void cia_bnb(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
 };
 
 
-static PyObject* py_run_cia_bnb(PyObject* self, PyObject* args){
+static PyObject* py_run_cia(PyObject* self, PyObject* args){
 
     PyObject *b_init_py;
     PyObject *b_py;
@@ -276,7 +243,7 @@ static PyObject* py_run_cia_bnb(PyObject* self, PyObject* args){
 
     bnb_output_data.b_data = new int[n_b];
 
-    cia_bnb(bnb_input_data, &bnb_output_data);
+    cia(bnb_input_data, &bnb_output_data);
 
 
     PyObject *b_opt_py = PyList_New(n_b);
@@ -294,14 +261,14 @@ static PyObject* py_run_cia_bnb(PyObject* self, PyObject* args){
 
 }
 
-static PyMethodDef ciaBnbModule_methods[] = {
-  {"run_cia_bnb", py_run_cia_bnb, METH_VARARGS},
+static PyMethodDef ciaModule_methods[] = {
+  {"run_cia", py_run_cia, METH_VARARGS},
   {NULL, NULL}
 };
 
 
-extern "C" void initcia_bnb(void)
+extern "C" void initcia(void)
 {
-  (void) Py_InitModule("cia_bnb", ciaBnbModule_methods);
+  (void) Py_InitModule("cia", ciaModule_methods);
 }
 
