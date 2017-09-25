@@ -5,5 +5,5 @@ build/
 .ipynb_checkpoints/
 *.o
 previous_approaches/
-cia.egg-info/
+pycombina.egg-info/
 

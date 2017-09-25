@@ -1,48 +1,94 @@
+// cia.cpp
+
 #include <cia.hpp>
 
-#include <Python.h>
-
-#include <queue>
+#ifndef VECTOR_H
+#define VECTOR_H
 #include <vector>
-#include <iostream>
-#include <iomanip>
-#include <cmath>
+#endif
+
+#ifndef MAP_H
+#define MAP_H
 #include <map>
+#endif
+
+#include <iostream>
+#include <queue>
 #include <algorithm>
-#include <iterator>
-#include <ctime>
 
-using namespace std;
 
-bool node_comparison::operator()(const node& node_1, const node& node_2){
+std::vector<int> cia(const std::vector<double>& b_rel, const int& sigma_max){
 
-    if (node_1.priority != node_2.priority){
+    std::vector<double> delta_b_bin_p_k_true (b_rel.size());
+    std::vector<double> delta_b_bin_p_k_false (b_rel.size());
 
-        return node_1.priority > node_2.priority;
+    std::map<int, bnb_node> bnb_tree;
+
+    std::vector<int> b_bin;
+
+    welcome_prompt();
+
+    cia_preparation_phase(b_rel, delta_b_bin_p_k_true, delta_b_bin_p_k_false);    
+
+    cia_main_phase(b_rel, sigma_max, delta_b_bin_p_k_true, delta_b_bin_p_k_false, bnb_tree);
+
+    cia_postprocessing_phase(bnb_tree, b_bin);
+
+    return b_bin;
+
+};
+
+
+void welcome_prompt(){
+
+    std::cout << "\n-----------------------------------------------------------\n";
+    std::cout << "|                                                         |\n";
+    std::cout << "|    pycombina -- Combinatorial Integral Approximation    |\n";
+    std::cout << "|                                                         |\n";
+    std::cout << "-----------------------------------------------------------\n";
+
+};
+
+
+void cia_preparation_phase(const std::vector<double>& b_rel, 
+    std::vector<double>& delta_b_bin_p_k_true, 
+    std::vector<double>& delta_b_bin_p_k_false){
+    
+    clock_t t_start;
+    clock_t t_end;
+
+    std::cout << "\n- Running preparation phase ...\n";
+
+    t_start = clock();
+
+    delta_b_bin_p_k_true.at(delta_b_bin_p_k_true.size() - 1) = 
+        b_rel.at(b_rel.size() - 1) - 1;
+
+    delta_b_bin_p_k_false.at(delta_b_bin_p_k_false.size() - 1) = 
+        b_rel.at(b_rel.size() - 1);
+
+    for(int i = b_rel.size() - 2; i >= 0; i--){
+
+        delta_b_bin_p_k_true.at(i) = delta_b_bin_p_k_true.at(i+1) + b_rel.at(i) - 1;
+        delta_b_bin_p_k_false.at(i) = delta_b_bin_p_k_false.at(i+1) + b_rel.at(i);
+
     }
 
-    else{
+    t_end = clock();
 
-        if (node_1.d != node_2.d) {
+    std::cout << "  Preparation phase finished after " << 
+        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
 
-            return node_1.d < node_2.d;
-        }
-        else{
-
-            return node_1.k > node_2.k;
-        }
-    }
-}
+};
 
 
-void cia(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
+void cia_main_phase(const std::vector<double>& b_rel, const int& sigma_max,
+    const std::vector<double>& delta_b_bin_p_k_true, 
+    const std::vector<double>& delta_b_bin_p_k_false, 
+    std::map<int, bnb_node>& bnb_tree){
 
-    int i;
-
-    vector<int> b_opt_bin;
-    vector<int>::iterator it_b_opt_bin;
-
-    int b_opt[bnb_data_init.n_b];
+    clock_t t_start;
+    clock_t t_end;
 
     double priority_k;
     int d_k = 0;
@@ -56,132 +102,42 @@ void cia(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
 
     int n_bnb_iterations = 0;
 
-    clock_t t_start;
-    clock_t t_end;
+    std::priority_queue<bnb_node, std::vector<bnb_node>, 
+        bnb_node_priority_comparison> bnb_queue;
+
+    bnb_node a;
+
+    std::cout << "\n- Running Combinatorial Integral Approximation ...\n";
 
     t_start = clock();
-
-    double delta_b_opt_p_k_true [bnb_data_init.n_b];
-    double delta_b_opt_p_k_false [bnb_data_init.n_b];
-
-    cout << setprecision(15) << "\n-----------------------------------------------------------\n";
-    cout << setprecision(15) << "|                                                         |\n";
-    cout << setprecision(15) << "| Combinatorial Integral Approximation - Branch and Bound |\n";
-    cout << setprecision(15) << "|                                                         |\n";
-    cout << setprecision(15) << "-----------------------------------------------------------\n";
-
-    cout << setprecision(15) << "\nRunning Combinatorial Integral Approximation ...\n";
-
-
-    cout << setprecision(15) << "\n- Running preparation phase ...\n";
-
-    delta_b_opt_p_k_true[bnb_data_init.n_b-1] = 
-        bnb_data_init.b_data[bnb_data_init.n_b-1] - 1;
-    delta_b_opt_p_k_false[bnb_data_init.n_b-1] =
-        bnb_data_init.b_data[bnb_data_init.n_b-1];
-
-    for (i = bnb_data_init.n_b-2; i >=0; i--){
-        delta_b_opt_p_k_true[i] = delta_b_opt_p_k_true[i+1] + bnb_data_init.b_data[i] - 1;
-        delta_b_opt_p_k_false[i] = delta_b_opt_p_k_false[i+1] + bnb_data_init.b_data[i];
-    }
-
-
-    priority_queue<node, vector<node>, node_comparison> q;
-
-    map<int, node> q_selected;
-    map<int, node>::iterator it_q_selected;
-
-    node a;
 
     for (p_k = 0; p_k <= 1; p_k++){
 
         k++;
 
-        eta_k = bnb_data_init.b_data[d_k] - p_k;
+        eta_k = b_rel.at(d_k) - p_k;
         priority_k = fmax(0.0, fabs(eta_k));
 
         sigma_k = 0;
 
-        q.push({priority_k, d_k, k, eta_k, k_prev, p_k, sigma_k});
+        bnb_queue.push({priority_k, d_k, k, eta_k, k_prev, p_k, sigma_k});
 
     }
 
-    t_end = clock();
 
-    cout << setprecision(15) << "  Preparation phase finished after " << double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
-
-
-    cout << setprecision(15) << "\n- Running Branch and Bound ...\n";
-
-    t_start = clock();
-
-    while(!q.empty()){
+    while(!bnb_queue.empty()){
 
         n_bnb_iterations++;
 
-        a = q.top();
-        q.pop();
+        a = bnb_queue.top();
+        bnb_queue.pop();
 
-        q_selected.insert(std::pair<int, node>(a.k, a));
+        bnb_tree.insert(std::pair<int, bnb_node>(a.k, a));
 
-        if (a.d == bnb_data_init.n_b){
+        if (a.d == b_rel.size()){
 
-            t_end = clock();
-
-            cout << setprecision(15) << "  Branch and bound finished after " << double(t_end - t_start) / CLOCKS_PER_SEC << " s\n\n";
-
-            cout << "  * Number of iterations: " << n_bnb_iterations << "\n";
-            cout << "  * Number of nodes produced: " << k << "\n";
-            cout << "  * eta: " << a.eta << "\n";
-
-            cout << setprecision(15) << "\n- Retrieve solution from nodes ...\n";
-
-            t_start = clock();
-
-            b_opt_bin.insert(b_opt_bin.begin(), a.p);
-            k_prev = a.k_prev;
-
-            i = bnb_data_init.n_b-1;
-
-            while (k_prev != -1){
-
-                it_q_selected = q_selected.find(k_prev);
-                a = it_q_selected->second;
-
-                i--;
-                b_opt_bin.insert(b_opt_bin.begin(), a.p);
-                k_prev = a.k_prev;
-
-            }
-
-            while (i > 0){
-
-                b_opt_bin.insert(b_opt_bin.end(), a.p);
-                i--;
-            }
-
-            i = 0;
-
-
-            for(it_b_opt_bin = b_opt_bin.begin(); it_b_opt_bin < b_opt_bin.end(); it_b_opt_bin++){
-
-                b_opt[i] = *it_b_opt_bin;
-                i++;
-            }
-
-
-            for(i = 0; i < bnb_data_init.n_b; i++){
-
-                bnb_output_data->b_data[i] = b_opt[i];
-            }
-
-            t_end = clock();
-
-            cout << setprecision(15) << "  Retrieving finished after " << double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
-        
-            cout << setprecision(15) << "\nCombinatorial Integral Approximation finished.\n\n";
-        
             break;
+
         }
 
         else {
@@ -191,84 +147,115 @@ void cia(const bnb_input &bnb_data_init, bnb_output *bnb_output_data){
                 k++;
                 d_k = a.d + 1;
 
-                eta_k = a.eta + (bnb_data_init.b_data[d_k] - p_k);
+                eta_k = a.eta + (b_rel.at(d_k) - p_k);
 
                 sigma_k = a.sigma + abs(a.p - p_k);
 
-                if (sigma_k == bnb_data_init.sigma_max){
+                if (sigma_k == sigma_max){
 
                     if (p_k == 0){
 
-                        eta_k = eta_k + delta_b_opt_p_k_false[d_k+1];
+                        eta_k = eta_k + delta_b_bin_p_k_false[d_k+1];
                     }
                     else if (p_k == 1){
 
-                        eta_k = eta_k + delta_b_opt_p_k_true[d_k+1];
+                        eta_k = eta_k + delta_b_bin_p_k_true[d_k+1];
                     }
 
-                    d_k = bnb_data_init.n_b;
+                    d_k = b_rel.size();
                 }
 
                 priority_k = fmax(a.priority, fabs(eta_k));
-                q.push({priority_k, d_k, k, eta_k, a.k, p_k, sigma_k});
+                bnb_queue.push({priority_k, d_k, k, eta_k, a.k, p_k, sigma_k});
             }
         }
     }
+
+
+    t_end = clock();
+
+    std::cout << "  Branch and bound finished after " << 
+        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n\n";
+
+    std::cout << "  * Number of iterations: " << n_bnb_iterations << "\n";
+    std::cout << "  * Number of BnB nodes produced: " << k << "\n";
+    std::cout << "  * eta: " << a.eta << "\n";
+
 };
 
 
-static PyObject* py_run_cia(PyObject* self, PyObject* args){
+void cia_postprocessing_phase(std::map<int, bnb_node>& bnb_tree, 
+    std::vector<int>& b_bin){
 
-    PyObject *b_init_py;
-    PyObject *b_py;
     int n_b;
-    int sigma_max;
 
-    PyArg_ParseTuple(args, "Oii", &b_init_py, &n_b, &sigma_max);
+    bnb_node a;
 
-    double *b_init = new double[n_b];
+    std::map<int, bnb_node>::iterator it_bnb_tree;
 
-    for (int j = 0; j < n_b; j++){
+    clock_t t_start;
+    clock_t t_end;
 
-        b_py = PySequence_GetItem(b_init_py, j);
-        b_init[j] = PyFloat_AsDouble(b_py);
-    }
+    std::cout << "\n- Running post-processing phase ...\n";
 
-    bnb_input bnb_input_data;
-    bnb_output bnb_output_data;
+    t_start = clock();
 
-    bnb_input_data.b_data = b_init;
-    bnb_input_data.n_b = n_b;
-    bnb_input_data.sigma_max = sigma_max;
+    std::map<int, bnb_node>::iterator final_node_entry = std::max_element(
+        bnb_tree.begin(), bnb_tree.end(), bnb_queue_order_comparison);
 
-    bnb_output_data.b_data = new int[n_b];
+    a = final_node_entry->second;
 
-    cia(bnb_input_data, &bnb_output_data);
-
-
-    PyObject *b_opt_py = PyList_New(n_b);
-
-    for(int j = 0; j < n_b; j++){
-
-        PyObject *b = PyInt_FromLong(bnb_output_data.b_data[j]);
-        PyList_SET_ITEM(b_opt_py, j, b);
-    }
+    b_bin.insert(b_bin.begin(), a.p);
     
-    delete[] b_init;
-    delete[] bnb_output_data.b_data;
+    n_b = a.d;
 
-    return b_opt_py;
+    while(a.k_prev != -1){
+    
+        it_bnb_tree = bnb_tree.find(a.k_prev);
+        a = it_bnb_tree->second;
+        b_bin.insert(b_bin.begin(), a.p);
 
-}
+    }
 
-static PyMethodDef ciaModule_methods[] = {
-  {"run_cia", py_run_cia, METH_VARARGS},
-  {NULL, NULL}
+    a = bnb_tree.rbegin()->second;
+
+    while(b_bin.size() < n_b) {
+
+        b_bin.insert(b_bin.end(), a.p);
+
+    }
+
+    t_end = clock();
+
+    std::cout << "  Post-processing finished after " << 
+        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
+
 };
 
 
-extern "C" void initcia(void)
-{
-  (void) Py_InitModule("cia", ciaModule_methods);
-}
+bool bnb_queue_order_comparison(const std::pair<int, bnb_node>& pair_a, 
+    const std::pair<int, bnb_node>& pair_b){
 
+    return pair_a.second.d < pair_b.second.d;
+};
+
+
+bool bnb_node_priority_comparison::operator()(const bnb_node& node_a, const bnb_node& node_b){
+
+    if (node_a.priority != node_b.priority){
+
+        return node_a.priority > node_b.priority;
+    }
+
+    else{
+
+        if (node_a.d != node_b.d) {
+
+            return node_a.d < node_b.d;
+        }
+        else{
+
+            return node_a.k > node_b.k;
+        }
+    }
+}

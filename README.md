@@ -1,5 +1,38 @@
-Combinatorial Integral Approximation using Branch and Bound
-===========================================================
+pycombina - Combinatorial Integral Approximation
+================================================
+
+Python module containing a Combinatorial Integral Approximation algorithm
+
+Prerequisites
+-------------
+
+Python modules
+~~~~~~~~~~~~~~
+
+```
+setuptools
+
+```
+
+is you want to run the automated tests, you also need
+
+```
+unittest2
+
+```
+
+The module has been tested with Python2, but should also work with Python3.
+
+Other software
+~~~~~~~~~~~~~~
+
+```
+g++
+cmake
+```
+
+pycombina uses features available only from C++11 on and contains `pybind11 <https://github.com/pybind/pybind11>`.
+
 
 How to install
 --------------
@@ -17,16 +50,10 @@ to the containing folder, which can be done by running
 sudo python setup.py develop
 ```
 
-If you just want to build the module locally, you can also do this by running
+To use the automated tests, run
 
 ```
-make
-```
-
-or
-
-```
-make build
+sudo python setup.py test
 ```
 
 How to use
