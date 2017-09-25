@@ -6,13 +6,14 @@ Python module containing a Combinatorial Integral Approximation algorithm
 
 ### Python modules
 
+In order to install pycombina, you need
 
 ```
 setuptools
 
 ```
 
-is you want to run the automated tests, you also need
+to be installed If you want to run the automated tests, you also need
 
 ```
 unittest2
@@ -23,12 +24,14 @@ The module has been tested with Python2, but should also work with Python3.
 
 ### Other software
 
+The (major) C++ part of pycombina is built using
+
 ```
 g++
 cmake
 ```
 
-pycombina uses features available only from C++11 on and contains `pybind11 <https://github.com/pybind/pybind11>`.
+**Please note:** pycombina uses features available only from C++11 on and contains [pybind1](https://github.com/pybind/pybind11).
 
 
 ## How to install
