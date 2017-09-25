@@ -1,13 +1,11 @@
-pycombina - Combinatorial Integral Approximation
-================================================
+# pycombina - Combinatorial Integral Approximation
 
 Python module containing a Combinatorial Integral Approximation algorithm
 
-Prerequisites
--------------
+## Prerequisites
 
-Python modules
-~~~~~~~~~~~~~~
+### Python modules
+
 
 ```
 setuptools
@@ -23,8 +21,7 @@ unittest2
 
 The module has been tested with Python2, but should also work with Python3.
 
-Other software
-~~~~~~~~~~~~~~
+### Other software
 
 ```
 g++
@@ -34,8 +31,8 @@ cmake
 pycombina uses features available only from C++11 on and contains `pybind11 <https://github.com/pybind/pybind11>`.
 
 
-How to install
---------------
+## How to install
+
 
 For system-wide installation of the Python module, run
 
@@ -56,7 +53,7 @@ To use the automated tests, run
 sudo python setup.py test
 ```
 
-How to use
-----------
+## How to use
 
-An example of how to use the module can be found in the file `test_cia_bnb.py`.
+
+For examples on how to use the module, please refer to the tests.
