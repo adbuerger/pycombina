@@ -27,6 +27,8 @@ struct bnb_node{
 
 std::vector<int> cia(const std::vector<double>& b_rel, const int& sigma_max);
 
+void input_validation(const std::vector<double>& b_rel);
+
 void welcome_prompt();
 
 void cia_preparation_phase(const std::vector<double>& b_rel,

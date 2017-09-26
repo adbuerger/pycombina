@@ -26,6 +26,8 @@ std::vector<int> cia(const std::vector<double>& b_rel, const int& sigma_max){
 
     std::vector<int> b_bin;
 
+    input_validation(b_rel);
+
     welcome_prompt();
 
     cia_preparation_phase(b_rel, delta_b_bin_p_k_true, delta_b_bin_p_k_false);    
@@ -35,6 +37,21 @@ std::vector<int> cia(const std::vector<double>& b_rel, const int& sigma_max){
     cia_postprocessing_phase(bnb_tree, b_bin);
 
     return b_bin;
+
+};
+
+
+void input_validation(const std::vector<double>& b_rel){
+
+    for(double b : b_rel){
+
+        if (0.0 > b || b > 1.0){
+
+            throw std::invalid_argument("For all entries b in b_rel it must hold that 0 <= b <= 1.");
+
+        }
+
+    }
 
 };
 
