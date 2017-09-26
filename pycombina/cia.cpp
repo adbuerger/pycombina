@@ -108,14 +108,14 @@ void cia_main_phase(const std::vector<double>& b_rel, const int& sigma_max,
     clock_t t_end;
 
     double priority_k;
-    int d_k = 0;
+    short unsigned int d_k = 0;
 
     int k = -1;
     double eta_k;
     int k_prev = -1;
 
-    int p_k;
-    int sigma_k;
+    short unsigned int p_k;
+    short unsigned int sigma_k;
 
     int n_bnb_iterations = 0;
 
@@ -172,11 +172,11 @@ void cia_main_phase(const std::vector<double>& b_rel, const int& sigma_max,
 
                     if (p_k == 0){
 
-                        eta_k = eta_k + delta_b_bin_p_k_false[d_k+1];
+                        eta_k += delta_b_bin_p_k_false[d_k+1];
                     }
                     else if (p_k == 1){
 
-                        eta_k = eta_k + delta_b_bin_p_k_true[d_k+1];
+                        eta_k += delta_b_bin_p_k_true[d_k+1];
                     }
 
                     d_k = b_rel.size();

@@ -13,14 +13,14 @@
 struct bnb_node{
 
     double priority;
-    int d;
+    short unsigned int d;
     int k;
 
     double eta;
     int k_prev;
     
-    int p;
-    int sigma;
+    short unsigned int p;
+    short unsigned int sigma;
 
 };
 
