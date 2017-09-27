@@ -31,7 +31,7 @@ g++
 cmake
 ```
 
-**Please note:** pycombina uses features available only from C++11 on and uses [pybind1](https://github.com/pybind/pybind11) (a copy is shipped with pycombina).
+**Please note:** pycombina uses features available only from C++11 on and uses [pybind11](https://github.com/pybind/pybind11) (a copy is shipped with pycombina).
 
 
 ## How to install
