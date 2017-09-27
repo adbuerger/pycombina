@@ -7,8 +7,9 @@
 
 #ifndef MAP_H
 #define MAP_H
-#include <map>
+#include <unordered_map>
 #endif
+
 
 struct bnb_node{
 
@@ -24,6 +25,8 @@ struct bnb_node{
 
 };
 
+typedef std::unordered_map<int, bnb_node> bnb_tree_map;
+
 
 std::vector<int> cia(const std::vector<double>& b_rel, const int& sigma_max);
 
@@ -38,9 +41,9 @@ void cia_preparation_phase(const std::vector<double>& b_rel,
 void cia_main_phase(const std::vector<double>& b_rel, const int& sigma_max,
     const std::vector<double>& delta_b_bin_p_k_true, 
     const std::vector<double>& delta_b_bin_p_k_false,
-    std::map<int, bnb_node>& bnb_tree);
+    bnb_tree_map& bnb_tree);
 
-void cia_postprocessing_phase(std::map<int, bnb_node>& bnb_tree, 
+void cia_postprocessing_phase(bnb_tree_map& bnb_tree, 
     std::vector<int>& b_bin);
 
 bool bnb_queue_order_comparison(const std::pair<int, bnb_node>& pair_a, 

@@ -7,11 +7,6 @@
 #include <vector>
 #endif
 
-#ifndef MAP_H
-#define MAP_H
-#include <map>
-#endif
-
 #include <iostream>
 #include <queue>
 #include <algorithm>
@@ -22,7 +17,7 @@ std::vector<int> cia(const std::vector<double>& b_rel, const int& sigma_max){
     std::vector<double> delta_b_bin_p_k_true (b_rel.size());
     std::vector<double> delta_b_bin_p_k_false (b_rel.size());
 
-    std::map<int, bnb_node> bnb_tree;
+    bnb_tree_map bnb_tree;
 
     std::vector<int> b_bin;
 
@@ -102,7 +97,7 @@ void cia_preparation_phase(const std::vector<double>& b_rel,
 void cia_main_phase(const std::vector<double>& b_rel, const int& sigma_max,
     const std::vector<double>& delta_b_bin_p_k_true, 
     const std::vector<double>& delta_b_bin_p_k_false, 
-    std::map<int, bnb_node>& bnb_tree){
+    bnb_tree_map& bnb_tree){
 
     clock_t t_start;
     clock_t t_end;
@@ -201,14 +196,14 @@ void cia_main_phase(const std::vector<double>& b_rel, const int& sigma_max,
 };
 
 
-void cia_postprocessing_phase(std::map<int, bnb_node>& bnb_tree, 
+void cia_postprocessing_phase(bnb_tree_map& bnb_tree, 
     std::vector<int>& b_bin){
 
     int n_b;
 
     bnb_node a;
 
-    std::map<int, bnb_node>::iterator it_bnb_tree;
+    bnb_tree_map::iterator it_bnb_tree;
 
     clock_t t_start;
     clock_t t_end;
@@ -217,7 +212,7 @@ void cia_postprocessing_phase(std::map<int, bnb_node>& bnb_tree,
 
     t_start = clock();
 
-    std::map<int, bnb_node>::iterator final_node_entry = std::max_element(
+    bnb_tree_map::iterator final_node_entry = std::max_element(
         bnb_tree.begin(), bnb_tree.end(), bnb_queue_order_comparison);
 
     a = final_node_entry->second;
@@ -233,8 +228,6 @@ void cia_postprocessing_phase(std::map<int, bnb_node>& bnb_tree,
         b_bin.insert(b_bin.begin(), a.p);
 
     }
-
-    a = bnb_tree.rbegin()->second;
 
     while(b_bin.size() < n_b) {
 
