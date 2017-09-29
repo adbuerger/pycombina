@@ -1,15 +1,39 @@
 import unittest
 
-from pycombina import cia
+from pycombina import CIA
 
 class InputTest(unittest.TestCase):
 
-    def test_invalid_input(self):
+    def test_input_valid(self):
 
-        b_rel = [9.164991131439303e-08, 9.164989910069793e-08, 3.2]
-        sigma_max = 4
+        T = [0, 1, 2, 3]
+        b_rel = [0.1, 0.3, 0.2]
         
-        self.assertRaises(ValueError, cia, b_rel, sigma_max)
+        cia = CIA(T, b_rel)
+
+
+    def test_input_invalid_dimensions(self):
+
+        T = [0, 1, 2, 3]
+        b_rel = [0.1, 0.3, 0.2, 0.5]
+        
+        self.assertRaises(ValueError, CIA, T, b_rel)
+
+
+    def test_input_invalid_T(self):
+
+        T = [0, 2, 1, 3]
+        b_rel = [0.1, 0.3, 0.2]
+        
+        self.assertRaises(ValueError, CIA, T, b_rel)
+
+
+    def test_input_invalid_b_rel(self):
+
+        T = [0, 2, 1, 3]
+        b_rel = [0.1, 0.3, 1.2]
+        
+        self.assertRaises(ValueError, CIA, T, b_rel)
 
 
 if __name__ == '__main__':

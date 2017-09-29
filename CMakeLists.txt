@@ -6,7 +6,7 @@ set(SOURCE_DIR "pycombina")
 
 # Tell CMake that headers are also in SOURCE_DIR
 include_directories(${SOURCE_DIR})
-set(SOURCES "${SOURCE_DIR}/cia.cpp")
+set(SOURCES "${SOURCE_DIR}/CIA.cpp")
 
 # Generate Python module
 add_subdirectory(lib/pybind11)

@@ -6,4 +6,4 @@ build/
 *.o
 previous_approaches/
 pycombina.egg-info/
-lib/stx-btree
+implementierung_jung/
