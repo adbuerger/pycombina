@@ -14,6 +14,7 @@
 
 #include "BnBNodeComparison.hpp"
 
+
 class CIA {
 
 public:
@@ -22,19 +23,19 @@ public:
 
     ~CIA();
 
-    // Run BnB
-
-    void run_cia(const int& sigma_max);
+    void run_cia(int n_max_swichtes = -1);
 
     // get-functions
 
-    std::vector<double> get_T();
-    std::vector<double> get_b_rel();
+    std::vector<double> const get_T();
+    std::vector<double> const get_b_rel();
     
-    double get_ub();
-    std::vector<double> get_Tg();
+    int const get_sigma_max();
 
-    std::vector<double> get_b_bin();
+    std::vector<double> const get_Tg();
+    double const get_ub();
+
+    std::vector<unsigned int> const get_b_bin();
 
 
 private:
@@ -46,25 +47,42 @@ private:
     void validate_input_values_T();
     void validate_input_values_b_rel();
 
-    void run_cia_preparation_phase();
+    void set_sigma_max(int n_max_switches);
+
+    void prepare_bnb_data();
     void determine_number_of_control_intervals();
     void compute_time_grid_from_time_points();
     void compute_initial_upper_bound();
-    void compute_integrated_deltas_of_b_rel_to_binary_values();
+    void compute_sum_of_etas_of_b_rel_to_binary_values();
+
+    void initialize_bnb_queue();
+
+    void add_nodes_to_bnb_queue(BnBNode * ptr_parent_node);
+
+    void run_bnb();
+    void update_best_solution(BnBNode * ptr_active_node);
+    void display_solution_update(BnBNode * ptr_best_node);
+    void create_new_child_nodes(BnBNode * ptr_parent_node);
+    void delete_node(BnBNode * ptr_active_node);
+
+    void retrieve_solution();
 
     std::vector<double> T;
     std::vector<double> b_rel;
+
+    int sigma_max;
 
     unsigned int N;
     double ub;
     std::vector<double> Tg;
 
-    std::vector<double> integ_delta_b_rel_true;
-    std::vector<double> integ_delta_b_rel_false;
+    std::vector<double> sum_eta_b_rel_true;
+    std::vector<double> sum_eta_b_rel_false;
 
     std::priority_queue<BnBNode*, std::vector<BnBNode*>,
         BnBNodeComparison> *ptr_bnb_node_queue;
+    BnBNode * ptr_best_node;
 
-    std::vector<double> b_bin;
+    std::vector<unsigned int> b_bin;
 
 };
