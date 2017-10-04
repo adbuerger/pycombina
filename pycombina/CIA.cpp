@@ -309,7 +309,7 @@ void CIA::run_bnb() {
         }
     }
 
-    std::cout << "Number of iterations: " << n_iterations;
+    // std::cout << "Number of iterations: " << n_iterations;
 
     t_end = clock();
 
@@ -328,7 +328,7 @@ void CIA::update_best_solution(BnBNode * ptr_active_node) {
     ptr_best_node = ptr_active_node;
     ub = ptr_best_node->get_lb();
 
-    std::cout << "Setting ub to :" << ub << "\n";
+    // std::cout << "Setting ub to :" << ub << "\n";
 
     display_solution_update(ptr_best_node);
 
