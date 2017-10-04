@@ -181,14 +181,6 @@ void CIA::compute_sum_of_etas_of_b_rel_to_binary_values() {
 
         sum_eta_b_rel_true.at(i) = sum_eta_b_rel_true.at(i+1) + Tg.at(i) * (b_rel.at(i) - 1);
         sum_eta_b_rel_false.at(i) = sum_eta_b_rel_false.at(i+1) + Tg.at(i) * b_rel.at(i);
-        
-        /*
-        std::cout << b_rel.at(i) - 1 << " ";
-        std::cout << fabs(b_rel.at(i) - 1) << " ";
-        std::cout << Tg.at(i) * fabs(b_rel.at(i) - 1) << " ";
-        std::cout << sum_eta_b_rel_true.at(i) << " ";
-        std::cout << sum_eta_b_rel_false.at(i) << "\n";
-        */
     }
 }
 
@@ -301,6 +293,7 @@ void CIA::run_bnb() {
                 ptr_active_node->get_sigma() == sigma_max) {        
                 
                 update_best_solution(ptr_active_node);
+                break;
             }
 
             else {
@@ -387,14 +380,10 @@ void CIA::retrieve_solution() {
             node_range_begin = ptr_preceding_node->get_depth();
         }
 
-        // std::cout << node_range_end << " ";
-        // std::cout << node_range_begin << " ";
-
 
         for(int i = node_range_end; i >= node_range_begin; i--) {
 
             b_bin.at(i) = ptr_active_node->get_b();
-            // std::cout << b_bin.at(i) << " ";
         }
 
         ptr_active_node = ptr_active_node->get_ptr_parent_node();
