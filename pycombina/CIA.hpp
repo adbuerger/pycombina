@@ -23,7 +23,7 @@ public:
 
     ~CIA();
 
-    void run_cia(int n_max_swichtes = -1);
+    void run_cia(int n_max_swichtes = 2);
 
     // get-functions
 

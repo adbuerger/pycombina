@@ -25,5 +25,5 @@ PYBIND11_MODULE(pycombina, m)
 
         .def("get_b_bin", &CIA::get_b_bin)
 
-        .def("run_cia", &CIA::run_cia, py::arg("sigma_max") = -1);
+        .def("run_cia", &CIA::run_cia, py::arg("sigma_max") = 2);
 }
