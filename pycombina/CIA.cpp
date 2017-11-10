@@ -216,6 +216,7 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
     unsigned int depth_node;
     double eta_node;
     double lb_node;
+    double lb_parent;
 
     for(unsigned int b = 0; b <= 1; b++) {
 
@@ -228,6 +229,8 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
             
             sigma_node = ptr_parent_node->get_sigma() +
                 abs(ptr_parent_node->get_b() - b);
+
+            lb_parent = ptr_parent_node->get_lb();
         }
 
         else {
@@ -235,11 +238,10 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
             sigma_node = 0;
             depth_node = 1;
             lb_node = 0.0;
+            lb_parent = 0.0;
         }
 
         if((sigma_max > 0) && (sigma_node == sigma_max) && (depth_node < N)) {
-
-            // TODO: one vector for integ_delta_b_rel, saves quite some lines!
 
             if(b == 0) {
 
@@ -254,7 +256,7 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
             depth_node = N;
         }
 
-        lb_node = fabs(eta_node);
+        lb_node = fmax(lb_parent, fabs(eta_node));
 
         if(lb_node < ub) {
 
@@ -293,7 +295,8 @@ void CIA::run_bnb() {
                 ptr_active_node->get_sigma() == sigma_max) {        
                 
                 update_best_solution(ptr_active_node);
-                break;
+                std::cout << "  New best solution with eta = " << ptr_active_node->get_eta() << "\n";
+                // break;
             }
 
             else {
@@ -366,7 +369,6 @@ void CIA::retrieve_solution() {
 
     t_start = clock();
 
-
     BnBNode * ptr_active_node = ptr_best_node;
 
     while(ptr_active_node != NULL){
@@ -374,12 +376,15 @@ void CIA::retrieve_solution() {
         node_range_end = (ptr_active_node->get_depth() - 1);
         BnBNode * ptr_preceding_node = ptr_active_node->get_ptr_parent_node();
 
-        node_range_begin = 0;
-        if(ptr_preceding_node != NULL){
+        if(ptr_preceding_node != NULL) {
 
             node_range_begin = ptr_preceding_node->get_depth();
         }
 
+        else {
+        
+            node_range_begin = 0;
+        }
 
         for(int i = node_range_end; i >= node_range_begin; i--) {
 
