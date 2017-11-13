@@ -21,11 +21,8 @@ CIA::CIA(const std::vector<double>& T, const std::vector<double>& b_rel)
       b_rel(b_rel),
 
       N(0),
-      ub(0.0),
+      eta(0.0),
       Tg(T.size()-1),
-
-      sum_eta_b_rel_true(b_rel.size()),
-      sum_eta_b_rel_false(b_rel.size()),
 
       ptr_bnb_node_queue(new std::priority_queue<BnBNode*, std::vector<BnBNode*>,
         BnBNodeComparison>()),
@@ -84,7 +81,7 @@ void CIA::validate_input_values() {
 
 void CIA::validate_input_values_T() {
 
-    for(int i = 1; i < T.size(); i++) {
+    for(unsigned int i = 1; i < T.size(); i++) {
 
         if((T.at(i) - T.at(i-1)) <= 0.0) {
 
@@ -138,7 +135,6 @@ void CIA::prepare_bnb_data() {
     determine_number_of_control_intervals();
     compute_time_grid_from_time_points();
     compute_initial_upper_bound();
-    compute_sum_of_etas_of_b_rel_to_binary_values();
 
 
     t_end = clock();
@@ -157,30 +153,18 @@ void CIA::determine_number_of_control_intervals() {
 
 void CIA::compute_time_grid_from_time_points() {
 
-    for(int i = 1; i < N+1; i++) {
+    for(unsigned int i = 1; i < N+1; i++) {
 
         Tg.at(i-1) = T.at(i) - T.at(i-1);
     }
 }
 
+
 void CIA::compute_initial_upper_bound() {
 
-    for(int i; i < N; i++) {
+    for(unsigned int i = 0; i < N; i++) {
 
-        ub += Tg.at(i);
-    }
-}
-
-
-void CIA::compute_sum_of_etas_of_b_rel_to_binary_values() {
-
-    sum_eta_b_rel_true.at(N-1) = Tg.at(N-1) * (b_rel.at(N-1) - 1);
-    sum_eta_b_rel_false.at(N-1) = Tg.at(N-1) * b_rel.at(N-1);
-
-    for(int i = N-2; i >= 0; i--) {
-
-        sum_eta_b_rel_true.at(i) = sum_eta_b_rel_true.at(i+1) + Tg.at(i) * (b_rel.at(i) - 1);
-        sum_eta_b_rel_false.at(i) = sum_eta_b_rel_false.at(i+1) + Tg.at(i) * b_rel.at(i);
+        eta += Tg.at(i);
     }
 }
 
@@ -212,10 +196,11 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     BnBNode * ptr_child_node = NULL;
 
-    unsigned int sigma_node;
+    int sigma_node;
     unsigned int depth_node;
     double eta_node;
     double lb_node;
+    double lb_parent;
 
     for(unsigned int b = 0; b <= 1; b++) {
 
@@ -223,40 +208,37 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
             depth_node = ptr_parent_node->get_depth() + 1;
 
-            eta_node = ptr_parent_node->get_eta() + 
+            eta_node = ptr_parent_node->get_eta_node() + 
                 Tg.at(depth_node - 1) * (b_rel.at(depth_node - 1) - b);
             
             sigma_node = ptr_parent_node->get_sigma() +
                 abs(ptr_parent_node->get_b() - b);
+
+            lb_parent = ptr_parent_node->get_eta_branch();
         }
 
         else {
 
             sigma_node = 0;
             depth_node = 1;
-            lb_node = 0.0;
+
+            eta_node = Tg.at(depth_node - 1) * (b_rel.at(depth_node - 1) - b);
+            lb_parent = 0.0;
         }
 
         if((sigma_max > 0) && (sigma_node == sigma_max) && (depth_node < N)) {
 
-            // TODO: one vector for integ_delta_b_rel, saves quite some lines!
+            for(unsigned int i = depth_node; i < N; i++){
 
-            if(b == 0) {
-
-                eta_node += sum_eta_b_rel_false.at(depth_node);
-            }
-
-            else {
-
-                eta_node += sum_eta_b_rel_true.at(depth_node);
+                eta_node += Tg.at(i) * (b_rel.at(i) - b);
             }
 
             depth_node = N;
         }
 
-        lb_node = fabs(eta_node);
+        lb_node = fmax(lb_parent, fabs(eta_node));
 
-        if(lb_node < ub) {
+        if(lb_node < eta) {
 
             ptr_child_node = new BnBNode(ptr_parent_node, b, 
                 sigma_node, depth_node, eta_node, lb_node);
@@ -287,13 +269,13 @@ void CIA::run_bnb() {
         ptr_active_node = ptr_bnb_node_queue->top();
         ptr_bnb_node_queue->pop();
 
-        if(ptr_active_node->get_lb() < ub) {
+        if(ptr_active_node->get_eta_branch() < eta) {
 
-            if(ptr_active_node->get_depth() == N ||
-                ptr_active_node->get_sigma() == sigma_max) {        
+            if(ptr_active_node->get_depth() == N) {     
                 
                 update_best_solution(ptr_active_node);
-                break;
+                std::cout << "  Found solution with eta = " << ptr_active_node->get_eta_branch() << "\n";
+                // break;
             }
 
             else {
@@ -308,8 +290,6 @@ void CIA::run_bnb() {
 
         }
     }
-
-    // std::cout << "Number of iterations: " << n_iterations;
 
     t_end = clock();
 
@@ -326,9 +306,7 @@ void CIA::update_best_solution(BnBNode * ptr_active_node) {
     }
 
     ptr_best_node = ptr_active_node;
-    ub = ptr_best_node->get_lb();
-
-    // std::cout << "Setting ub to :" << ub << "\n";
+    eta = ptr_best_node->get_eta_branch();
 
     display_solution_update(ptr_best_node);
 
@@ -366,7 +344,6 @@ void CIA::retrieve_solution() {
 
     t_start = clock();
 
-
     BnBNode * ptr_active_node = ptr_best_node;
 
     while(ptr_active_node != NULL){
@@ -374,12 +351,15 @@ void CIA::retrieve_solution() {
         node_range_end = (ptr_active_node->get_depth() - 1);
         BnBNode * ptr_preceding_node = ptr_active_node->get_ptr_parent_node();
 
-        node_range_begin = 0;
-        if(ptr_preceding_node != NULL){
+        if(ptr_preceding_node != NULL) {
 
             node_range_begin = ptr_preceding_node->get_depth();
         }
 
+        else {
+        
+            node_range_begin = 0;
+        }
 
         for(int i = node_range_end; i >= node_range_begin; i--) {
 
@@ -399,37 +379,37 @@ void CIA::retrieve_solution() {
 
 // get-functions
 
-std::vector<double> const CIA::get_T() {
+std::vector<double> CIA::get_T() {
 
     return T;
 }
 
 
-std::vector<double> const CIA::get_b_rel() {
+std::vector<double> CIA::get_b_rel() {
 
     return b_rel;
 }
 
 
-int const CIA::get_sigma_max() {
+int CIA::get_sigma_max() {
 
     return sigma_max;
 }
 
 
-std::vector<double> const CIA::get_Tg() {
+std::vector<double> CIA::get_Tg() {
 
     return Tg;
 }
 
 
-double const CIA::get_ub() {
+double CIA::get_eta() {
 
-    return ub;
+    return eta;
 }
 
 
-std::vector<unsigned int> const CIA::get_b_bin() {
+std::vector<unsigned int> CIA::get_b_bin() {
 
     return b_bin;
 }

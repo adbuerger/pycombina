@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(pycombina)
+project(cia)
 
 # Set source directory
-set(SOURCE_DIR "pycombina")
+set(SOURCE_DIR "pycombina/src")
 
 # Tell CMake that headers are also in SOURCE_DIR
 include_directories(${SOURCE_DIR})
@@ -11,4 +11,10 @@ set(${SOURCES})
 
 # Generate Python module
 add_subdirectory(lib/pybind11)
-pybind11_add_module(pycombina ${SOURCES} "${SOURCE_DIR}/pycombina.cpp")
+pybind11_add_module(_cia ${SOURCES} "${SOURCE_DIR}/cia.cpp")
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3")

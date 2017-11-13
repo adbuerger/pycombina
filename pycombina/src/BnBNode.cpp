@@ -12,14 +12,14 @@
 
 BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const b,
             unsigned int const sigma, unsigned int const depth,
-            double const eta, double const lb)
+            double const eta_node, double const eta_branch)
 
     : ptr_parent_node(ptr_parent_node),
       b(b),
       sigma(sigma),
       depth(depth),
-      eta(eta),
-      lb(lb),
+      eta_node(eta_node),
+      eta_branch(eta_branch),
 
       n_active_children(0)
 
@@ -65,43 +65,43 @@ void BnBNode::child_node_becomes_inactive() {
 
 // get-functions
 
-BnBNode* const BnBNode::get_ptr_parent_node() {
+BnBNode* BnBNode::get_ptr_parent_node() {
 
     return ptr_parent_node;
 }
 
 
-unsigned int const BnBNode::get_b() {
+unsigned int BnBNode::get_b() {
 
     return b;
 }
 
 
-unsigned int const BnBNode::get_sigma() {
+unsigned int BnBNode::get_sigma() {
 
     return sigma;
 }
 
 
-unsigned int const BnBNode::get_depth() {
+unsigned int BnBNode::get_depth() {
 
     return depth;
 }
 
 
-double const BnBNode::get_eta() {
+double BnBNode::get_eta_node() {
 
-    return eta;
+    return eta_node;
 }
 
 
-double const BnBNode::get_lb() {
+double BnBNode::get_eta_branch() {
 
-    return lb;
+    return eta_branch;
 }
 
 
-int const BnBNode::get_n_active_children() {
+int BnBNode::get_n_active_children() {
 
     return n_active_children;
 }
