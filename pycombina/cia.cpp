@@ -12,7 +12,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(pycombina, m)
+PYBIND11_MODULE(_cia, m)
 {
     py::class_<CIA>(m, "CIA")
         .def(py::init<const std::vector<double> &, const std::vector<double> &>())

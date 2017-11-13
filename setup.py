@@ -83,7 +83,7 @@ setup(
     # see again: http://www.benjack.io/2017/06/12/python-cpp-tests.html
 
     # add extension module
-    ext_modules=[CMakeExtension('pycombina')],
+    ext_modules=[CMakeExtension('_cia')],
 
     # add custom build_ext command
     cmdclass=dict(build_ext=CMakeBuild),
