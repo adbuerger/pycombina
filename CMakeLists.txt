@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(pycombina)
+project(cia)
 
 # Set source directory
-set(SOURCE_DIR "pycombina")
+set(SOURCE_DIR "pycombina/src")
 
 # Tell CMake that headers are also in SOURCE_DIR
 include_directories(${SOURCE_DIR})

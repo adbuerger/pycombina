@@ -20,7 +20,7 @@ PYBIND11_MODULE(_cia, m)
         .def("get_T", &CIA::get_T)
         .def("get_b_rel", &CIA::get_b_rel)
 
-        .def("get_ub", &CIA::get_ub)
+        .def("get_eta", &CIA::get_eta)
         .def("get_Tg", &CIA::get_Tg)
 
         .def("get_b_bin", &CIA::get_b_bin)

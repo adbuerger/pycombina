@@ -21,7 +21,7 @@ CIA::CIA(const std::vector<double>& T, const std::vector<double>& b_rel)
       b_rel(b_rel),
 
       N(0),
-      ub(0.0),
+      eta(0.0),
       Tg(T.size()-1),
 
       ptr_bnb_node_queue(new std::priority_queue<BnBNode*, std::vector<BnBNode*>,
@@ -164,7 +164,7 @@ void CIA::compute_initial_upper_bound() {
 
     for(unsigned int i = 0; i < N; i++) {
 
-        ub += Tg.at(i);
+        eta += Tg.at(i);
     }
 }
 
@@ -238,7 +238,7 @@ void CIA::add_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
         lb_node = fmax(lb_parent, fabs(eta_node));
 
-        if(lb_node < ub) {
+        if(lb_node < eta) {
 
             ptr_child_node = new BnBNode(ptr_parent_node, b, 
                 sigma_node, depth_node, eta_node, lb_node);
@@ -269,7 +269,7 @@ void CIA::run_bnb() {
         ptr_active_node = ptr_bnb_node_queue->top();
         ptr_bnb_node_queue->pop();
 
-        if(ptr_active_node->get_eta_branch() < ub) {
+        if(ptr_active_node->get_eta_branch() < eta) {
 
             if(ptr_active_node->get_depth() == N) {     
                 
@@ -306,7 +306,7 @@ void CIA::update_best_solution(BnBNode * ptr_active_node) {
     }
 
     ptr_best_node = ptr_active_node;
-    ub = ptr_best_node->get_eta_branch();
+    eta = ptr_best_node->get_eta_branch();
 
     display_solution_update(ptr_best_node);
 
@@ -403,9 +403,9 @@ std::vector<double> CIA::get_Tg() {
 }
 
 
-double CIA::get_ub() {
+double CIA::get_eta() {
 
-    return ub;
+    return eta;
 }
 
 

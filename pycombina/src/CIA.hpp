@@ -33,7 +33,7 @@ public:
     int get_sigma_max();
 
     std::vector<double> get_Tg();
-    double get_ub();
+    double get_eta();
 
     std::vector<unsigned int> get_b_bin();
 
@@ -72,7 +72,7 @@ private:
     int sigma_max;
 
     unsigned int N;
-    double ub;
+    double eta;
     std::vector<double> Tg;
 
     std::vector<double> sum_eta_b_rel_true;
