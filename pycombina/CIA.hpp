@@ -27,15 +27,15 @@ public:
 
     // get-functions
 
-    std::vector<double> const get_T();
-    std::vector<double> const get_b_rel();
+    std::vector<double> get_T();
+    std::vector<double> get_b_rel();
     
-    int const get_sigma_max();
+    int get_sigma_max();
 
-    std::vector<double> const get_Tg();
-    double const get_ub();
+    std::vector<double> get_Tg();
+    double get_ub();
 
-    std::vector<unsigned int> const get_b_bin();
+    std::vector<unsigned int> get_b_bin();
 
 
 private:
@@ -53,7 +53,6 @@ private:
     void determine_number_of_control_intervals();
     void compute_time_grid_from_time_points();
     void compute_initial_upper_bound();
-    void compute_sum_of_etas_of_b_rel_to_binary_values();
 
     void initialize_bnb_queue();
 

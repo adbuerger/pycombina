@@ -12,3 +12,9 @@ set(${SOURCES})
 # Generate Python module
 add_subdirectory(lib/pybind11)
 pybind11_add_module(pycombina ${SOURCES} "${SOURCE_DIR}/pycombina.cpp")
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3")

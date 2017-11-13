@@ -10,7 +10,7 @@ public:
 
     BnBNode(BnBNode * const ptr_parent_node, unsigned int const b,
             unsigned int const sigma, unsigned int const depth,
-            double const eta, double const lb);
+            double const eta_node, double const eta_branch);
 
 
     ~BnBNode();
@@ -21,15 +21,15 @@ public:
 
     // get-functions
 
-    BnBNode* const get_ptr_parent_node();
-    unsigned int const get_b();
-    double const get_duration();
-    unsigned int const get_sigma();
-    unsigned int const get_depth();
-    double const get_eta();
-    double const get_lb();
+    BnBNode* get_ptr_parent_node();
+    unsigned int get_b();
+    double get_duration();
+    unsigned int get_sigma();
+    unsigned int get_depth();
+    double get_eta_node();
+    double get_eta_branch();
 
-    int const get_n_active_children();
+    int get_n_active_children();
 
 
 private:
@@ -39,8 +39,8 @@ private:
     double duration;
     unsigned int sigma;
     unsigned int depth;
-    double eta;
-    double lb;
+    double eta_node;
+    double eta_branch;
 
     unsigned int n_active_children;
 
