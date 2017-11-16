@@ -1,0 +1,14 @@
+image: ubuntu:16.04
+
+stages:
+  - test
+
+testing:
+    stage: test
+    before_script:
+      - apt-get update
+      - apt-get install -y cmake make python-dev python-pip
+      - pip install setuptools nose
+
+    script:
+      - python setup.py test
