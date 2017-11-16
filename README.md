@@ -1,5 +1,4 @@
-![pycombina logo](logo/logo.png)
-Format: ![Alt Text](url)
+![pycombina logo](logo/logo.png =250x)
 
 # pycombina - Combinatorial Integral Approximation
 
