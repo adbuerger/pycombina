@@ -35,9 +35,9 @@ Other software
 
 For building the C++ implementation, the following packages are required
 
-- python-dev
-- g++
-- cmake
+- ``python-dev``
+- ``g++``
+- ``cmake``
 
 **Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy is shipped with pycombina).
 
