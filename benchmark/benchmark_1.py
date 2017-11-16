@@ -1,6 +1,6 @@
 import pylab as pl
 
-from pycombina import CIA, CIA_SCIP
+from pycombina import CIA, CIA_SCIP, CIA_GUROBI
 
 pl.close("all")
 
@@ -21,9 +21,17 @@ cia_scip.run_cia(sigma_max = sigma_max)
 
 b_bin_scip = cia_scip.get_b_bin()
 
+
+cia_gurobi = CIA_GUROBI(T, b_rel)
+cia_gurobi.run_cia(sigma_max = sigma_max)
+
+b_bin_gurobi = cia_gurobi.get_b_bin()
+
+
 pl.figure()
-pl.plot(b_bin_scip, label = "scip")
 pl.plot(b_bin_cia, label = "cia")
+pl.plot(b_bin_scip, label = "scip")
+pl.plot(b_bin_gurobi, label = "gurobi")
 pl.plot(b_rel, label = "rel")
 pl.legend(loc = "best")
 pl.show()
@@ -33,17 +41,11 @@ pl.show()
 
 N = len(b_bin_cia)
 
-eta_scip = (i, 0)
 eta_cia = (i, 0)
+eta_scip = (i, 0)
+eta_gurobi = (i, 0)
 
 for i in range(N):
-
-    eta_scip_i = abs(sum([b_rel[j] - b_bin_scip[j] for j in range(i)]))
-
-    if eta_scip_i > eta_scip[1]:
-
-        eta_scip = (i, eta_scip_i)
-
 
     eta_cia_i = abs(sum([b_rel[j] - b_bin_cia[j] for j in range(i)]))
 
@@ -52,5 +54,20 @@ for i in range(N):
         eta_cia = (i, eta_cia_i)
 
 
-print "eta_scip = " + str(eta_scip)
+    eta_scip_i = abs(sum([b_rel[j] - b_bin_scip[j] for j in range(i)]))
+
+    if eta_scip_i > eta_scip[1]:
+
+        eta_scip = (i, eta_scip_i)
+
+
+    eta_gurobi_i = abs(sum([b_rel[j] - b_bin_gurobi[j] for j in range(i)]))
+
+    if eta_gurobi_i > eta_gurobi[1]:
+
+        eta_gurobi = (i, eta_gurobi_i)
+
+
 print "eta_cia = " + str(eta_cia)
+print "eta_scip = " + str(eta_scip)
+print "eta_gurobi = " + str(eta_gurobi)
