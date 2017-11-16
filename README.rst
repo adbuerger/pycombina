@@ -1,4 +1,6 @@
-![pycombina logo](logo/logo.png)
+..figure:: logo/logo.png
+    :scale: 80%
+    :align: center
 
 pycombina - Combinatorial Integral Approximation
 ================================================
