@@ -12,3 +12,4 @@ testing:
 
     script:
       - python setup.py test
+
