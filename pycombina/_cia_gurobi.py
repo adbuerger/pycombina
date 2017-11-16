@@ -47,12 +47,12 @@ class CIA_GUROBI(CIA_MILP):
 
     def solve_milp(self):
 
-        self.model.setParam("Presolve", 2)
+        # self.model.setParam("Presolve", 2)
         self.model.optimize()
 
 
     def retrieve_solutions(self):
 
         self.eta = self.model.getVarByName(self.eta_sym.VarName).x
-        self.b_bin = [self.model.getVarByName(self.b_bin_sym[i].VarName).x \
+        self.b_bin = [abs(round(self.model.getVarByName(self.b_bin_sym[i].VarName).x)) \
             for i in range(self.N)]

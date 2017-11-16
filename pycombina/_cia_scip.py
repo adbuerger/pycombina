@@ -47,11 +47,12 @@ class CIA_SCIP(CIA_MILP):
 
     def solve_milp(self):
 
-        self.model.setRealParam("numerics/lpfeastol", 1e-17)
+        # self.model.setRealParam("numerics/lpfeastol", 1e-17)
         self.model.optimize()
 
 
     def retrieve_solutions(self):
 
         self.eta = self.model.getVal(self.eta_sym)
-        self.b_bin = [self.model.getVal(self.b_bin_sym[i]) for i in range(self.N)]
+        self.b_bin = [abs(round(self.model.getVal(self.b_bin_sym[i]))) \
+            for i in range(self.N)]
