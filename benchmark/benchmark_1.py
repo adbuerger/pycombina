@@ -1,6 +1,6 @@
 import pylab as pl
 
-from pycombina import CIA, CIAScip, CIAGurobi
+import pycombina
 
 pl.close("all")
 
@@ -10,22 +10,32 @@ T = [i for i in range(len(b_rel)+1)]
 sigma_max = 4
 
 
-cia = CIA(T, b_rel)
+cia = pycombina.CIA(T, b_rel)
 cia.run_cia(sigma_max = sigma_max)
 
 b_bin_cia = cia.get_b_bin()
 
+if pycombina._pyscipopt_available:
 
-cia_scip = CIAScip(T, b_rel)
-cia_scip.run_cia(sigma_max = sigma_max)
+    cia_scip = pycombina.CIAScip(T, b_rel)
+    cia_scip.run_cia(sigma_max = sigma_max)
 
-b_bin_scip = cia_scip.get_b_bin()
+    b_bin_scip = cia_scip.get_b_bin()
 
+else:
 
-cia_gurobi = CIAGurobi(T, b_rel)
-cia_gurobi.run_cia(sigma_max = sigma_max)
+    b_bin_scip = [0] * len(b_bin_cia)
 
-b_bin_gurobi = cia_gurobi.get_b_bin()
+if pycombina._gurobiypy_available:
+
+    cia_gurobi = pycombina.CIAGurobi(T, b_rel)
+    cia_gurobi.run_cia(sigma_max = sigma_max)
+
+    b_bin_gurobi = cia_gurobi.get_b_bin()
+
+else:
+
+    b_bin_gurobi = [0] * len(b_bin_cia)
 
 
 pl.figure()
