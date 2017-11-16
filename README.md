@@ -1,3 +1,6 @@
+![pycombina logo](logo/logo.png)
+Format: ![Alt Text](url)
+
 # pycombina - Combinatorial Integral Approximation
 
 Python module containing a Combinatorial Integral Approximation algorithm
