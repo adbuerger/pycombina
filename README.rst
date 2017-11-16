@@ -82,32 +82,32 @@ For examples on how to use the module, please refer to the tests.
 
 .. _linkf1: https://mathopt.de/Sager/publications.php
 
-.. |linkf1| replace:: Sager et al.: Combinatorial Integral Approximation. *Mathematical Methods of Operations Research*, 2011.
+.. |linkf1| replace:: Sager et al.: Combinatorial Integral Approximation. *Mathematical Methods of Operations Research*, 2011
 
 
 .. [#f2] |linkf2|_
 
 .. _linkf2: https://github.com/SCIP-Interfaces/PySCIPOpt
 
-.. |linkf2| replace:: PySCIPOpt - Python interface for the SCIP Optimization Suite.
+.. |linkf2| replace:: PySCIPOpt - Python interface for the SCIP Optimization Suite (website)
 
 
 .. [#f3] |linkf3|_
 
 .. _linkf3: http://scip.zib.de/
 
-.. |linkf3| replace:: SCIP - Solving Constraint Integer Programs.
+.. |linkf3| replace:: SCIP - Solving Constraint Integer Programs (website)
 
 
 .. [#f4] |linkf4|_
 
 .. _linkf4: http://www.gurobi.com/documentation/6.5/quickstart_mac/the_gurobi_python_interfac.html
 
-.. |linkf4| replace:: The Gurobi Python Interface for Python Users
+.. |linkf4| replace:: The Gurobi Python Interface for Python Users (website)
 
 
 .. [#f5] |linkf5|_
 
 .. _linkf5: https://github.com/pybind/pybind11
 
-.. |linkf5| replace:: pybind11 - Seamless operability between C++11 and Python
+.. |linkf5| replace:: pybind11 - Seamless operability between C++11 and Python (website)
