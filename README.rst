@@ -19,10 +19,12 @@ For more information on the implemented algorithms, see, e. g., [#f1]_.
 Prerequisites
 -------------
 
+pycombina has been tested with Python2.7 on Ubuntu 16.04. 
+
 Python modules
 ~~~~~~~~~~~~~~
 
-pycombina has been tested with Python2. The following Python modules are required:
+The following Python modules are required:
 
 - ``setuptools``
 - ``unittest2`` (optional, for running automated tests)
