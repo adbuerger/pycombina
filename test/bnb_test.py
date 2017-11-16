@@ -9,6 +9,7 @@ class BnBTest1(object):
     T = [i for i in range(len(b_rel)+1)]
     sigma_max = 4
 
+    Tg = [T[k+1] - t for k, t in enumerate(T[:-1])]
 
     def test_check_binary_solution(self):
 
@@ -26,7 +27,7 @@ class BnBTest1(object):
 
         for i in range(len(b_bin)):
 
-            eta_check_i = abs(sum([self.b_rel[j] - b_bin[j] for j in range(i)]))
+            eta_check_i = abs(sum([self.Tg[j] * (self.b_rel[j] - b_bin[j]) for j in range(i)]))
 
             if eta_check_i > eta_check:
 

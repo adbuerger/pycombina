@@ -40,9 +40,9 @@ class CIAGurobi(CIAMilp):
         for i in range(self.N):
 
             self.model.addConstr(self.eta_sym >= quicksum( \
-                [self.b_rel[j] - self.b_bin_sym[j] for j in range(i)]))
+                [self.Tg[j] * (self.b_rel[j] - self.b_bin_sym[j]) for j in range(i)]))
             self.model.addConstr(self.eta_sym >= -quicksum( \
-                [self.b_rel[j] - self.b_bin_sym[j] for j in range(i)]))
+                [self.Tg[j] * (self.b_rel[j] - self.b_bin_sym[j]) for j in range(i)]))
 
 
     def solve_milp(self):
