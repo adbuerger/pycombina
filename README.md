@@ -1,4 +1,4 @@
-![pycombina logo](logo/logo.png =250x)
+![pycombina logo](logo/logo.png)
 
 # pycombina - Combinatorial Integral Approximation
 
