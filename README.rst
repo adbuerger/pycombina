@@ -47,9 +47,10 @@ How to install
 
 For system-wide installation of the Python module, run
 
-```
-sudo python setup.py install
-```
+.. code-block:: bash
+
+   sudo python setup.py install
+
 
 If you're working on the module, it's better to just set a link
 to the containing folder, which can be done by running
