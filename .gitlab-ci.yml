@@ -7,7 +7,7 @@ testing:
     stage: test
     before_script:
       - apt-get update
-      - apt-get install cmake make python-dev python-pip
+      - apt-get install -y cmake make python-dev python-pip
       - pip install setuptools nose
 
     script:
