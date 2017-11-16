@@ -3,7 +3,18 @@
 pycombina - Combinatorial Integral Approximation
 ================================================
 
-pycombina is a Python module for Combinatorial Integral Approximation (CIA). For more information on this topics, see e. g. [#f1]_.
+pycombina is a Python module for combinatorial integral approximation computations.
+
+Combinatorial integral approximation problems can be formulated and solved
+
+1. by a custom Branch-and-Bound algorithm (using fast implementation in C++, recommended),
+2. by SCIP (using an MILP formulation, requires SCIP and pyscipopt)
+3. by Gurobi (using an MILP formulation, requires Gurobi and gurobipy)
+
+while the problem setup is widely automatized.
+
+For more information on the implemented algorithms, see e. g. [#f1]_.
+
 
 Prerequisites
 -------------
@@ -11,32 +22,24 @@ Prerequisites
 Python modules
 ~~~~~~~~~~~~~~
 
-In order to install pycombina, you need
+pycombina has been tested with Python2. The following Python modules are required:
 
+- setuptools
+- unittest2
+- pyscipopt (optional, required for using SCIP (license required), see [#f2]_ and [#f3]_)
+- gurobipy (optional, required for using Gurobi (license required), see  [#f4]_)
 
-    setuptools
-
-
-to be installed If you want to run the automated tests, you also need
-
-
-    unittest2
-
-
-
-The module has been tested with Python2, but should also work with Python3.
 
 Other software
 ~~~~~~~~~~~~~~
 
-The (major) C++ part of pycombina is built using
+For building the C++ implementation, the following packages are required
 
-```
-g++
-cmake
-```
+- python-dev
+- g++
+- cmake
 
-**Please note:** pycombina uses features available only from C++11 on and uses [pybind11](https://github.com/pybind/pybind11) (a copy is shipped with pycombina).
+**Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy is shipped with pycombina).
 
 
 ## How to install
@@ -55,16 +58,19 @@ to the containing folder, which can be done by running
 sudo python setup.py develop
 ```
 
-To use the automated tests, run
+To run the the automated tests, run
 
 ```
 sudo python setup.py test
 ```
 
+Tests for SCIP and Gurobi will be skipped automatically if they're not available.
+
+
 ## How to use
 
-
 For examples on how to use the module, please refer to the tests.
+
 
 .. rubric:: References
 
@@ -73,3 +79,31 @@ For examples on how to use the module, please refer to the tests.
 .. _linkf1: https://mathopt.de/Sager/publications.php
 
 .. |linkf1| replace:: Sager et al.: Combinatorial Integral Approximation. *Mathematical Methods of Operations Research*, 2011.
+
+
+.. [#f1] |linkf2|_
+
+.. _linkf2: https://github.com/SCIP-Interfaces/PySCIPOpt
+
+.. |linkf2| replace:: PySCIPOpt - Python interface for the SCIP Optimization Suite.
+
+
+.. [#f1] |linkf3|_
+
+.. _linkf3: http://scip.zib.de/
+
+.. |linkf3| replace:: SCIP - Solving Constraint Integer Programs.
+
+
+.. [#f1] |linkf4|_
+
+.. _linkf4: http://www.gurobi.com/documentation/6.5/quickstart_mac/the_gurobi_python_interfac.html
+
+.. |linkf4| replace:: The Gurobi Python Interface for Python Users
+
+
+.. [#f1] |linkf5|_
+
+.. _linkf5: https://github.com/pybind/pybind11
+
+.. |linkf5| replace:: pybind11 - Seamless operability between C++11 and Python
