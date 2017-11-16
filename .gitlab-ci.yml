@@ -5,6 +5,9 @@ stages:
 
 testing:
     stage: test
-    before_install:
+    before_script:
       - apt-get install cmake make python-dev python-pip
       - pip install setuptools nose
+
+    script:
+      - python setup.py test
