@@ -42,8 +42,8 @@ For building the C++ implementation, the following packages are required
 **Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy is shipped with pycombina).
 
 
-## How to install
-
+How to install
+--------------
 
 For system-wide installation of the Python module, run
 
@@ -54,20 +54,23 @@ sudo python setup.py install
 If you're working on the module, it's better to just set a link
 to the containing folder, which can be done by running
 
-```
-sudo python setup.py develop
-```
+.. code-block:: bash
+
+   sudo python setup.py develop
+
 
 To run the the automated tests, run
 
-```
-sudo python setup.py test
-```
+.. code-block:: bash
+
+   sudo python setup.py test
+
 
 Tests for SCIP and Gurobi will be skipped automatically if they're not available.
 
 
-## How to use
+How to use
+----------
 
 For examples on how to use the module, please refer to the tests.
 
