@@ -1,30 +1,33 @@
 ![pycombina logo](logo/logo.png)
 
-# pycombina - Combinatorial Integral Approximation
+pycombina - Combinatorial Integral Approximation
+================================================
 
-Python module containing a Combinatorial Integral Approximation algorithm
+pycombina is a Python module for Combinatorial Integral Approximation (CIA). For more information on this topics, see e. g. [#f1]_.
 
-## Prerequisites
+Prerequisites
+-------------
 
-### Python modules
+Python modules
+~~~~~~~~~~~~~~
 
 In order to install pycombina, you need
 
-```
-setuptools
 
-```
+    setuptools
+
 
 to be installed If you want to run the automated tests, you also need
 
-```
-unittest2
 
-```
+    unittest2
+
+
 
 The module has been tested with Python2, but should also work with Python3.
 
-### Other software
+Other software
+~~~~~~~~~~~~~~
 
 The (major) C++ part of pycombina is built using
 
@@ -62,3 +65,11 @@ sudo python setup.py test
 
 
 For examples on how to use the module, please refer to the tests.
+
+.. rubric:: References
+
+.. [#f1] |linkf1|_
+
+.. _linkf1: https://mathopt.de/Sager/publications.php
+
+.. |linkf1| replace:: Sager et al.: Combinatorial Integral Approximation. *Mathematical Methods of Operations Research*, 2011.
