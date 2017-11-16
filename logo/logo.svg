@@ -17,8 +17,8 @@
    inkscape:version="0.91 r13725"
    sodipodi:docname="logo.svg"
    inkscape:export-filename="/home/ab/pycombina/logo/logo.png"
-   inkscape:export-xdpi="1200"
-   inkscape:export-ydpi="1200">
+   inkscape:export-xdpi="115.41019"
+   inkscape:export-ydpi="115.41019">
   <defs
      id="defs4">
     <pattern
@@ -124,9 +124,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="150.72749"
-     inkscape:cy="-14.863199"
+     inkscape:zoom="2.8"
+     inkscape:cx="172.06729"
+     inkscape:cy="-1.50621"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -151,7 +151,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>

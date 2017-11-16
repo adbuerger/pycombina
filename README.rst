@@ -13,7 +13,7 @@ Combinatorial integral approximation problems can be formulated and solved
 
 while the problem setup is widely automatized.
 
-For more information on the implemented algorithms, see e. g. [#f1]_.
+For more information on the implemented algorithms, see, e. g., [#f1]_.
 
 
 Prerequisites
@@ -25,7 +25,7 @@ Python modules
 pycombina has been tested with Python2. The following Python modules are required:
 
 - ``setuptools``
-- ``unittest2``
+- ``unittest2`` (optional, for running automated tests)
 - ``pyscipopt`` (optional, required for using SCIP (license required), see [#f2]_ and [#f3]_)
 - ``gurobipy`` (optional, required for using Gurobi (license required), see  [#f4]_)
 
