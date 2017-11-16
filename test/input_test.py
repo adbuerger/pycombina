@@ -1,6 +1,7 @@
 import unittest
 
-from pycombina import CIA, CIA_SCIP
+from pycombina import CIA
+from pycombina._cia_milp import CIAMilp
 
 class InputValid(unittest.TestCase):
 
@@ -15,9 +16,9 @@ class InputValid(unittest.TestCase):
         cia = CIA(self.T, self.b_rel)
 
         
-    def test_input_valid_cia_scip(self):
+    def test_input_valid_cia_milp(self):
 
-        cia_scip = CIA_SCIP(self.T, self.b_rel)
+        cia_milp = CIAMilp(self.T, self.b_rel)
 
 
 class InputInvalidDimensions(unittest.TestCase):
@@ -33,9 +34,9 @@ class InputInvalidDimensions(unittest.TestCase):
         self.assertRaises(ValueError, CIA, self.T, self.b_rel)
 
 
-    def test_input_invalid_dimensions_cia_scip(self):
+    def test_input_invalid_dimensions_cia_milp(self):
 
-        self.assertRaises(ValueError, CIA_SCIP, self.T, self.b_rel)
+        self.assertRaises(ValueError, CIAMilp, self.T, self.b_rel)
 
         
 class InputInvalidT(unittest.TestCase):
@@ -51,9 +52,9 @@ class InputInvalidT(unittest.TestCase):
         self.assertRaises(ValueError, CIA, self.T, self.b_rel)
 
 
-    def test_input_invalid_T_cia_scip(self):
+    def test_input_invalid_T_cia_milp(self):
 
-        self.assertRaises(ValueError, CIA_SCIP, self.T, self.b_rel)
+        self.assertRaises(ValueError, CIAMilp, self.T, self.b_rel)
 
 
 class InputInvalidBRel(unittest.TestCase):
@@ -69,9 +70,9 @@ class InputInvalidBRel(unittest.TestCase):
         self.assertRaises(ValueError, CIA, self.T, self.b_rel)
 
 
-    def test_input_invalid_b_rel_cia_scip(self):
+    def test_input_invalid_b_rel_cia_milp(self):
 
-        self.assertRaises(ValueError, CIA_SCIP, self.T, self.b_rel)
+        self.assertRaises(ValueError, CIAMilp, self.T, self.b_rel)
 
 
 if __name__ == '__main__':

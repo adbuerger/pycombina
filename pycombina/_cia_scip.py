@@ -1,7 +1,7 @@
 from pyscipopt import Model, quicksum
-from _cia_milp import CIA_MILP
+from _cia_milp import CIAMilp
 
-class CIA_SCIP(CIA_MILP):
+class CIAScip(CIAMilp):
 
     def initialize_model(self):
 

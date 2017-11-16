@@ -1,7 +1,7 @@
 from gurobipy import Model, quicksum
-from _cia_milp import CIA_MILP
+from _cia_milp import CIAMilp
 
-class CIA_GUROBI(CIA_MILP):
+class CIAGurobi(CIAMilp):
 
     def initialize_model(self):
 

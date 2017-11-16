@@ -1,6 +1,6 @@
 import pylab as pl
 
-from pycombina import CIA, CIA_SCIP, CIA_GUROBI
+from pycombina import CIA, CIAScip, CIAGurobi
 
 pl.close("all")
 
@@ -16,13 +16,13 @@ cia.run_cia(sigma_max = sigma_max)
 b_bin_cia = cia.get_b_bin()
 
 
-cia_scip = CIA_SCIP(T, b_rel)
+cia_scip = CIAScip(T, b_rel)
 cia_scip.run_cia(sigma_max = sigma_max)
 
 b_bin_scip = cia_scip.get_b_bin()
 
 
-cia_gurobi = CIA_GUROBI(T, b_rel)
+cia_gurobi = CIAGurobi(T, b_rel)
 cia_gurobi.run_cia(sigma_max = sigma_max)
 
 b_bin_gurobi = cia_gurobi.get_b_bin()

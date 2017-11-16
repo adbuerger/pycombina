@@ -1,4 +1,4 @@
-class CIA_MILP(object):
+class CIAMilp(object):
 
     def get_T(self):
 
