@@ -77,7 +77,7 @@ setup(
     author='Adrian Buerger, Clemens Zeile',
     author_email='adrian.buerger@hs-karlsruhe.de, clemens.zeile@ovgu.de',
     
-    description='A fast Combinatorial Integral Approximation algorithm',
+    description='Python module for Combinatorial Integral Approximation',
 
     long_description='',
     

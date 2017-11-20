@@ -28,6 +28,7 @@ The following Python modules are required:
 
 - ``setuptools``
 - ``unittest2`` (optional, for running automated tests)
+- ``numpy`` (optional, for running automated tests)
 - ``pyscipopt`` (optional, required for using SCIP (license required), see [#f2]_ and [#f3]_)
 - ``gurobipy`` (optional, required for using Gurobi (license required), see  [#f4]_)
 

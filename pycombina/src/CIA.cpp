@@ -274,7 +274,6 @@ void CIA::run_bnb() {
             if(ptr_active_node->get_depth() == N) {     
                 
                 update_best_solution(ptr_active_node);
-                std::cout << "  Found solution with eta = " << ptr_active_node->get_eta_branch() << "\n";
                 // break;
             }
 
@@ -315,7 +314,8 @@ void CIA::update_best_solution(BnBNode * ptr_active_node) {
 
 void CIA::display_solution_update(BnBNode * ptr_best_node) {
 
-    ; // here goes some solver-ish output
+    std::cout << "  Found solution with eta = " 
+        << ptr_best_node->get_eta_branch() << "\n";
 
 }
 
