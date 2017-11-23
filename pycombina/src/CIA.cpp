@@ -39,7 +39,9 @@ CIA::CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b
       eta_node(b_rel.size()),
       
       eta_parent(b_rel.size()),
-      sigma_node(b_rel.size())
+      sigma_node(b_rel.size()),
+
+      sum_eta(2, std::vector<std::vector<double>> (b_rel.size(), std::vector<double> (b_rel[0].size())))
 
 {
 
@@ -167,6 +169,7 @@ void CIA::prepare_bnb_data() {
 
     compute_time_grid_from_time_points();
     compute_initial_upper_bound();
+    precompute_sum_of_etas();
 
 
     t_end = clock();
@@ -191,6 +194,22 @@ void CIA::compute_initial_upper_bound() {
     for(unsigned int i = 0; i < N_b; i++) {
 
         eta += Tg[i];
+    }
+}
+
+
+void CIA::precompute_sum_of_etas() {
+
+    for(unsigned int i = 0; i < N_c; i++) {
+
+        sum_eta[0][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1]);
+        sum_eta[1][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1] - 1);
+
+        for(int j = N_b-2; j >= 0; j--) {
+
+            sum_eta[0][i][j] = sum_eta[0][i][j+1] + Tg[j] * b_rel[i][j];
+            sum_eta[1][i][j] = sum_eta[1][i][j+1] + Tg[j] * (b_rel[i][j] - 1);
+        }
     }
 }
 
@@ -378,16 +397,13 @@ void CIA::increment_sigma_on_active_control_change(BnBNode * ptr_parent_node) {
             sigma_node[active_control]++;
         }
 
-        for(unsigned int j = 0; j < N_c; j++){
+        for(unsigned int i = 0; i < N_c; i++){
 
-            if(sigma_node[j] == sigma_max[j]){
+            if(sigma_node[i] == sigma_max[i]){
 
-                for(unsigned int k = 0; k < N_c; k++){
+                for(unsigned int j = 0; j < N_c; j++){
 
-                    for(unsigned int l = depth_node; l < N_b; l++){
-
-                        eta_node[k] += Tg[l] * (b_rel[k][l] - double(active_control == k));
-                    }                                
+                    eta_node[j] +=  sum_eta[int(active_control == j)][j][depth_node];                              
                 }
 
                 depth_node = N_b;

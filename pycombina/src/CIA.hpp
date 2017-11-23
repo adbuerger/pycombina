@@ -59,6 +59,7 @@ private:
     void prepare_bnb_data();
     void compute_time_grid_from_time_points();
     void compute_initial_upper_bound();
+    void precompute_sum_of_etas();
 
     void initialize_bnb_queue();
     void add_initial_nodes_to_bnb_queue();
@@ -105,5 +106,7 @@ private:
     double lb_node;
     std::vector<double> eta_parent;
     double lb_parent;
+
+    std::vector<std::vector<std::vector<double>>> sum_eta;
 
 };
