@@ -25,7 +25,7 @@ BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const active_cont
 
 {
 
-    if(ptr_parent_node != NULL) {
+    if(ptr_parent_node) {
 
         ptr_parent_node->child_node_becomes_active();
 
@@ -36,7 +36,7 @@ BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const active_cont
 
 BnBNode::~BnBNode(){
 
-    if(ptr_parent_node != NULL) {
+    if(ptr_parent_node) {
 
         ptr_parent_node->child_node_becomes_inactive();
     }

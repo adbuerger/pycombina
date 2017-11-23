@@ -16,7 +16,7 @@ cia.run_cia([sigma_max])
 b_bin = cia.get_b_bin()
 
 
-# pl.figure()
-# pl.step(T[:-1], b_bin)
-# pl.step(T[:-1], b_bin_check)
-# pl.show()
+pl.figure()
+pl.step(T[:-1], b_bin)
+pl.step(T[:-1], b_bin_check)
+pl.show()

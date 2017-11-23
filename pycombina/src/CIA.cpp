@@ -339,7 +339,7 @@ void CIA::run_bnb() {
 
 void CIA::update_best_solution(BnBNode * ptr_active_node) {
 
-    if (ptr_best_node != NULL) {
+    if (ptr_best_node) {
 
         delete_node(ptr_best_node);
     }
@@ -435,12 +435,12 @@ void CIA::retrieve_solution() {
 
     BnBNode * ptr_active_node = ptr_best_node;
 
-    while(ptr_active_node != NULL){
+    while(ptr_active_node){
 
         node_range_end = (ptr_active_node->get_depth() - 1);
         BnBNode * ptr_preceding_node = ptr_active_node->get_ptr_parent_node();
 
-        if(ptr_preceding_node != NULL) {
+        if(ptr_preceding_node) {
 
             node_range_begin = ptr_preceding_node->get_depth();
         }
