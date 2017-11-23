@@ -4,7 +4,11 @@
  *
  */
 
+#ifndef VECTOR_H
+#define VECTOR_H
 #include <vector>
+#endif
+ 
 #include <queue>
 
 #ifndef BNB_NODE_H
@@ -19,18 +23,18 @@ class CIA {
 
 public:
 
-    CIA(const std::vector<double>& T, const std::vector<double>& b_rel);
+    CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b_rel);
 
     ~CIA();
 
-    void run_cia(int n_max_swichtes = 2);
+    void run_cia(std::vector<unsigned int> n_max_swichtes);
 
     // get-functions
 
     std::vector<double> get_T();
-    std::vector<double> get_b_rel();
+    std::vector<std::vector<double>> get_b_rel();
     
-    int get_sigma_max();
+    std::vector<unsigned int> get_sigma_max();
 
     std::vector<double> get_Tg();
     double get_eta();
@@ -41,16 +45,18 @@ public:
 private:
 
     void welcome_prompt();
+
     void validate_input_data();
+    void determine_number_of_controls();
+    void determine_number_of_control_intervals();
     void validate_input_dimensions();
     void validate_input_values();
     void validate_input_values_T();
     void validate_input_values_b_rel();
 
-    void set_sigma_max(int n_max_switches);
+    void set_sigma_max(std::vector<unsigned int> n_max_switches);
 
     void prepare_bnb_data();
-    void determine_number_of_control_intervals();
     void compute_time_grid_from_time_points();
     void compute_initial_upper_bound();
 
@@ -67,11 +73,13 @@ private:
     void retrieve_solution();
 
     std::vector<double> T;
-    std::vector<double> b_rel;
+    std::vector<std::vector<double>> b_rel;
 
-    int sigma_max;
+    std::vector<unsigned int> sigma_max;
 
-    unsigned int N;
+    unsigned int N_c;
+    unsigned int N_b;
+
     double eta;
     std::vector<double> Tg;
 
@@ -83,5 +91,14 @@ private:
     BnBNode * ptr_best_node;
 
     std::vector<unsigned int> b_bin;
+
+    std::vector<double> eta_node;
+    std::vector<unsigned int> sigma_node;
+
+    unsigned int depth_node;
+    double lb_node;
+    std::vector<double> eta_parent;
+    std::vector<unsigned int> sigma_parent;
+    double lb_parent;
 
 };

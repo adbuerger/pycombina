@@ -13,7 +13,7 @@ class InputValid(unittest.TestCase):
 
     def test_input_valid_cia(self):
 
-        cia = CIA(self.T, self.b_rel)
+        cia = CIA(self.T, [self.b_rel])
 
         
     def test_input_valid_cia_milp(self):
@@ -31,7 +31,7 @@ class InputInvalidDimensions(unittest.TestCase):
 
     def test_input_invalid_dimensions_cia(self):
 
-        self.assertRaises(ValueError, CIA, self.T, self.b_rel)
+        self.assertRaises(ValueError, CIA, self.T, [self.b_rel])
 
 
     def test_input_invalid_dimensions_cia_milp(self):
@@ -49,7 +49,7 @@ class InputInvalidT(unittest.TestCase):
 
     def test_input_invalid_T_cia(self):
 
-        self.assertRaises(ValueError, CIA, self.T, self.b_rel)
+        self.assertRaises(ValueError, CIA, self.T, [self.b_rel])
 
 
     def test_input_invalid_T_cia_milp(self):
@@ -67,7 +67,7 @@ class InputInvalidBRel(unittest.TestCase):
 
     def test_input_invalid_b_rel_cia(self):
 
-        self.assertRaises(ValueError, CIA, self.T, self.b_rel)
+        self.assertRaises(ValueError, CIA, self.T, [self.b_rel])
 
 
     def test_input_invalid_b_rel_cia_milp(self):
