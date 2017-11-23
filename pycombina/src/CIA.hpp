@@ -61,13 +61,18 @@ private:
     void compute_initial_upper_bound();
 
     void initialize_bnb_queue();
+    void add_initial_nodes_to_bnb_queue();
+    void compute_eta_of_current_node();
+    void compute_lower_bound_of_node();
+    void add_node_to_bnb_queue(BnBNode * ptr_parent_node);
 
     void add_nodes_to_bnb_queue(BnBNode * ptr_parent_node);
 
     void run_bnb();
     void update_best_solution(BnBNode * ptr_active_node);
     void display_solution_update(BnBNode * ptr_best_node);
-    void create_new_child_nodes(BnBNode * ptr_parent_node);
+    void add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node);
+    void increment_sigma_on_active_control_change(BnBNode * ptr_active_node);
     void delete_node(BnBNode * ptr_active_node);
 
     void retrieve_solution();
@@ -95,10 +100,10 @@ private:
     std::vector<double> eta_node;
     std::vector<unsigned int> sigma_node;
 
+    unsigned int active_control;
     unsigned int depth_node;
     double lb_node;
     std::vector<double> eta_parent;
-    std::vector<unsigned int> sigma_parent;
     double lb_parent;
 
 };
