@@ -63,6 +63,11 @@ void BnBNode::child_node_becomes_inactive() {
 }
 
 
+unsigned int BnBNode::get_max_sigma() const {
+
+    return * std::max_element(sigma.begin(), sigma.end());
+}
+
 // get-functions
 
 BnBNode* BnBNode::get_ptr_parent_node() {

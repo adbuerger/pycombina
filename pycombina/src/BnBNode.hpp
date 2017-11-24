@@ -8,6 +8,11 @@
 #include <vector>
 #endif
 
+#ifndef ALGORITHM_H
+#define ALGORITHM_H
+#include <algorithm>
+#endif
+
 class BnBNode {
     friend class BnBNodeComparison;
 
@@ -23,6 +28,7 @@ public:
     void child_node_becomes_active();
     void child_node_becomes_inactive();
 
+    unsigned int get_max_sigma() const;
 
     // get-functions
 

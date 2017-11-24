@@ -26,7 +26,6 @@ bool BnBNodeComparison::operator() (BnBNode const *node_a, BnBNode const *node_b
 
     else {
 
-        return (std::max_element(node_a->sigma.begin(), node_a->sigma.end()) > 
-            std::max_element(node_b->sigma.begin(), node_b->sigma.end()));
+        return(node_a->get_max_sigma() > node_b->get_max_sigma());
     }
 }
