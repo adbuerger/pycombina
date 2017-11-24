@@ -39,7 +39,7 @@ public:
     std::vector<double> get_Tg();
     double get_eta();
 
-    std::vector<unsigned int> get_b_bin();
+    std::vector<std::vector<unsigned int>> get_b_bin();
 
 
 private:
@@ -96,7 +96,7 @@ private:
         BnBNodeComparison> *ptr_bnb_node_queue;
     BnBNode * ptr_best_node;
 
-    std::vector<unsigned int> b_bin;
+    std::vector<std::vector<unsigned int>> b_bin;
 
     std::vector<double> eta_node;
     std::vector<unsigned int> sigma_node;

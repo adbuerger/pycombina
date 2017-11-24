@@ -17,6 +17,10 @@ b_bin = cia.get_b_bin()
 
 
 pl.figure()
-pl.step(T[:-1], b_bin)
+pl.step(T[:-1], b_bin[0])
+
+import ipdb
+ipdb.set_trace()
+
 pl.step(T[:-1], b_bin_check)
 pl.show()

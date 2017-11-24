@@ -34,7 +34,7 @@ CIA::CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b
         BnBNodeComparison>()),
       ptr_best_node(NULL),
 
-      b_bin(b_rel[0].size()),
+      b_bin(b_rel.size(), std::vector<unsigned int>(b_rel[0].size(), 0)),
 
       eta_node(b_rel.size()),
       
@@ -450,9 +450,12 @@ void CIA::retrieve_solution() {
             node_range_begin = 0;
         }
 
-        for(int i = node_range_end; i >= node_range_begin; i--) {
+        if(ptr_active_node->get_active_control() != N_c) {
 
-            b_bin[i] = ptr_active_node->get_active_control();
+            for(int i = node_range_end; i >= node_range_begin; i--) {
+
+                b_bin.at(ptr_active_node->get_active_control())[i] = 1;
+            }
         }
 
         ptr_active_node = ptr_active_node->get_ptr_parent_node();
@@ -499,7 +502,7 @@ double CIA::get_eta() {
 }
 
 
-std::vector<unsigned int> CIA::get_b_bin() {
+std::vector<std::vector<unsigned int>> CIA::get_b_bin() {
 
     return b_bin;
 }
