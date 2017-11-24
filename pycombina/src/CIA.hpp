@@ -92,7 +92,7 @@ private:
     std::vector<double> sum_eta_b_rel_true;
     std::vector<double> sum_eta_b_rel_false;
 
-    std::priority_queue<BnBNode*, std::vector<BnBNode*>,
+    std::priority_queue<BnBNode*, std::vector<BnBNode*>, 
         BnBNodeComparison> *ptr_bnb_node_queue;
     BnBNode * ptr_best_node;
 

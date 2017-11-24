@@ -30,8 +30,8 @@ CIA::CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b
       eta(0.0),
       Tg(T.size()-1),
 
-      ptr_bnb_node_queue(new std::priority_queue<BnBNode*, std::vector<BnBNode*>,
-        BnBNodeComparison>()),
+      ptr_bnb_node_queue(new std::priority_queue<BnBNode*, 
+          std::vector<BnBNode*>, BnBNodeComparison>),
       ptr_best_node(NULL),
 
       b_bin(b_rel.size(), std::vector<unsigned int>(b_rel[0].size(), 0)),
