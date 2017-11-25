@@ -3,7 +3,7 @@
 pycombina - Combinatorial Integral Approximation
 ================================================
 
-**pycombina** is a Python module for combinatorial integral approximation computations.
+**pycombina** is a Python module for solving combinatorial integral approximation problems.
 
 Combinatorial integral approximation problems can be formulated and solved
 
@@ -29,8 +29,8 @@ The following Python modules are required:
 - ``setuptools``
 - ``unittest2`` (optional, for running automated tests)
 - ``numpy`` (optional, for running automated tests)
-- ``pyscipopt`` (optional, required for using SCIP (license required), see [#f2]_ and [#f3]_)
-- ``gurobipy`` (optional, required for using Gurobi (license required), see  [#f4]_)
+- ``pyscipopt`` (optional, required for using SCIP (solver license required), see [#f2]_ and [#f3]_)
+- ``gurobipy`` (optional, required for using Gurobi (solver license required), see  [#f4]_)
 
 
 Other software
@@ -42,7 +42,7 @@ For building the C++ implementation, the following packages are required
 - ``g++``
 - ``cmake``
 
-**Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy is shipped with pycombina).
+**Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
 
 
 How to install
