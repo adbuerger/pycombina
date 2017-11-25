@@ -1,6 +1,6 @@
 /*
  *
- * CIA.hpp
+ * CombinaBnBSolver.hpp
  *
  */
 
@@ -19,24 +19,19 @@
 #include "BnBNodeComparison.hpp"
 
 
-class CIA {
+class CombinaBnBSolver {
 
 public:
 
-    CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b_rel);
+    CombinaBnBSolver(const std::vector<double>& Tg, const std::vector<std::vector<double>>& b_rel,
+        const unsigned int& N_c, const unsigned int& N_b);
 
-    ~CIA();
+    ~CombinaBnBSolver();
 
-    void run_cia(std::vector<unsigned int> n_max_swichtes);
+    void run(std::vector<unsigned int> n_max_swichtes);
 
     // get-functions
 
-    std::vector<double> get_T();
-    std::vector<std::vector<double>> get_b_rel();
-    
-    std::vector<unsigned int> get_sigma_max();
-
-    std::vector<double> get_Tg();
     double get_eta();
 
     std::vector<std::vector<unsigned int>> get_b_bin();
@@ -44,20 +39,9 @@ public:
 
 private:
 
-    void welcome_prompt();
-
-    void validate_input_data();
-    void determine_number_of_controls();
-    void determine_number_of_control_intervals();
-    void validate_input_dimensions();
-    void validate_input_values();
-    void validate_input_values_T();
-    void validate_input_values_b_rel();
-
     void set_sigma_max(std::vector<unsigned int> n_max_switches);
 
     void prepare_bnb_data();
-    void compute_time_grid_from_time_points();
     void compute_initial_upper_bound();
     void precompute_sum_of_etas();
 
@@ -78,7 +62,7 @@ private:
 
     void retrieve_solution();
 
-    std::vector<double> T;
+    std::vector<double> Tg;
     std::vector<std::vector<double>> b_rel;
 
     std::vector<unsigned int> sigma_max;
@@ -87,7 +71,6 @@ private:
     unsigned int N_b;
 
     double eta;
-    std::vector<double> Tg;
 
     std::vector<double> sum_eta_b_rel_true;
     std::vector<double> sum_eta_b_rel_false;
@@ -99,12 +82,13 @@ private:
     std::vector<std::vector<unsigned int>> b_bin;
 
     std::vector<double> eta_node;
+
+    std::vector<double> eta_parent;
     std::vector<unsigned int> sigma_node;
 
     unsigned int active_control;
     unsigned int depth_node;
     double lb_node;
-    std::vector<double> eta_parent;
     double lb_parent;
 
     std::vector<std::vector<std::vector<double>>> sum_eta;

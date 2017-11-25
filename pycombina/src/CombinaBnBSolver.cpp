@@ -1,6 +1,6 @@
 /*
  *
- * CIA.cpp
+ * CombinaBnBSolver.cpp
  *
  */
 
@@ -16,19 +16,20 @@
 #include "BnBNode.hpp"
 #endif
 
-#include "CIA.hpp"
+#include "CombinaBnBSolver.hpp"
 
 
-CIA::CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b_rel)
+CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& Tg, 
+        const std::vector<std::vector<double>>& b_rel,
+        const unsigned int& N_c, const unsigned int& N_b)
 
-    : T(T), 
+    : Tg(Tg),
       b_rel(b_rel),
 
-      N_c(0),
-      N_b(0),
+      N_c(N_c),
+      N_b(N_b),
 
       eta(0.0),
-      Tg(T.size()-1),
 
       ptr_bnb_node_queue(new std::priority_queue<BnBNode*, 
           std::vector<BnBNode*>, BnBNodeComparison>),
@@ -45,102 +46,15 @@ CIA::CIA(const std::vector<double>& T, const std::vector<std::vector<double>>& b
 
 {
 
-    welcome_prompt();
-    validate_input_data();
+}
+
+
+CombinaBnBSolver::~CombinaBnBSolver(){
 
 }
 
 
-CIA::~CIA(){
-
-}
-
-
-void CIA::welcome_prompt(){
-
-    std::cout << "\n-----------------------------------------------------------\n";
-    std::cout << "|                                                         |\n";
-    std::cout << "|    pycombina -- Combinatorial Integral Approximation    |\n";
-    std::cout << "|                                                         |\n";
-    std::cout << "-----------------------------------------------------------\n";
-
-}
-
-
-void CIA::validate_input_data() {
-
-    determine_number_of_controls();
-    determine_number_of_control_intervals();
-    validate_input_dimensions();
-    validate_input_values();
-}
-
-
-void CIA::determine_number_of_controls() {
-
-    N_c = b_rel.size();
-}
-
-
-void CIA::determine_number_of_control_intervals() {
-
-    N_b = T.size() - 1;
-}
-
-
-void CIA::validate_input_dimensions() {
-
-    for(std::vector<double> b_rel_i: b_rel) {
-
-        if (b_rel_i.size() != N_b) {
-
-            throw std::invalid_argument("All elements in b_rel must contain one more entry that T.");
-
-        }
-
-    }
-}
-
-
-void CIA::validate_input_values() {
-
-    validate_input_values_T();
-    validate_input_values_b_rel();
-
-}
-
-
-void CIA::validate_input_values_T() {
-
-    for(unsigned int i = 1; i < T.size(); i++) {
-
-        if((T[i] - T[i-1]) <= 0.0) {
-
-            throw std::invalid_argument("Values in T must be strictly increasing.");
-
-        }
-    }
-}
-
-
-void CIA::validate_input_values_b_rel() {
-
-    for(std::vector<double> b_rel_i: b_rel){
-
-        for(double b: b_rel_i) {
-
-            if(b < 0.0 || b > 1.0) {
-
-                throw std::invalid_argument("All elements of the relaxed binary input must be 0 <= b <= 1.");
-
-            }
-        }
-
-    }
-}
-
-
-void CIA::run_cia(std::vector<unsigned int> n_max_switches) {
+void CombinaBnBSolver::run(std::vector<unsigned int> n_max_switches) {
 
     set_sigma_max(n_max_switches);
     prepare_bnb_data();
@@ -151,13 +65,13 @@ void CIA::run_cia(std::vector<unsigned int> n_max_switches) {
 }
 
 
-void CIA::set_sigma_max(std::vector<unsigned int> n_max_switches) {
+void CombinaBnBSolver::set_sigma_max(std::vector<unsigned int> n_max_switches) {
 
     sigma_max = n_max_switches;
 }
 
 
-void CIA::prepare_bnb_data() {
+void CombinaBnBSolver::prepare_bnb_data() {
 
     clock_t t_start;
     clock_t t_end;
@@ -167,7 +81,6 @@ void CIA::prepare_bnb_data() {
     t_start = clock();
 
 
-    compute_time_grid_from_time_points();
     compute_initial_upper_bound();
     precompute_sum_of_etas();
 
@@ -180,16 +93,7 @@ void CIA::prepare_bnb_data() {
 }
 
 
-void CIA::compute_time_grid_from_time_points() {
-
-    for(unsigned int i = 1; i < N_b+1; i++) {
-
-        Tg[i-1] = T[i] - T[i-1];
-    }
-}
-
-
-void CIA::compute_initial_upper_bound() {
+void CombinaBnBSolver::compute_initial_upper_bound() {
 
     for(unsigned int i = 0; i < N_b; i++) {
 
@@ -198,7 +102,7 @@ void CIA::compute_initial_upper_bound() {
 }
 
 
-void CIA::precompute_sum_of_etas() {
+void CombinaBnBSolver::precompute_sum_of_etas() {
 
     for(unsigned int i = 0; i < N_c; i++) {
 
@@ -214,7 +118,7 @@ void CIA::precompute_sum_of_etas() {
 }
 
 
-void CIA::initialize_bnb_queue() {
+void CombinaBnBSolver::initialize_bnb_queue() {
 
     clock_t t_start;
     clock_t t_end;
@@ -232,7 +136,7 @@ void CIA::initialize_bnb_queue() {
 }
 
 
-void CIA::add_initial_nodes_to_bnb_queue() {
+void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 
     std::fill(eta_parent.begin(), eta_parent.end(), 0);
     lb_parent = 0.0;
@@ -252,7 +156,7 @@ void CIA::add_initial_nodes_to_bnb_queue() {
 }
 
 
-void CIA::compute_eta_of_current_node() {
+void CombinaBnBSolver::compute_eta_of_current_node() {
 
     for(unsigned int i = 0; i < N_c; i++){
 
@@ -262,7 +166,7 @@ void CIA::compute_eta_of_current_node() {
 }
 
 
-void CIA::compute_lower_bound_of_node() {
+void CombinaBnBSolver::compute_lower_bound_of_node() {
 
     lb_node = 0.0;
 
@@ -275,7 +179,7 @@ void CIA::compute_lower_bound_of_node() {
 }
 
 
-void CIA::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
+void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     BnBNode * ptr_child_node = NULL;
 
@@ -288,7 +192,7 @@ void CIA::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
 }
 
 
-void CIA::run_bnb() {
+void CombinaBnBSolver::run_bnb() {
 
     clock_t t_start;
     clock_t t_end;
@@ -337,7 +241,7 @@ void CIA::run_bnb() {
 }
 
 
-void CIA::update_best_solution(BnBNode * ptr_active_node) {
+void CombinaBnBSolver::update_best_solution(BnBNode * ptr_active_node) {
 
     if (ptr_best_node) {
 
@@ -352,7 +256,7 @@ void CIA::update_best_solution(BnBNode * ptr_active_node) {
 }
 
 
-void CIA::display_solution_update(BnBNode * ptr_best_node) {
+void CombinaBnBSolver::display_solution_update(BnBNode * ptr_best_node) {
 
     std::cout << "  Found solution with eta = " 
         << ptr_best_node->get_eta_branch() << "\n";
@@ -360,7 +264,7 @@ void CIA::display_solution_update(BnBNode * ptr_best_node) {
 }
 
 
-void CIA::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
+void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
     
     eta_parent = ptr_parent_node->get_eta_node();
     lb_parent = ptr_parent_node->get_eta_branch();
@@ -381,7 +285,7 @@ void CIA::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 }
 
 
-void CIA::increment_sigma_on_active_control_change(BnBNode * ptr_parent_node) {
+void CombinaBnBSolver::increment_sigma_on_active_control_change(BnBNode * ptr_parent_node) {
 
     sigma_node = ptr_parent_node->get_sigma();
 
@@ -415,13 +319,13 @@ void CIA::increment_sigma_on_active_control_change(BnBNode * ptr_parent_node) {
 }
 
 
-void CIA::delete_node(BnBNode * ptr_active_node) {
+void CombinaBnBSolver::delete_node(BnBNode * ptr_active_node) {
 
     delete ptr_active_node;
 }
 
 
-void CIA::retrieve_solution() {
+void CombinaBnBSolver::retrieve_solution() {
 
     clock_t t_start;
     clock_t t_end;
@@ -472,37 +376,13 @@ void CIA::retrieve_solution() {
 
 // get-functions
 
-std::vector<double> CIA::get_T() {
-
-    return T;
-}
-
-
-std::vector<std::vector<double>> CIA::get_b_rel() {
-
-    return b_rel;
-}
-
-
-std::vector<unsigned int> CIA::get_sigma_max() {
-
-    return sigma_max;
-}
-
-
-std::vector<double> CIA::get_Tg() {
-
-    return Tg;
-}
-
-
-double CIA::get_eta() {
+double CombinaBnBSolver::get_eta() {
 
     return eta;
 }
 
 
-std::vector<std::vector<unsigned int>> CIA::get_b_bin() {
+std::vector<std::vector<unsigned int>> CombinaBnBSolver::get_b_bin() {
 
     return b_bin;
 }

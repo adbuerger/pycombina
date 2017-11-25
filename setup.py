@@ -77,14 +77,14 @@ setup(
     author='Adrian Buerger, Clemens Zeile',
     author_email='adrian.buerger@hs-karlsruhe.de, clemens.zeile@ovgu.de',
     
-    description='Python module for Combinatorial Integral Approximation',
+    description='Python module for solving Combinatorial Integral Approximation problems',
 
     long_description='',
     
     # see again: http://www.benjack.io/2017/06/12/python-cpp-tests.html
 
     # add extension module
-    ext_modules=[CMakeExtension('pycombina/_cia')],
+    ext_modules=[CMakeExtension('pycombina/_combina_bnb')],
 
     # add custom build_ext command
     cmdclass=dict(build_ext=CMakeBuild),

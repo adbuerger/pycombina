@@ -11,7 +11,7 @@ set(${SOURCES})
 
 # Generate Python module
 add_subdirectory(lib/pybind11)
-pybind11_add_module(_cia ${SOURCES} "${SOURCE_DIR}/cia.cpp")
+pybind11_add_module(_combina_bnb_solver ${SOURCES} "${SOURCE_DIR}/PythonBindings.cpp")
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
