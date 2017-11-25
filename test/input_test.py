@@ -1,7 +1,6 @@
 import unittest
 
 from pycombina._combina import Combina
-from pycombina._cia_milp import CIAMilp
 
 class InputTest(unittest.TestCase):
 
