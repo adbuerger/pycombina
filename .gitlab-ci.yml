@@ -7,7 +7,7 @@ testing:
     stage: test
     before_script:
       - apt-get clean && apt-get update
-      - apt-get install -y cmake make python-dev python-pip
+      - apt-get install -y cmake g++ python-dev python-pip
       - pip install numpy unittest2
 
     script:
