@@ -9,7 +9,6 @@
 #include "BnBNode.hpp"
 #endif
 
-
 class BnBNodeComparison {
 
 public:

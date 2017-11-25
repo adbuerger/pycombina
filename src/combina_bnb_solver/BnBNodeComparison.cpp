@@ -4,13 +4,7 @@
  *
  */
 
-// #ifndef BNB_NODE_H
-// #define BNB_NODE_H
-// #include "BnBNode.hpp"
-// #endif
-
 #include "BnBNodeComparison.hpp"
-#include <iostream>
 
 
 bool BnBNodeComparison::operator() (BnBNode const *node_a, BnBNode const *node_b) const {
@@ -27,6 +21,6 @@ bool BnBNodeComparison::operator() (BnBNode const *node_a, BnBNode const *node_b
 
     else {
 
-        return (node_a->sigma > node_b->sigma);
+        return(node_a->get_max_sigma() > node_b->get_max_sigma());
     }
 }

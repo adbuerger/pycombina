@@ -10,12 +10,12 @@
 #include "BnBNode.hpp"
 #endif
 
-BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const b,
-            unsigned int const sigma, unsigned int const depth,
-            double const eta_node, double const eta_branch)
+BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const active_control,
+            std::vector<unsigned int> const sigma, unsigned int const depth,
+            std::vector<double> const eta_node, double const eta_branch)
 
     : ptr_parent_node(ptr_parent_node),
-      b(b),
+      active_control(active_control),
       sigma(sigma),
       depth(depth),
       eta_node(eta_node),
@@ -25,7 +25,7 @@ BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const b,
 
 {
 
-    if(ptr_parent_node != NULL) {
+    if(ptr_parent_node) {
 
         ptr_parent_node->child_node_becomes_active();
 
@@ -36,7 +36,7 @@ BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const b,
 
 BnBNode::~BnBNode(){
 
-    if(ptr_parent_node != NULL) {
+    if(ptr_parent_node) {
 
         ptr_parent_node->child_node_becomes_inactive();
     }
@@ -63,6 +63,12 @@ void BnBNode::child_node_becomes_inactive() {
 }
 
 
+unsigned int BnBNode::get_max_sigma() const {
+
+    return * std::max_element(sigma.begin(), sigma.end());
+}
+
+
 // get-functions
 
 BnBNode* BnBNode::get_ptr_parent_node() {
@@ -71,13 +77,13 @@ BnBNode* BnBNode::get_ptr_parent_node() {
 }
 
 
-unsigned int BnBNode::get_b() {
+unsigned int BnBNode::get_active_control() {
 
-    return b;
+    return active_control;
 }
 
 
-unsigned int BnBNode::get_sigma() {
+std::vector<unsigned int> BnBNode::get_sigma() {
 
     return sigma;
 }
@@ -89,7 +95,7 @@ unsigned int BnBNode::get_depth() {
 }
 
 
-double BnBNode::get_eta_node() {
+std::vector<double> BnBNode::get_eta_node() {
 
     return eta_node;
 }
