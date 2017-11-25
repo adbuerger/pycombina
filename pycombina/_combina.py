@@ -147,7 +147,7 @@ class Combina():
 
             if len(b_rel_i) != self._N_b:
 
-                raise ValueError("All elements in b_rel must contain one more entry that T.")
+                raise ValueError("All elements in b_rel must contain one entry less than T.")
 
 
     def _validate_input_values_T(self):
