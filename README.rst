@@ -3,6 +3,12 @@
 pycombina - Combinatorial Integral Approximation
 ================================================
 
+|gitlab-ci|
+
+.. |gitlab-ci| image:: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/badges/master/pipeline.svg
+    :target: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/commits/master
+    :alt: Gitlab CI pipeline status master branch
+
 **pycombina** is a Python module for solving combinatorial integral approximation problems.
 
 Combinatorial integral approximation problems can be formulated and solved
