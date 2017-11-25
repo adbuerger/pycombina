@@ -25,14 +25,26 @@ class CIAMilp(object):
         return self.b_bin
 
 
-    def validate_input_dimensions(self):
+    def _determine_number_of_controls(self):
 
-        if len(self.T) != (len(self.b_rel) + 1):
-
-            raise ValueError("T must contain one element more than b_rel.")
+        self.N_c = len(self.b_rel)
 
 
-    def validate_input_values_T(self):
+    def _determine_number_of_control_intervals(self):
+
+        self.N_b = len(self.T) - 1
+
+
+    def _validate_input_dimensions(self):
+
+        for b_rel_i in self.b_rel:
+
+            if len(b_rel_i) != self.N_b:
+
+                raise ValueError("All elements in b_rel must contain one more entry that T.")
+
+
+    def _validate_input_values_T(self):
 
         for i, t in enumerate(self.T[:-1]):
 
@@ -41,25 +53,27 @@ class CIAMilp(object):
                 raise ValueError("Values in T must be strictly increasing.")
 
 
-    def validate_input_values_b_rel(self):
+    def _validate_input_values_b_rel(self):
 
-        for b in self.b_rel:
+        for b_rel_i in self.b_rel:
 
-            if ((b < 0.0) or (b > 1.0)):
+            for b in b_rel_i:
 
-                raise ValueError("All elements b of the relaxed binary input must be 0 <= b <= 1.")
+                if ((b < 0.0) or (b > 1.0)):
 
-
-    def validate_input_values(self):
-
-        self.validate_input_values_T()
-        self.validate_input_values_b_rel()
+                    raise ValueError("All elements of the relaxed binary input must be 0 <= b <= 1.")
 
 
-    def validate_input_data(self):
+    def _validate_input_values(self):
 
-        self.validate_input_dimensions()
-        self.validate_input_values()
+        self._validate_input_values_T()
+        self._validate_input_values_b_rel()
+
+
+    def _validate_input_data(self):
+
+        self._validate_input_dimensions()
+        self._validate_input_values()
 
 
     def __init__(self, T, b_rel):
@@ -67,25 +81,21 @@ class CIAMilp(object):
         self.T = T
         self.b_rel = b_rel
 
-        self.N = 0
         self.Tg = []
         
         self.eta = 0
-        self.b_bin = []
+        self.b_bin = [[]]
 
-        self.validate_input_data()
-
-
-    def determine_number_of_control_intervals(self):
-
-        self.N = len(self.b_rel)
+        self._determine_number_of_controls()
+        self._determine_number_of_control_intervals()
+        self._validate_input_data()
 
 
     def compute_time_grid_from_time_points(self):
 
-        self.Tg = [0] * self.N
+        self.Tg = [0] * self.N_b
 
-        for i in range(1, self.N):
+        for i in range(1, self.N_b):
 
             self.Tg[i-1] = self.T[i] - self.T[i-1]
 
