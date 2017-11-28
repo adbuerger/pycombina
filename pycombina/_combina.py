@@ -186,9 +186,9 @@ class Combina():
 
         self._Tg = [0] * self._N_b
 
-        for i in range(1, self._N_b):
+        for i in range(self._N_b):
 
-            self._Tg[i-1] = self._T[i] - self._T[i-1]
+            self._Tg[i] = self._T[i+1] - self._T[i]
 
 
     def __init__(self, T, b_rel):
