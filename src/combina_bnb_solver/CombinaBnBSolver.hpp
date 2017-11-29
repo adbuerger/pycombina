@@ -93,4 +93,6 @@ private:
 
     std::vector<std::vector<std::vector<double>>> sum_eta;
 
+    unsigned int n_iterations;
+
 };
