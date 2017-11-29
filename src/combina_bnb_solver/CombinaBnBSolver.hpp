@@ -76,7 +76,7 @@ private:
     std::vector<double> sum_eta_b_rel_false;
 
     std::priority_queue<BnBNode*, std::vector<BnBNode*>, 
-        BnBNodeComparison> *ptr_bnb_node_queue;
+        BnBNodeComparison> bnb_node_queue;
     BnBNode * ptr_best_node;
 
     std::vector<std::vector<unsigned int>> b_bin;

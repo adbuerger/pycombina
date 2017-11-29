@@ -31,8 +31,6 @@ CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& Tg,
 
       eta(0.0),
 
-      ptr_bnb_node_queue(new std::priority_queue<BnBNode*, 
-          std::vector<BnBNode*>, BnBNodeComparison>),
       ptr_best_node(NULL),
 
       b_bin(b_rel.size(), std::vector<unsigned int>(b_rel[0].size(), 0)),
@@ -52,9 +50,8 @@ CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& Tg,
 
 
 CombinaBnBSolver::~CombinaBnBSolver(){
-    // delete ptr_bnb_node_queue;
-    delete ptr_best_node;
 
+    delete ptr_best_node;
 }
 
 
@@ -193,7 +190,7 @@ void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
 
         ptr_child_node = new BnBNode(ptr_parent_node, active_control, 
             sigma_node, depth_node, eta_node, lb_node);
-        ptr_bnb_node_queue->push(ptr_child_node);
+        bnb_node_queue.push(ptr_child_node);
     }
 }
 
@@ -210,12 +207,12 @@ void CombinaBnBSolver::run_bnb() {
 
     BnBNode * ptr_active_node;
 
-    while (!ptr_bnb_node_queue->empty()) {
+    while (!bnb_node_queue.empty()) {
 
         n_iterations++;
 
-        ptr_active_node = ptr_bnb_node_queue->top();
-        ptr_bnb_node_queue->pop();
+        ptr_active_node = bnb_node_queue.top();
+        bnb_node_queue.pop();
 
         if(ptr_active_node->get_eta_branch() < eta) {
 
