@@ -57,7 +57,8 @@ private:
     void update_best_solution(BnBNode * ptr_active_node);
     void display_solution_update(BnBNode * ptr_best_node);
     void add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node);
-    void increment_sigma_on_active_control_change(BnBNode * ptr_active_node);
+    void increment_sigma_and_eta_on_active_control_change(BnBNode * ptr_active_node);
+    void increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status);
     void delete_node(BnBNode * ptr_active_node);
 
     void retrieve_solution();
