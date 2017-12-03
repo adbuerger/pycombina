@@ -174,20 +174,22 @@ void CombinaBnBSolver::compute_eta_of_current_node(BnBNode * ptr_parent_node) {
 
     eta_node = eta_parent;
 
-    time_step = increas_eta_node(time_step);
+    increas_eta_node();
+    time_step += Tg[depth_node];    
 
     if(check_dwell_time) {
 
         while((!std::all_of(dwell_time.begin(), dwell_time.end(), 
             [=](double dt){return dt <= time_step;})) && (depth_node < N_b)) {
 
-            time_step = increas_eta_node(time_step);
+            increas_eta_node();
+            time_step += Tg[depth_node];
         }
     }
 }
 
 
-double CombinaBnBSolver::increas_eta_node(double time_step) {
+void CombinaBnBSolver::increas_eta_node() {
 
     for(unsigned int i = 0; i < N_c; i++){
 
@@ -199,9 +201,6 @@ double CombinaBnBSolver::increas_eta_node(double time_step) {
     }
 
     depth_node++;
-    time_step += Tg[depth_node];
-
-    return time_step;
 }
 
 

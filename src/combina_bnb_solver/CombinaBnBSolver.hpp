@@ -49,7 +49,7 @@ private:
     void initialize_bnb_queue();
     void add_initial_nodes_to_bnb_queue();
     void compute_eta_of_current_node(BnBNode * ptr_parent_node);
-    double increas_eta_node(double time_step);
+    void increas_eta_node();
     void set_lower_bound_of_branch();
     void add_node_to_bnb_queue(BnBNode * ptr_parent_node);
 
