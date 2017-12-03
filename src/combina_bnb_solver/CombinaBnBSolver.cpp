@@ -153,7 +153,7 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 
         depth_node = 0;
 
-        compute_eta_of_current_node();
+        compute_eta_of_current_node(NULL);
         set_lower_bound_of_branch();
         add_node_to_bnb_queue(NULL);
 
@@ -162,28 +162,46 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 }
 
 
-void CombinaBnBSolver::compute_eta_of_current_node() {
+void CombinaBnBSolver::compute_eta_of_current_node(BnBNode * ptr_parent_node) {
 
+    bool check_dwell_time(true);
     double time_step(0.0);
+
+    if (ptr_parent_node) {
+
+        check_dwell_time = (active_control != ptr_parent_node->get_active_control());
+    }
 
     eta_node = eta_parent;
 
-    do {
+    time_step = increas_eta_node(time_step);
 
-        for(unsigned int i = 0; i < N_c; i++){
+    if(check_dwell_time) {
 
-            if(sigma_node[i] < sigma_max[i]) {
-            
-                eta_node[i] += Tg[depth_node] * 
-                    (b_rel[i][depth_node] - double(active_control == i));
-            }
+        while((!std::all_of(dwell_time.begin(), dwell_time.end(), 
+            [=](double dt){return dt <= time_step;})) && (depth_node < N_b)) {
+
+            time_step = increas_eta_node(time_step);
         }
+    }
+}
 
-        depth_node++;
-        time_step += Tg[depth_node];
 
-    } while ((!std::all_of(dwell_time.begin(), dwell_time.end(), 
-        [=](double dt){return dt <= time_step;})) && (depth_node < N_b));
+double CombinaBnBSolver::increas_eta_node(double time_step) {
+
+    for(unsigned int i = 0; i < N_c; i++){
+
+        if(sigma_node[i] < sigma_max[i]) {
+        
+            eta_node[i] += Tg[depth_node] * 
+                (b_rel[i][depth_node] - double(active_control == i));
+        }
+    }
+
+    depth_node++;
+    time_step += Tg[depth_node];
+
+    return time_step;
 }
 
 
@@ -303,7 +321,7 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
             depth_node = ptr_parent_node->get_depth();
 
-            compute_eta_of_current_node();
+            compute_eta_of_current_node(ptr_parent_node);
             increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
             set_lower_bound_of_branch();
             add_node_to_bnb_queue(ptr_parent_node);
@@ -321,7 +339,7 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
         depth_node = ptr_parent_node->get_depth();
 
-        compute_eta_of_current_node();
+        compute_eta_of_current_node(ptr_parent_node);
         increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
         set_lower_bound_of_branch();
         add_node_to_bnb_queue(ptr_parent_node);
