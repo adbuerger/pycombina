@@ -9,23 +9,23 @@ T = [240 * i for i in range(len(b_rel[0])+1)]
 
 Tg = [T[k+1] - t for k, t in enumerate(T[:-1])]
 
-sigma_max = [4]
+max_switches = [4]
 
 
 combina = pycombina.Combina(T, b_rel)
 
-combina.solve(sigma_max = sigma_max, solver = "bnb")
+combina.solve(solver = "bnb", max_switches = max_switches)
 b_bin_bnb = combina.b_bin
 
 try:
-    combina.solve(sigma_max = sigma_max, solver = "scip")
+    combina.solve(solver = "scip", max_switches = max_switches)
     b_bin_scip = combina.b_bin
 
 except KeyError:
     b_bin_scip = [0] * len(b_bin_bnb)
 
 try:
-    combina.solve(sigma_max = sigma_max, solver = "gurobi")
+    combina.solve(solver = "gurobi", max_switches = max_switches)
     b_bin_gurobi = combina.b_bin
 
 except KeyError:

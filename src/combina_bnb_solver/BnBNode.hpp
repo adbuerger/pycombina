@@ -20,7 +20,7 @@ public:
 
     BnBNode(BnBNode * const ptr_parent_node, unsigned int const active_control,
             std::vector<unsigned int> const sigma, unsigned int const depth,
-            std::vector<double> const eta_node, double const eta_branch);
+            std::vector<double> const eta_node, double const lb_branch);
 
 
     ~BnBNode();
@@ -38,7 +38,7 @@ public:
     std::vector<unsigned int> get_sigma();
     unsigned int get_depth();
     std::vector<double> get_eta_node();
-    double get_eta_branch();
+    double get_lb_branch();
 
     int get_n_active_children();
 
@@ -51,7 +51,7 @@ private:
     std::vector<unsigned int> sigma;
     unsigned int depth;
     std::vector<double> eta_node;
-    double eta_branch;
+    double lb_branch;
 
     unsigned int n_active_children;
 

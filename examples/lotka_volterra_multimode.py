@@ -12,10 +12,10 @@ dN = 80
 T = data[::dN,0].tolist()
 b_rel = data[:-1:dN, 3:].T.tolist()
 
-sigma_max = [2, 2, 2]
+max_switches = [2, 2, 2]
 
 combina = Combina(T, b_rel)
-combina.solve(sigma_max, solver = "bnb")
+combina.solve(solver = "bnb", max_switches = max_switches)
 b_bin = combina.b_bin
 
 

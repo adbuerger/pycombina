@@ -29,7 +29,7 @@ CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& Tg,
       N_c(N_c),
       N_b(N_b),
 
-      eta(0.0),
+      eta_max(0.0),
 
       ptr_best_node(NULL),
 
@@ -55,9 +55,11 @@ CombinaBnBSolver::~CombinaBnBSolver(){
 }
 
 
-void CombinaBnBSolver::run(std::vector<unsigned int> n_max_switches) {
+void CombinaBnBSolver::run(std::vector<unsigned int> max_switches, 
+    std::vector<double> min_up_time) {
 
-    set_sigma_max(n_max_switches);
+    set_sigma_max(max_switches);
+    set_dwell_time(min_up_time);
     prepare_bnb_data();
     initialize_bnb_queue();
     run_bnb();
@@ -68,6 +70,12 @@ void CombinaBnBSolver::run(std::vector<unsigned int> n_max_switches) {
 void CombinaBnBSolver::set_sigma_max(std::vector<unsigned int> n_max_switches) {
 
     sigma_max = n_max_switches;
+}
+
+
+void CombinaBnBSolver::set_dwell_time(std::vector<double> min_up_time) {
+
+    dwell_time = min_up_time;
 }
 
 
@@ -95,7 +103,7 @@ void CombinaBnBSolver::compute_initial_upper_bound() {
 
     for(unsigned int i = 0; i < N_b; i++) {
 
-        eta += Tg[i];
+        eta_max += Tg[i];
     }
 }
 
@@ -143,10 +151,10 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 
     while(active_control <= N_c) {
 
-        depth_node = 1;
+        depth_node = 0;
 
         compute_eta_of_current_node();
-        compute_lower_bound_of_node();
+        set_lower_bound_of_branch();
         add_node_to_bnb_queue(NULL);
 
         active_control++;
@@ -156,18 +164,30 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 
 void CombinaBnBSolver::compute_eta_of_current_node() {
 
-    for(unsigned int i = 0; i < N_c; i++){
+    double time_step(0.0);
 
-        if(sigma_node[i] < sigma_max[i]) {
-        
-            eta_node[i] = eta_parent[i] + Tg[depth_node - 1] * 
-                (b_rel[i][depth_node - 1] - double(active_control == i));
+    eta_node = eta_parent;
+
+    do {
+
+        for(unsigned int i = 0; i < N_c; i++){
+
+            if(sigma_node[i] < sigma_max[i]) {
+            
+                eta_node[i] += Tg[depth_node] * 
+                    (b_rel[i][depth_node] - double(active_control == i));
+            }
         }
-    }
+
+        depth_node++;
+        time_step += Tg[depth_node];
+
+    } while ((!std::all_of(dwell_time.begin(), dwell_time.end(), 
+        [=](double dt){return dt <= time_step;})) && (depth_node < N_b));
 }
 
 
-void CombinaBnBSolver::compute_lower_bound_of_node() {
+void CombinaBnBSolver::set_lower_bound_of_branch() {
 
     lb_node = 0.0;
 
@@ -184,7 +204,7 @@ void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     BnBNode * ptr_child_node = NULL;
 
-    if(lb_node < eta) {
+    if(lb_node < eta_max) {
 
         ptr_child_node = new BnBNode(ptr_parent_node, active_control, 
             sigma_node, depth_node, eta_node, lb_node);
@@ -212,7 +232,7 @@ void CombinaBnBSolver::run_bnb() {
         ptr_active_node = bnb_node_queue.top();
         bnb_node_queue.pop();
 
-        if(ptr_active_node->get_eta_branch() < eta) {
+        if(ptr_active_node->get_lb_branch() < eta_max) {
 
             if(ptr_active_node->get_depth() == N_b) {     
                 
@@ -242,22 +262,28 @@ void CombinaBnBSolver::run_bnb() {
 
 void CombinaBnBSolver::update_best_solution(BnBNode * ptr_active_node) {
 
+    set_new_best_node(ptr_active_node);
+    display_solution_update();
+}
+
+
+void CombinaBnBSolver::set_new_best_node(BnBNode * ptr_active_node) {
+
     if (ptr_best_node) {
 
         delete_node(ptr_best_node);
     }
 
     ptr_best_node = ptr_active_node;
-    eta = ptr_best_node->get_eta_branch();
+    eta_max = ptr_best_node->get_lb_branch();
 
-    display_solution_update(ptr_best_node);
 }
 
 
-void CombinaBnBSolver::display_solution_update(BnBNode * ptr_best_node) {
+void CombinaBnBSolver::display_solution_update() {
 
-    std::cout << "  Solution with eta = " 
-        << ptr_best_node->get_eta_branch() << 
+    std::cout << "  Solution with eta_max = " 
+        << ptr_best_node->get_lb_branch() << 
         " at iteration " << n_iterations << "\n";
 }
 
@@ -265,7 +291,7 @@ void CombinaBnBSolver::display_solution_update(BnBNode * ptr_best_node) {
 void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
     
     eta_parent = ptr_parent_node->get_eta_node();
-    lb_parent = ptr_parent_node->get_eta_branch();
+    lb_parent = ptr_parent_node->get_lb_branch();
 
     active_control = 0;
 
@@ -275,11 +301,11 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
         if(sigma_node[active_control] < sigma_max[active_control]) {
 
-            depth_node = ptr_parent_node->get_depth() + 1;
+            depth_node = ptr_parent_node->get_depth();
 
             compute_eta_of_current_node();
             increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
-            compute_lower_bound_of_node();
+            set_lower_bound_of_branch();
             add_node_to_bnb_queue(ptr_parent_node);
 
         }
@@ -293,11 +319,11 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
         active_control = N_c;
 
-        depth_node = ptr_parent_node->get_depth() + 1;
+        depth_node = ptr_parent_node->get_depth();
 
         compute_eta_of_current_node();
         increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
-        compute_lower_bound_of_node();
+        set_lower_bound_of_branch();
         add_node_to_bnb_queue(ptr_parent_node);
     }
 }
@@ -392,7 +418,7 @@ void CombinaBnBSolver::retrieve_solution() {
 
 double CombinaBnBSolver::get_eta() {
 
-    return eta;
+    return eta_max;
 }
 
 

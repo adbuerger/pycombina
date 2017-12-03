@@ -12,14 +12,14 @@
 
 BnBNode::BnBNode(BnBNode * const ptr_parent_node, unsigned int const active_control,
             std::vector<unsigned int> const sigma, unsigned int const depth,
-            std::vector<double> const eta_node, double const eta_branch)
+            std::vector<double> const eta_node, double const lb_branch)
 
     : ptr_parent_node(ptr_parent_node),
       active_control(active_control),
       sigma(sigma),
       depth(depth),
       eta_node(eta_node),
-      eta_branch(eta_branch),
+      lb_branch(lb_branch),
 
       n_active_children(0)
 
@@ -101,9 +101,9 @@ std::vector<double> BnBNode::get_eta_node() {
 }
 
 
-double BnBNode::get_eta_branch() {
+double BnBNode::get_lb_branch() {
 
-    return eta_branch;
+    return lb_branch;
 }
 
 

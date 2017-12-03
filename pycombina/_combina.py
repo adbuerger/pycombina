@@ -34,13 +34,13 @@ class Combina():
 
 
     @property
-    def sigma_max(self):
+    def max_switches(self):
 
         try:
-            return self._sigma_max
+            return self._max_switches
 
         except AttributeError:
-           raise AttributeError("sigma_max not yet available, call solve() first.")
+           raise AttributeError("max_switches not yet available, call solve() first.")
 
 
     @property
@@ -204,17 +204,33 @@ class Combina():
         self._compute_time_grid_from_time_points()
 
 
-    def solve(self, sigma_max = [2], solver = "bnb"):
+    def solve(self, solver = "bnb", max_switches = [2], min_up_time = None):
 
         try:
-            sigma_max = list(sigma_max)
-            self._sigma_max = [int(s) for s in sigma_max]
+            max_switches = list(max_switches)
+            self._max_switches = [int(s) for s in max_switches]
 
-            if not len(self.sigma_max) == len(self.b_rel):
+            if not len(self._max_switches) == len(self._b_rel):
                 raise ValueError
 
         except ValueError:
-            raise ValueError("sigma_max must be a list of integer values with length equal to the number of binary controls.")
+            raise ValueError("max_switches must be a list of integer values with length equal to the number of binary controls.")
+
+
+        if not min_up_time:
+
+           min_up_time = [0.0] * self._N_c
+
+        try:
+            min_up_time = list(min_up_time)
+            self._min_up_time = [float(m) for m in min_up_time]
+
+            if not len(self._min_up_time) == len(self._b_rel):
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("max_switches must be a list of float values with length equal to the number of binary controls.")
+
 
         try:
             self._solver = self._available_solvers[solver]( \
@@ -224,7 +240,7 @@ class Combina():
             raise ValueError("Unknown solver '" + solver + "', valid options are:\n" + \
                 str(self._available_solvers.keys()))
 
-        self._solver.run(sigma_max = self._sigma_max)
+        self._solver.run(max_switches = self._max_switches, min_up_time = self._min_up_time)
 
         self._eta = self._solver.get_eta()
         self._b_bin = self._solver.get_b_bin()

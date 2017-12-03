@@ -21,5 +21,5 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
         .def("get_eta", &CombinaBnBSolver::get_eta)
         .def("get_b_bin", &CombinaBnBSolver::get_b_bin)
 
-        .def("run", &CombinaBnBSolver::run, py::arg("sigma_max"));
+        .def("run", &CombinaBnBSolver::run, py::arg("max_switches"), py::arg("min_up_time"));
 }

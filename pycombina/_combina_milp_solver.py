@@ -23,9 +23,18 @@ class CombinaMilpSolverBaseClass(object):
         self.N_b = N_b
 
 
-    def setup_sigma_max(self, sigma_max):
+    def setup_sigma_max(self, max_switches):
 
-        self.sigma_max = sigma_max
+        self.sigma_max = max_switches
+
+
+    def setup_dwell_time(self, min_up_time):
+
+        self.dwell_time = min_up_time
+
+        if not all(m == 0 for m in min_up_time):
+
+            raise NotImplementedError("Use of dwell times with MILP solvers not yet implemented.")
 
 
     def initialize_model(self):
@@ -95,9 +104,10 @@ class CombinaMilpSolverBaseClass(object):
         pass
 
 
-    def run(self, sigma_max):
+    def run(self, max_switches, min_up_time):
 
-        self.setup_sigma_max(sigma_max)
+        self.setup_sigma_max(max_switches)
+        self.setup_dwell_time(min_up_time)
         self.setup_milp()
         self.solve_milp()
         self.retrieve_solutions()
