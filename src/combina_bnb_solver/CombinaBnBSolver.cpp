@@ -105,12 +105,12 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
     for(unsigned int i = 0; i < N_c; i++) {
 
         sum_eta[0][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1]);
-        sum_eta[1][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1] - 1);
+        sum_eta[1][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1] - 1.0);
 
         for(int j = N_b-2; j >= 0; j--) {
 
             sum_eta[0][i][j] = sum_eta[0][i][j+1] + Tg[j] * b_rel[i][j];
-            sum_eta[1][i][j] = sum_eta[1][i][j+1] + Tg[j] * (b_rel[i][j] - 1);
+            sum_eta[1][i][j] = sum_eta[1][i][j+1] + Tg[j] * (b_rel[i][j] - 1.0);
         }
     }
 }
@@ -217,7 +217,7 @@ void CombinaBnBSolver::run_bnb() {
             if(ptr_active_node->get_depth() == N_b) {     
                 
                 update_best_solution(ptr_active_node);
-                // break;
+                break;
             }
 
             else {
@@ -281,6 +281,7 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
             increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
             compute_lower_bound_of_node();
             add_node_to_bnb_queue(ptr_parent_node);
+
         }
         
         active_control++;
@@ -334,6 +335,7 @@ void CombinaBnBSolver::increment_sigma_and_eta(unsigned int switched_control, un
 void CombinaBnBSolver::delete_node(BnBNode * ptr_active_node) {
 
     delete ptr_active_node;
+    ptr_active_node = NULL;
 }
 
 
@@ -398,4 +400,3 @@ std::vector<std::vector<unsigned int>> CombinaBnBSolver::get_b_bin() {
 
     return b_bin;
 }
-

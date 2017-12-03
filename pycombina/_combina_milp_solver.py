@@ -142,9 +142,9 @@ class CombinaScipSolver(CombinaMilpSolverBaseClass):
             for j in range(self.N_b):
 
                 self.model.addCons(self.eta_sym >= self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j)]))
+                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
                 self.model.addCons(self.eta_sym >= -self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j)]))
+                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
 
 
     def solve_milp(self):
@@ -204,9 +204,9 @@ class CombinaGurobiSolver(CombinaMilpSolverBaseClass):
             for j in range(self.N_b):
 
                 self.model.addConstr(self.eta_sym >= self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j)]))
+                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
                 self.model.addConstr(self.eta_sym >= -self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j)]))
+                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
 
 
     def solve_milp(self):

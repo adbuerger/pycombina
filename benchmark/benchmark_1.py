@@ -43,7 +43,7 @@ pl.show()
 
 # Check etas
 
-N = len(b_bin_cia)
+N = len(b_bin_bnb[0])
 
 eta_bnb = (i, 0)
 eta_scip = (i, 0)
@@ -51,21 +51,21 @@ eta_gurobi = (i, 0)
 
 for i in range(N):
 
-    eta_bnb_i = abs(sum([Tg[j] * (b_rel[j] - b_bin_bnb[j]) for j in range(i)]))
+    eta_bnb_i = abs(sum([Tg[j] * (b_rel[0][j] - b_bin_bnb[0][j]) for j in range(i)]))
 
     if eta_bnb_i > eta_bnb[1]:
 
         eta_bnb = (i, eta_bnb_i)
 
 
-    eta_scip_i = abs(sum([Tg[j] * (b_rel[j] - b_bin_scip[j]) for j in range(i)]))
+    eta_scip_i = abs(sum([Tg[j] * (b_rel[0][j] - b_bin_scip[0][j]) for j in range(i)]))
 
     if eta_scip_i > eta_scip[1]:
 
         eta_scip = (i, eta_scip_i)
 
 
-    eta_gurobi_i = abs(sum([Tg[j] * (b_rel[j] - b_bin_gurobi[j]) for j in range(i)]))
+    eta_gurobi_i = abs(sum([Tg[j] * (b_rel[0][j] - b_bin_gurobi[0][j]) for j in range(i)]))
 
     if eta_gurobi_i > eta_gurobi[1]:
 

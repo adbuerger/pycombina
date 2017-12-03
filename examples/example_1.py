@@ -8,9 +8,23 @@ T = [240 * i for i in range(len(b_rel[0])+1)]
 sigma_max = [4]
 
 combina = Combina(T, b_rel)
-combina.solve(sigma_max, solver = "scip")
+combina.solve(sigma_max, solver = "bnb")
 b_bin = combina.b_bin
 
+eta = [(0,0)]
+Tg = (pl.asarray(T[1:]) - pl.asarray(T[:-1])).tolist()
+
+for k, b_bin_k in enumerate(b_bin):
+
+    for i, b_i in enumerate(b_bin_k):
+
+        eta_i = abs(sum([Tg[j] * (b_rel[k][j] - b_bin_k[j]) for j in range(i)]))
+
+        if eta_i > eta[k][1]:
+
+            eta[k] = (i, eta_i)
+
 pl.figure()
+pl.step(T[:-1], b_rel[0])
 pl.step(T[:-1], b_bin[0])
 pl.show()
