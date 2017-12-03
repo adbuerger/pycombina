@@ -164,28 +164,25 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 
 void CombinaBnBSolver::compute_eta_of_current_node(BnBNode * ptr_parent_node) {
 
-    bool check_dwell_time(true);
     double time_step(0.0);
 
     if (ptr_parent_node) {
 
-        check_dwell_time = (active_control != ptr_parent_node->get_active_control());
+        if(active_control == ptr_parent_node->get_active_control()){
+
+            time_step = *std::max_element(dwell_time.begin(), dwell_time.end());
+        }
     }
 
     eta_node = eta_parent;
 
-    increas_eta_node();
-    time_step += Tg[depth_node];    
+    do {
 
-    if(check_dwell_time) {
+        increas_eta_node();
+        time_step += Tg[depth_node];
 
-        while((!std::all_of(dwell_time.begin(), dwell_time.end(), 
-            [=](double dt){return dt <= time_step;})) && (depth_node < N_b)) {
-
-            increas_eta_node();
-            time_step += Tg[depth_node];
-        }
-    }
+    } while((!std::all_of(dwell_time.begin(), dwell_time.end(), 
+            [=](double dt){return dt <= time_step;})) && (depth_node < N_b));
 }
 
 
