@@ -73,7 +73,7 @@ class CombinaMilpSolverBaseClass(object):
 
         r'''
         We set up only the relevant facets, see:
-        Sager et al.: Combinatorial integral approximation, 2010
+        Sager et al.: Combinatorial integral approximation, 2011
         '''
 
 

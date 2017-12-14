@@ -6,11 +6,15 @@ class Combina():
     @property
     def T(self):
 
+        '''Discrete time points.'''
+
         return self._T
 
 
     @property
     def b_rel(self):
+
+        '''Relaxed binary controls.'''
 
         return self._b_rel
 
@@ -18,11 +22,15 @@ class Combina():
     @property
     def Tg(self):
 
+        '''Duration between sequent time points.'''
+
         return self._Tg
 
 
     @property
     def N_b(self):
+
+        '''Number of discrete values per control.'''
 
         return self._N_b
 
@@ -30,11 +38,15 @@ class Combina():
     @property
     def N_c(self):
 
+        '''Number of mutually exclusive controls.'''
+
         return self._N_c
 
 
     @property
     def max_switches(self):
+
+        '''Maximum possible amount of switches per control.'''
 
         try:
             return self._max_switches
@@ -46,6 +58,8 @@ class Combina():
     @property
     def eta(self):
 
+        '''Objective value of the combinatorial integral approximation problem.'''
+
         try:
             return self._eta
 
@@ -55,6 +69,8 @@ class Combina():
 
     @property
     def b_bin(self):
+
+        '''Binary controls obtained from the solution of the combinatorial integral approximation problem.'''
 
         try:
             return self._b_bin
@@ -193,6 +209,22 @@ class Combina():
 
     def __init__(self, T, b_rel):
 
+        r'''
+        :raises: ValueError, RuntimeError
+
+        :param T: Discrete time points of the combinatorial integral approximation
+                  problem. The values in T must be strictly increasing.
+        :type T: list of float
+
+        :param b_rel: Relaxed binary controls to be approximated. A list of N_c
+                      lists is expected, where N_c is the number of the mutually
+                      exclusive controls to be approximated. Every of those
+                      lists must contain N_b = len(T)-1 entries b_i with 
+                      0 <= b_i <= 1 for i = 0, ..., N_b-1.
+        :type b_rel: list of list of float
+
+        '''
+
         self._initialize_combina()
 
         self._T = T
@@ -205,6 +237,32 @@ class Combina():
 
 
     def solve(self, solver = "bnb", max_switches = [2], min_up_time = None):
+
+        r'''
+        :raises: ValueError, NotImplementedError
+
+        :param solver: Specifies which solver to use to solve the combinatorial
+                       integral approximation problem. Possible options are:
+
+                       "bnb" - solve using a custom Branch-and-Bound algorithm
+                       "scip" - solve using a MILP formulation with SCIP
+                       "gurobi" - solve using a MILP formulation with Gurobi
+
+                       Availability of solvers depends on whether the necessary
+                       libraries and Python interfaces are installed on your
+                       system. Also, not all solver options are available
+                       for all solvers.
+        :type solver: str
+
+        :param max_switches: Specifies the maximum number of allowed switches
+                             per control.
+        :type max_switches: list of int
+
+        :param min_up_time: Specifies the minimum time per control that must
+                            pass in between two switching actions.
+        :type min_up_time: list of float
+
+        '''
 
         try:
             max_switches = list(max_switches)

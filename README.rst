@@ -73,7 +73,7 @@ To run the the automated tests, run
 
 .. code-block:: bash
 
-   sudo python setup.py test
+   python setup.py test
 
 
 Tests for SCIP and Gurobi will be skipped automatically if they're not available.
