@@ -213,14 +213,14 @@ class Combina():
         :raises: ValueError, RuntimeError
 
         :param T: Discrete time points of the combinatorial integral approximation
-                  problem. The values in T must be strictly increasing.
+                  problem. The values in :math:`T` must be strictly increasing.
         :type T: list of float
 
-        :param b_rel: Relaxed binary controls to be approximated. A list of N_c
-                      lists is expected, where N_c is the number of the mutually
+        :param b_rel: Relaxed binary controls to be approximated. A list of :math:`N_c`
+                      lists is expected, where :math:`N_c` is the number of the mutually
                       exclusive controls to be approximated. Every of those
-                      lists must contain N_b = len(T)-1 entries b_i with 
-                      0 <= b_i <= 1 for i = 0, ..., N_b-1.
+                      lists must contain :math:`N_b = |T|-1` entries :math:`b_i` with 
+                      :math:`0 <= b_i <= 1` for :math:`i = 0, ..., N_b-1`.
         :type b_rel: list of list of float
 
         '''
@@ -236,7 +236,7 @@ class Combina():
         self._compute_time_grid_from_time_points()
 
 
-    def solve(self, solver = "bnb", max_switches = [2], min_up_time = None):
+    def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None):
 
         r'''
         :raises: ValueError, NotImplementedError
@@ -244,9 +244,9 @@ class Combina():
         :param solver: Specifies which solver to use to solve the combinatorial
                        integral approximation problem. Possible options are:
 
-                       "bnb" - solve using a custom Branch-and-Bound algorithm
-                       "scip" - solve using a MILP formulation with SCIP
-                       "gurobi" - solve using a MILP formulation with Gurobi
+                       * 'bnb' - solve using a custom Branch-and-Bound algorithm
+                       * 'scip' - solve using a MILP formulation with SCIP
+                       * 'gurobi' - solve using a MILP formulation with Gurobi
 
                        Availability of solvers depends on whether the necessary
                        libraries and Python interfaces are installed on your
@@ -259,8 +259,9 @@ class Combina():
         :type max_switches: list of int
 
         :param min_up_time: Specifies the minimum time per control that must
-                            pass in between two switching actions.
-        :type min_up_time: list of float
+                            pass in between two switching actions. If None,
+                            no minimum time is considered.
+        :type min_up_time: None, list of float
 
         '''
 

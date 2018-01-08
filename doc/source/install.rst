@@ -15,37 +15,14 @@
 .. You should have received a copy of the GNU Lesser General Public License
 .. along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
-.. image:: logo/logo.png
 
-pycombina - Combinatorial Integral Approximation
-================================================
-
-|gitlab-ci|
-
-.. |gitlab-ci| image:: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/badges/master/pipeline.svg
-    :target: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/commits/master
-    :alt: Gitlab CI pipeline status master branch
-
-**pycombina** is a Python module for solving combinatorial integral approximation problems.
-
-Combinatorial integral approximation problems can be formulated and solved
-
-1. by a custom Branch-and-Bound algorithm (using fast implementation in C++, recommended),
-2. by SCIP (using an MILP formulation, requires SCIP and pyscipopt)
-3. by Gurobi (using an MILP formulation, requires Gurobi and gurobipy)
-
-while the problem setup is widely automatized.
-
-For more information on the implemented algorithms, see, e. g., [#f1]_.
-
-
-Prerequisites
--------------
+How to install
+==============
 
 pycombina has been tested with Python2.7 on Ubuntu 16.04. 
 
-Python modules
-~~~~~~~~~~~~~~
+Required Python modules
+-----------------------
 
 The following Python modules are required:
 
@@ -56,8 +33,8 @@ The following Python modules are required:
 - ``gurobipy`` (optional, required for using Gurobi (solver license required), see  [#f4]_)
 
 
-Other software
-~~~~~~~~~~~~~~
+Required build software
+-----------------------
 
 For building the C++ implementation, the following packages are required
 
@@ -68,8 +45,8 @@ For building the C++ implementation, the following packages are required
 **Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
 
 
-How to install
---------------
+Installation
+------------
 
 For system-wide installation of the Python module, run
 
@@ -78,7 +55,7 @@ For system-wide installation of the Python module, run
    sudo python setup.py install
 
 
-If you're working on the module, it's better to just set a link
+If you're working on development of the module, it's better to just set a link
 to the containing folder, which can be done by running
 
 .. code-block:: bash
@@ -95,21 +72,7 @@ To run the the automated tests, run
 
 Tests for SCIP and Gurobi will be skipped automatically if they're not available.
 
-
-How to use
-----------
-
-For examples on how to use the module, please refer to the tests.
-
-
 .. rubric:: References
-
-.. [#f1] |linkf1|_
-
-.. _linkf1: https://mathopt.de/Sager/publications.php
-
-.. |linkf1| replace:: Sager et al.: Combinatorial Integral Approximation. *Mathematical Methods of Operations Research*, 2011
-
 
 .. [#f2] |linkf2|_
 
