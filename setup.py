@@ -6,7 +6,7 @@ import platform
 import subprocess
 
 from distutils.version import LooseVersion
-from setuptools import setup, Extension
+from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
 # see: http://www.benjack.io/2017/06/12/python-cpp-tests.html
@@ -85,6 +85,8 @@ setup(
 
     # add extension module
     ext_modules=[CMakeExtension('pycombina/_combina_bnb')],
+
+    packages = find_packages(),
 
     # add custom build_ext command
     cmdclass=dict(build_ext=CMakeBuild),

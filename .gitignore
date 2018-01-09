@@ -10,3 +10,4 @@ implementierung_jung/
 gurobi.log
 implementierung_seminar/
 doc/build/*
+dist/
