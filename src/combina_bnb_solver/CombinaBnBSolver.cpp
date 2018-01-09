@@ -18,6 +18,8 @@
 
 #include "CombinaBnBSolver.hpp"
 
+namespace py = pybind11;
+
 
 CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& Tg, 
         const std::vector<std::vector<double>>& b_rel,
@@ -84,7 +86,7 @@ void CombinaBnBSolver::prepare_bnb_data() {
     clock_t t_start;
     clock_t t_end;
 
-    std::cout << "\n- Preparing data for Branch and Bound ...\n";
+    py::print("\n- Preparing data for Branch and Bound ...");
 
     t_start = clock();
 
@@ -93,8 +95,8 @@ void CombinaBnBSolver::prepare_bnb_data() {
 
     t_end = clock();
 
-    std::cout << "  Preparation phase finished after " << 
-        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
+    py::print("  Preparation phase finished after ", 
+        double(t_end - t_start) / CLOCKS_PER_SEC, " s");
 
 }
 
@@ -129,7 +131,7 @@ void CombinaBnBSolver::initialize_bnb_queue() {
     clock_t t_start;
     clock_t t_end;
 
-    std::cout << "\n- Initializing Branch and Bound queue ...\n";
+    py::print("\n- Initializing Branch and Bound queue ...");
 
     t_start = clock();
 
@@ -137,8 +139,8 @@ void CombinaBnBSolver::initialize_bnb_queue() {
 
     t_end = clock();
 
-    std::cout << "  Initialization finished after " << 
-        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
+    py::print("  Initialization finished after ", 
+        double(t_end - t_start) / CLOCKS_PER_SEC, " s");
 }
 
 
@@ -232,7 +234,7 @@ void CombinaBnBSolver::run_bnb() {
     clock_t t_start;
     clock_t t_end;
 
-    std::cout << "\n- Running Branch and Bound ...\n";
+    py::print("\n- Running Branch and Bound ...");
 
     t_start = clock();
 
@@ -269,8 +271,8 @@ void CombinaBnBSolver::run_bnb() {
 
     t_end = clock();
 
-    std::cout << "  Branch and Bound finished after " << 
-        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
+    py::print("  Branch and Bound finished after ", 
+        double(t_end - t_start) / CLOCKS_PER_SEC," s");
 }
 
 
@@ -296,9 +298,8 @@ void CombinaBnBSolver::set_new_best_node(BnBNode * ptr_active_node) {
 
 void CombinaBnBSolver::display_solution_update() {
 
-    std::cout << "  Solution with eta_max = " 
-        << ptr_best_node->get_lb_branch() << 
-        " at iteration " << n_iterations << "\n";
+    py::print("  Solution with eta_max = ",
+        ptr_best_node->get_lb_branch(), " at iteration ", n_iterations);
 }
 
 
@@ -387,7 +388,7 @@ void CombinaBnBSolver::retrieve_solution() {
     int node_range_end;
     int node_range_begin;
 
-    std::cout << "\n- Retrieving Branch and Bound solution ...\n";
+    py::print("\n- Retrieving Branch and Bound solution ...");
 
     t_start = clock();
 
@@ -422,8 +423,8 @@ void CombinaBnBSolver::retrieve_solution() {
 
     t_end = clock();
 
-    std::cout << "  Reconstructing the solution finished after " << 
-        double(t_end - t_start) / CLOCKS_PER_SEC << " s\n";
+    py::print("  Reconstructing the solution finished after ", 
+        double(t_end - t_start) / CLOCKS_PER_SEC , " s");
 
 }
 

@@ -6,8 +6,12 @@
 
 #include <vector>
 
+#ifndef PYBIND11
+#define PYBIND11
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#endif
+ 
 #include "CombinaBnBSolver.hpp"
 
 namespace py = pybind11;
