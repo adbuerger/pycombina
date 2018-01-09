@@ -27,8 +27,8 @@ Required Python modules
 The following Python modules are required:
 
 - ``setuptools``
+- ``numpy``
 - ``unittest2`` (optional, for running automated tests)
-- ``numpy`` (optional, for running automated tests)
 - ``pyscipopt`` (optional, required for using SCIP (solver license required), see [#f2]_ and [#f3]_)
 - ``gurobipy`` (optional, required for using Gurobi (solver license required), see  [#f4]_)
 
@@ -36,7 +36,7 @@ The following Python modules are required:
 Required build software
 -----------------------
 
-For building the C++ implementation, the following packages are required
+For building the C++ extension, the following packages are required
 
 - ``python-dev``
 - ``g++``

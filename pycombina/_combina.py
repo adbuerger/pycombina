@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 class Combina():
 
@@ -147,49 +148,62 @@ class Combina():
         self._check_available_solvers()
 
 
-    def _determine_number_of_controls(self):
+    def _validate_input_dimension_T(self):
 
-        self._N_c = len(self._b_rel)
+        self._T = np.squeeze(self._T)
+
+        if not self._T.ndim == 1:
+
+                raise ValueError("Input T must be a vector.")
 
 
-    def _determine_number_of_control_intervals(self):
+    def _validate_input_dimension_b_rel(self):
 
-        self._N_b = len(self._T) - 1
+        self._b_rel = np.atleast_2d(self._b_rel)
 
+        if not self._b_rel.shape[1] == self._T.size-1:
 
-    def _validate_input_dimensions(self):
+            self._b_rel = self._b_rel.T
 
-        for b_rel_i in self._b_rel:
+        if not self._b_rel.shape[1] == self._T.size-1:
 
-            if len(b_rel_i) != self._N_b:
-
-                raise ValueError("All elements in b_rel must contain one entry less than T.")
+            raise ValueError("One dimension of b_rel must be |T|-1.")
 
 
     def _validate_input_values_T(self):
 
-        for i, t in enumerate(self._T[:-1]):
+        if not np.all((self._T[1:] - self._T[:-1]) > 0):
 
-            if (self._T[i+1] - t) <= 0.0:
-
-                raise ValueError("Values in T must be strictly increasing.")
+            raise ValueError("Values in T must be strictly increasing.")
 
 
     def _validate_input_values_b_rel(self):
 
-        for b_rel_i in self._b_rel:
+        if not (np.all(self._b_rel >= 0) and np.all(self._b_rel <= 1)):
 
-            for b in b_rel_i:
+            raise ValueError("All elements of the relaxed binary input must be 0 <= b <= 1.")
 
-                if ((b < 0.0) or (b > 1.0)):
 
-                    raise ValueError("All elements of the relaxed binary input must be 0 <= b <= 1.")
+    def _determine_number_of_control_intervals(self):
+
+        self._N_b = self._T.size - 1
+
+
+    def _determine_number_of_controls(self):
+
+        self._N_c = self._b_rel.shape[0]
 
 
     def _validate_input_values(self):
 
         self._validate_input_values_T()
         self._validate_input_values_b_rel()
+
+
+    def _validate_input_dimensions(self):
+
+        self._validate_input_dimension_T()
+        self._validate_input_dimension_b_rel()
 
 
     def _validate_input_data(self):
@@ -200,11 +214,17 @@ class Combina():
 
     def _compute_time_grid_from_time_points(self):
 
-        self._Tg = [0] * self._N_b
+        self._Tg = self._T[1:] - self._T[:-1]
 
-        for i in range(self._N_b):
 
-            self._Tg[i] = self._T[i+1] - self._T[i]
+    def _numpy_arrays_to_lists(self):
+
+        # For now, the solver interfaces expect lists, so we need to convert
+        # the numpy arrays accordingly
+
+        self._T = self._T.tolist()
+        self._b_rel = self._b_rel.tolist()
+        self._Tg = self._Tg.tolist()
 
 
     def __init__(self, T, b_rel):
@@ -212,16 +232,16 @@ class Combina():
         r'''
         :raises: ValueError, RuntimeError
 
-        :param T: Discrete time points of the combinatorial integral approximation
-                  problem. The values in :math:`T` must be strictly increasing.
-        :type T: list of float
+        :param T: One-dimensional array that contains the discrete time points
+                  of the combinatorial integral approximation problem. The
+                  values in :math:`T` must be strictly increasing.
+        :type T: numpy.ndarray
 
-        :param b_rel: Relaxed binary controls to be approximated. A list of :math:`N_c`
-                      lists is expected, where :math:`N_c` is the number of the mutually
-                      exclusive controls to be approximated. Every of those
-                      lists must contain :math:`N_b = |T|-1` entries :math:`b_i` with 
-                      :math:`0 <= b_i <= 1` for :math:`i = 0, ..., N_b-1`.
-        :type b_rel: list of list of float
+        :param b_rel: Two-dimensional array that contains the relaxed binary
+                      controls to be approximated. One dimension of the array
+                      must be of size :math:` |T|-1` and all entries of the array 
+                      must be :math:`0 <= b_{k,i} <= 1`.
+        :type b_rel: numpy.ndarray
 
         '''
 
@@ -230,10 +250,11 @@ class Combina():
         self._T = T
         self._b_rel = b_rel
 
+        self._validate_input_data()
         self._determine_number_of_controls()
         self._determine_number_of_control_intervals()
-        self._validate_input_data()
         self._compute_time_grid_from_time_points()
+        self._numpy_arrays_to_lists()
 
 
     def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None):
@@ -254,18 +275,21 @@ class Combina():
                        for all solvers.
         :type solver: str
 
-        :param max_switches: Specifies the maximum number of allowed switches
-                             per control.
-        :type max_switches: list of int
+        :param max_switches: Array of integer values that specifies the maximum
+                             number of allowed switching actions per control.
+        :type max_switches: list, numpy.ndarray
 
         :param min_up_time: Specifies the minimum time per control that must
                             pass in between two switching actions. If None,
                             no minimum time is considered.
-        :type min_up_time: None, list of float
+        :type min_up_time: None, list, numpy.ndarray
 
         '''
 
         try:
+            if not np.atleast_1d(np.squeeze(max_switches)).ndim == 1:
+                raise ValueError
+
             max_switches = list(max_switches)
             self._max_switches = [int(s) for s in max_switches]
 
@@ -273,7 +297,7 @@ class Combina():
                 raise ValueError
 
         except ValueError:
-            raise ValueError("max_switches must be a list of integer values with length equal to the number of binary controls.")
+            raise ValueError("The number of integer values in max_switches must be equal to the number of binary controls.")
 
 
         if not min_up_time:
@@ -281,6 +305,10 @@ class Combina():
            min_up_time = [0.0] * self._N_c
 
         try:
+
+            if not np.atleast_1d(np.squeeze(min_up_time)).ndim == 1:
+                raise ValueError
+
             min_up_time = list(min_up_time)
             self._min_up_time = [float(m) for m in min_up_time]
 
@@ -288,7 +316,7 @@ class Combina():
                 raise ValueError
 
         except ValueError:
-            raise ValueError("max_switches must be a list of float values with length equal to the number of binary controls.")
+            raise ValueError("The number of values in min_up_time must be equal to the number of binary controls.")
 
 
         try:
@@ -303,3 +331,5 @@ class Combina():
 
         self._eta = self._solver.get_eta()
         self._b_bin = self._solver.get_b_bin()
+
+        self._b_bin = np.asarray(self._b_bin)
