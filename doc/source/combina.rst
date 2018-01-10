@@ -27,7 +27,7 @@ tbd
 Problem formulation
 -------------------
 
-Given a vector :math:`b_\mathrm{rel}` with :math:`n_\mathrm{c}` entries where every entry is a vector with :math:`n_\mathrm{b}` entries :math:`b_{\mathrm{rel},k,i} \in \lbrack 0,1 \rbrack` and a vector :math:`t` with entries :math:`t_k \in \mathbb{R}` where :math:`t_{k+1} - t_k > 0`. With :math:`\sigma_{\mathrm{max},k} \in \mathrm{N}` for :math:`k = 1,\dots,n_c`, pycombina can be use to solve a combinatorial integral approximation problem of the following form
+Given a matrix :math:`b_\mathrm{rel} \in [0,1]^{n_\mathrm{c} \times n_\mathrm{r}}` which corresponds to the relaxed solution of :math:`n_\mathrm{c}` binary variables at :math:`n_\mathrm{b}` control intervals and a vector of time points :math:`t \in \mathbb{R}^{n_\mathrm{b}+1}` with :math:`t_{k+1} - t_k > 0` for :math:`k=0,\dots,n_\mathrm{b}`. With :math:`\sigma_{\mathrm{max},k} \in \mathrm{N}^{n_\mathrm{c}}`, pycombina can be use to solve a combinatorial integral approximation problem of the following form
 
 .. math::
     
@@ -42,7 +42,7 @@ Given a vector :math:`b_\mathrm{rel}` with :math:`n_\mathrm{c}` entries where ev
 Problem solution using pycombina
 --------------------------------
 
-Given a list of lists of float `b_rel` and a list of float `T` in accordance to the problem formulation above, a combinatorial integral approximation problem can be instantiated from the class ``pycombina.Combina``. The problem can then be solved using the class function ``solve()``, where :math:`\sigma_{\mathrm{max}}` can be specified as well as the desired solution method/solver:
+Given numpy arrays for `b_rel` and `t` in accordance to the problem formulation above, a combinatorial integral approximation problem can be instantiated from the class ``pycombina.Combina``. The problem can then be solved using the class function ``solve()``, where ``sigma_max`` can be specified as well as the desired solution method/solver:
 
    * `bnb` - solve using a custom Branch-and-Bound algorithm (recommended)
    * `scip` - solve using SCIP (MILP formulation, requires SCIP and pyscipopt)

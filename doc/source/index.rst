@@ -49,4 +49,4 @@ while the problem setup is widely automatized.
 
    install
    combina
-   samples
+   pycombina_sample_application

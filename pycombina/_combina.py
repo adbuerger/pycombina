@@ -154,7 +154,7 @@ class Combina():
 
         if not self._t.ndim == 1:
 
-                raise ValueError("Input T must be a vector.")
+                raise ValueError("Input t must be a vector.")
 
 
     def _validate_input_dimension_b_rel(self):
@@ -167,14 +167,14 @@ class Combina():
 
         if not self._b_rel.shape[1] == self._t.size-1:
 
-            raise ValueError("One dimension of b_rel must be |T|-1.")
+            raise ValueError("One dimension of b_rel must be |t|-1.")
 
 
     def _validate_input_values_t(self):
 
         if not np.all((self._t[1:] - self._t[:-1]) > 0):
 
-            raise ValueError("Values in T must be strictly increasing.")
+            raise ValueError("Values in t must be strictly increasing.")
 
 
     def _validate_input_values_b_rel(self):
@@ -227,27 +227,27 @@ class Combina():
         self._dt = self._dt.tolist()
 
 
-    def __init__(self, T, b_rel):
+    def __init__(self, t, b_rel):
 
         r'''
         :raises: ValueError, RuntimeError
 
         :param t: One-dimensional array that contains the discrete time points
                   of the combinatorial integral approximation problem. The
-                  values in :math:`T` must be strictly increasing.
+                  values in t must be strictly increasing.
         :type t: numpy.ndarray
 
         :param b_rel: Two-dimensional array that contains the relaxed binary
                       controls to be approximated. One dimension of the array
-                      must be of size :math:` |T|-1` and all entries of the array 
-                      must be :math:`0 <= b_{k,i} <= 1`.
+                      must be of size |t|-1 and all entries of the array 
+                      must be 0 <= b_k,i <= 1.
         :type b_rel: numpy.ndarray
 
         '''
 
         self._initialize_combina()
 
-        self._t = T
+        self._t = t
         self._b_rel = b_rel
 
         self._validate_input_data()
