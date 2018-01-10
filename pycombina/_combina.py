@@ -5,11 +5,11 @@ class Combina():
 
 
     @property
-    def T(self):
+    def t(self):
 
         '''Discrete time points.'''
 
-        return self._T
+        return self._t
 
 
     @property
@@ -21,27 +21,27 @@ class Combina():
 
 
     @property
-    def Tg(self):
+    def dt(self):
 
         '''Duration between sequent time points.'''
 
-        return self._Tg
+        return self._dt
 
 
     @property
-    def N_b(self):
+    def n_b(self):
 
         '''Number of discrete values per control.'''
 
-        return self._N_b
+        return self._n_b
 
 
     @property
-    def N_c(self):
+    def n_c(self):
 
         '''Number of mutually exclusive controls.'''
 
-        return self._N_c
+        return self._n_c
 
 
     @property
@@ -148,11 +148,11 @@ class Combina():
         self._check_available_solvers()
 
 
-    def _validate_input_dimension_T(self):
+    def _validate_input_dimension_t(self):
 
-        self._T = np.squeeze(self._T)
+        self._t = np.squeeze(self._t)
 
-        if not self._T.ndim == 1:
+        if not self._t.ndim == 1:
 
                 raise ValueError("Input T must be a vector.")
 
@@ -161,18 +161,18 @@ class Combina():
 
         self._b_rel = np.atleast_2d(self._b_rel)
 
-        if not self._b_rel.shape[1] == self._T.size-1:
+        if not self._b_rel.shape[1] == self._t.size-1:
 
             self._b_rel = self._b_rel.T
 
-        if not self._b_rel.shape[1] == self._T.size-1:
+        if not self._b_rel.shape[1] == self._t.size-1:
 
             raise ValueError("One dimension of b_rel must be |T|-1.")
 
 
-    def _validate_input_values_T(self):
+    def _validate_input_values_t(self):
 
-        if not np.all((self._T[1:] - self._T[:-1]) > 0):
+        if not np.all((self._t[1:] - self._t[:-1]) > 0):
 
             raise ValueError("Values in T must be strictly increasing.")
 
@@ -186,23 +186,23 @@ class Combina():
 
     def _determine_number_of_control_intervals(self):
 
-        self._N_b = self._T.size - 1
+        self._n_b = self._t.size - 1
 
 
     def _determine_number_of_controls(self):
 
-        self._N_c = self._b_rel.shape[0]
+        self._n_c = self._b_rel.shape[0]
 
 
     def _validate_input_values(self):
 
-        self._validate_input_values_T()
+        self._validate_input_values_t()
         self._validate_input_values_b_rel()
 
 
     def _validate_input_dimensions(self):
 
-        self._validate_input_dimension_T()
+        self._validate_input_dimension_t()
         self._validate_input_dimension_b_rel()
 
 
@@ -214,7 +214,7 @@ class Combina():
 
     def _compute_time_grid_from_time_points(self):
 
-        self._Tg = self._T[1:] - self._T[:-1]
+        self._dt = self._t[1:] - self._t[:-1]
 
 
     def _numpy_arrays_to_lists(self):
@@ -222,9 +222,9 @@ class Combina():
         # For now, the solver interfaces expect lists, so we need to convert
         # the numpy arrays accordingly
 
-        self._T = self._T.tolist()
+        self._t = self._t.tolist()
         self._b_rel = self._b_rel.tolist()
-        self._Tg = self._Tg.tolist()
+        self._dt = self._dt.tolist()
 
 
     def __init__(self, T, b_rel):
@@ -232,10 +232,10 @@ class Combina():
         r'''
         :raises: ValueError, RuntimeError
 
-        :param T: One-dimensional array that contains the discrete time points
+        :param t: One-dimensional array that contains the discrete time points
                   of the combinatorial integral approximation problem. The
                   values in :math:`T` must be strictly increasing.
-        :type T: numpy.ndarray
+        :type t: numpy.ndarray
 
         :param b_rel: Two-dimensional array that contains the relaxed binary
                       controls to be approximated. One dimension of the array
@@ -247,7 +247,7 @@ class Combina():
 
         self._initialize_combina()
 
-        self._T = T
+        self._t = T
         self._b_rel = b_rel
 
         self._validate_input_data()
@@ -302,7 +302,7 @@ class Combina():
 
         if not min_up_time:
 
-           min_up_time = [0.0] * self._N_c
+           min_up_time = [0.0] * self._n_c
 
         try:
 
@@ -321,7 +321,7 @@ class Combina():
 
         try:
             self._solver = self._available_solvers[solver]( \
-                self._Tg, self._b_rel, self._N_c, self._N_b)
+                self._dt, self._b_rel, self._n_c, self._n_b)
 
         except KeyError:
             raise ValueError("Unknown solver '" + solver + "', valid options are:\n" + \

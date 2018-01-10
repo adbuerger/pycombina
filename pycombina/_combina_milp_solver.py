@@ -14,13 +14,13 @@ class CombinaMilpSolverBaseClass(object):
         return self.b_bin
 
 
-    def __init__(self, Tg, b_rel, N_c, N_b):
+    def __init__(self, dt, b_rel, n_c, n_b):
 
-        self.Tg = Tg
+        self.dt = dt
         self.b_rel = b_rel
         
-        self.N_c = N_c
-        self.N_b = N_b
+        self.n_c = n_c
+        self.n_b = n_b
 
 
     def setup_sigma_max(self, max_switches):
@@ -49,9 +49,9 @@ class CombinaMilpSolverBaseClass(object):
         self.b_bin_sym = {}
         self.s = {}
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
         
-            for j in range(self.N_b-1):
+            for j in range(self.n_b-1):
 
                 self.s[(i,j)] = self.model.addVar(vtype = "C", \
                     name = "s_{0}".format((i,j)))
@@ -59,8 +59,8 @@ class CombinaMilpSolverBaseClass(object):
                 self.b_bin_sym[(i,j)] = self.model.addVar( \
                     vtype = "B", name = "b_bin_{0}".format((i,j)))
 
-            self.b_bin_sym[(i, self.N_b-1)] = self.model.addVar( \
-                vtype = "B", name = "b_bin_{0}".format((i,self.N_b-1)))
+            self.b_bin_sym[(i, self.n_b-1)] = self.model.addVar( \
+                vtype = "B", name = "b_bin_{0}".format((i,self.n_b-1)))
 
         
     def setup_objective(self):
@@ -119,9 +119,9 @@ class CombinaScipSolver(CombinaMilpSolverBaseClass):
 
     def setup_maximum_switching_constraints(self):
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
 
-            for j in range(self.N_b-1):
+            for j in range(self.n_b-1):
 
                 self.model.addCons(self.s[(i,j)] >= self.b_bin_sym[(i,j)] - self.b_bin_sym[(i,j+1)])
                 self.model.addCons(self.s[(i,j)] >= -self.b_bin_sym[(i,j)] + self.b_bin_sym[(i,j+1)])
@@ -133,28 +133,28 @@ class CombinaScipSolver(CombinaMilpSolverBaseClass):
             if sigma_max_i % 2 == 0:
 
                 self.model.addCons(sigma_max_i >= self.b_bin_sym[(i,0)] - \
-                    self.b_bin_sym[(i,self.N_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
-                self.model.addCons(sigma_max_i >= self.b_bin_sym[(i,self.N_b-1)] - \
-                    self.b_bin_sym[(i,0)] + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
+                    self.b_bin_sym[(i,self.n_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
+                self.model.addCons(sigma_max_i >= self.b_bin_sym[(i,self.n_b-1)] - \
+                    self.b_bin_sym[(i,0)] + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
 
             else:
 
                 self.model.addCons(sigma_max_i >= 1 - self.b_bin_sym[(i,0)] - \
-                    self.b_bin_sym[(i,self.N_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
+                    self.b_bin_sym[(i,self.n_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
                 self.model.addCons(sigma_max_i >= self.b_bin_sym[(i,0)] + \
-                    self.b_bin_sym[(i,self.N_b-1)] - 1 + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
+                    self.b_bin_sym[(i,self.n_b-1)] - 1 + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
 
 
     def setup_approximation_inequalites(self):
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
 
-            for j in range(self.N_b):
+            for j in range(self.n_b):
 
                 self.model.addCons(self.eta_sym >= self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
+                    [self.dt[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
                 self.model.addCons(self.eta_sym >= -self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
+                    [self.dt[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
 
 
     def solve_milp(self):
@@ -169,10 +169,10 @@ class CombinaScipSolver(CombinaMilpSolverBaseClass):
 
         self.b_bin = []
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
 
             self.b_bin.append([abs(round(self.model.getVal( \
-                self.b_bin_sym[(i,j)]))) for j in range(self.N_b)])
+                self.b_bin_sym[(i,j)]))) for j in range(self.n_b)])
 
 
 class CombinaGurobiSolver(CombinaMilpSolverBaseClass):
@@ -181,9 +181,9 @@ class CombinaGurobiSolver(CombinaMilpSolverBaseClass):
 
     def setup_maximum_switching_constraints(self):
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
 
-            for j in range(self.N_b-1):
+            for j in range(self.n_b-1):
 
                 self.model.addConstr(self.s[(i,j)] >= self.b_bin_sym[(i,j)] - self.b_bin_sym[(i,j+1)])
                 self.model.addConstr(self.s[(i,j)] >= -self.b_bin_sym[(i,j)] + self.b_bin_sym[(i,j+1)])
@@ -195,28 +195,28 @@ class CombinaGurobiSolver(CombinaMilpSolverBaseClass):
             if sigma_max_i % 2 == 0:
 
                 self.model.addConstr(sigma_max_i >= self.b_bin_sym[(i,0)] - \
-                    self.b_bin_sym[(i,self.N_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
-                self.model.addConstr(sigma_max_i >= self.b_bin_sym[(i,self.N_b-1)] - \
-                    self.b_bin_sym[(i,0)] + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
+                    self.b_bin_sym[(i,self.n_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
+                self.model.addConstr(sigma_max_i >= self.b_bin_sym[(i,self.n_b-1)] - \
+                    self.b_bin_sym[(i,0)] + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
 
             else:
 
                 self.model.addConstr(sigma_max_i >= 1 - self.b_bin_sym[(i,0)] - \
-                    self.b_bin_sym[(i,self.N_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
+                    self.b_bin_sym[(i,self.n_b-1)] + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
                 self.model.addConstr(sigma_max_i >= self.b_bin_sym[(i,0)] + \
-                    self.b_bin_sym[(i,self.N_b-1)] - 1 + self.quicksum([self.s[(i,j)] for j in range(self.N_b-1)]))
+                    self.b_bin_sym[(i,self.n_b-1)] - 1 + self.quicksum([self.s[(i,j)] for j in range(self.n_b-1)]))
 
 
     def setup_approximation_inequalites(self):
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
 
-            for j in range(self.N_b):
+            for j in range(self.n_b):
 
                 self.model.addConstr(self.eta_sym >= self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
+                    [self.dt[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
                 self.model.addConstr(self.eta_sym >= -self.quicksum( \
-                    [self.Tg[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
+                    [self.dt[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
 
 
     def solve_milp(self):
@@ -231,8 +231,8 @@ class CombinaGurobiSolver(CombinaMilpSolverBaseClass):
         
         self.b_bin = []
 
-        for i in range(self.N_c):
+        for i in range(self.n_c):
 
             self.b_bin.append([abs(round(self.model.getVarByName( \
-                self.b_bin_sym[(i,j)].VarName).x)) for j in range(self.N_b)])
+                self.b_bin_sym[(i,j)].VarName).x)) for j in range(self.n_b)])
             

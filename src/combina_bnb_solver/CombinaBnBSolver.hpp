@@ -29,8 +29,8 @@ class CombinaBnBSolver {
 
 public:
 
-    CombinaBnBSolver(const std::vector<double>& Tg, const std::vector<std::vector<double>>& b_rel,
-        const unsigned int& N_c, const unsigned int& N_b);
+    CombinaBnBSolver(const std::vector<double>& dt, const std::vector<std::vector<double>>& b_rel,
+        const unsigned int& n_c, const unsigned int& n_b);
 
     ~CombinaBnBSolver();
 
@@ -72,14 +72,14 @@ private:
 
     void retrieve_solution();
 
-    std::vector<double> Tg;
+    std::vector<double> dt;
     std::vector<std::vector<double>> b_rel;
 
     std::vector<unsigned int> sigma_max;
     std::vector<double> dwell_time;
 
-    unsigned int N_c;
-    unsigned int N_b;
+    unsigned int n_c;
+    unsigned int n_b;
 
     double eta_max;
 

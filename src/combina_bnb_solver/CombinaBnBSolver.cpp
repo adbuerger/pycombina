@@ -21,15 +21,15 @@
 namespace py = pybind11;
 
 
-CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& Tg, 
+CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& dt, 
         const std::vector<std::vector<double>>& b_rel,
-        const unsigned int& N_c, const unsigned int& N_b)
+        const unsigned int& n_c, const unsigned int& n_b)
 
-    : Tg(Tg),
+    : dt(dt),
       b_rel(b_rel),
 
-      N_c(N_c),
-      N_b(N_b),
+      n_c(n_c),
+      n_b(n_b),
 
       eta_max(0.0),
 
@@ -103,24 +103,24 @@ void CombinaBnBSolver::prepare_bnb_data() {
 
 void CombinaBnBSolver::compute_initial_upper_bound() {
 
-    for(unsigned int i = 0; i < N_b; i++) {
+    for(unsigned int i = 0; i < n_b; i++) {
 
-        eta_max += Tg[i];
+        eta_max += dt[i];
     }
 }
 
 
 void CombinaBnBSolver::precompute_sum_of_etas() {
 
-    for(unsigned int i = 0; i < N_c; i++) {
+    for(unsigned int i = 0; i < n_c; i++) {
 
-        sum_eta[0][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1]);
-        sum_eta[1][i][N_b-1] = Tg[N_b-1] * (b_rel[i][N_b-1] - 1.0);
+        sum_eta[0][i][n_b-1] = dt[n_b-1] * (b_rel[i][n_b-1]);
+        sum_eta[1][i][n_b-1] = dt[n_b-1] * (b_rel[i][n_b-1] - 1.0);
 
-        for(int j = N_b-2; j >= 0; j--) {
+        for(int j = n_b-2; j >= 0; j--) {
 
-            sum_eta[0][i][j] = sum_eta[0][i][j+1] + Tg[j] * b_rel[i][j];
-            sum_eta[1][i][j] = sum_eta[1][i][j+1] + Tg[j] * (b_rel[i][j] - 1.0);
+            sum_eta[0][i][j] = sum_eta[0][i][j+1] + dt[j] * b_rel[i][j];
+            sum_eta[1][i][j] = sum_eta[1][i][j+1] + dt[j] * (b_rel[i][j] - 1.0);
         }
     }
 }
@@ -151,7 +151,7 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
 
     active_control = 0;
 
-    while(active_control <= N_c) {
+    while(active_control <= n_c) {
 
         depth_node = 0;
 
@@ -181,20 +181,20 @@ void CombinaBnBSolver::compute_eta_of_current_node(BnBNode * ptr_parent_node) {
     do {
 
         increas_eta_node();
-        time_step += Tg[depth_node];
+        time_step += dt[depth_node];
 
     } while((!std::all_of(dwell_time.begin(), dwell_time.end(), 
-            [=](double dt){return dt <= time_step;})) && (depth_node < N_b));
+            [=](double dt_k){return dt_k <= time_step;})) && (depth_node < n_b));
 }
 
 
 void CombinaBnBSolver::increas_eta_node() {
 
-    for(unsigned int i = 0; i < N_c; i++){
+    for(unsigned int i = 0; i < n_c; i++){
 
         if(sigma_node[i] < sigma_max[i]) {
         
-            eta_node[i] += Tg[depth_node] * 
+            eta_node[i] += dt[depth_node] * 
                 (b_rel[i][depth_node] - double(active_control == i));
         }
     }
@@ -207,7 +207,7 @@ void CombinaBnBSolver::set_lower_bound_of_branch() {
 
     lb_node = 0.0;
 
-    for(unsigned int j = 0; j < N_c; j++){
+    for(unsigned int j = 0; j < n_c; j++){
 
         lb_node = fmax(lb_node, fabs(eta_node[j]));
     }
@@ -250,7 +250,7 @@ void CombinaBnBSolver::run_bnb() {
 
         if(ptr_active_node->get_lb_branch() < eta_max) {
 
-            if(ptr_active_node->get_depth() == N_b) {     
+            if(ptr_active_node->get_depth() == n_b) {     
                 
                 update_best_solution(ptr_active_node);
                 break;
@@ -310,7 +310,7 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     active_control = 0;
 
-    while(active_control < N_c) {
+    while(active_control < n_c) {
 
         sigma_node = ptr_parent_node->get_sigma();
 
@@ -332,7 +332,7 @@ void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     if(sigma_node != sigma_max) {
 
-        active_control = N_c;
+        active_control = n_c;
 
         depth_node = ptr_parent_node->get_depth();
 
@@ -353,7 +353,7 @@ void CombinaBnBSolver::increment_sigma_and_eta_on_active_control_change(BnBNode 
 
         if(sigma_node == sigma_max) {
 
-            depth_node = N_b;
+            depth_node = n_b;
         }
     }
 }
@@ -361,7 +361,7 @@ void CombinaBnBSolver::increment_sigma_and_eta_on_active_control_change(BnBNode 
 
 void CombinaBnBSolver::increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status) {
 
-    if(switched_control != N_c){
+    if(switched_control != n_c){
 
         sigma_node[switched_control]++;
 
@@ -409,7 +409,7 @@ void CombinaBnBSolver::retrieve_solution() {
             node_range_begin = 0;
         }
 
-        if(ptr_active_node->get_active_control() != N_c) {
+        if(ptr_active_node->get_active_control() != n_c) {
 
             for(int i = node_range_end; i >= node_range_begin; i--) {
 
