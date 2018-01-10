@@ -19,9 +19,7 @@
 Combinatorial integral approximation
 ====================================
 
-[Here goes a short description of what combinatorial integral approximation is, what is it used to and where it ca be applied]
-
-tbd
+**pycombina** can solve combinatorial integral approximation problems as they arise, e. g., within efficient solution of Mixed Integer Optimal Control Problems (MIOCPs), see [#f1]_.
 
 
 Problem formulation
@@ -54,7 +52,7 @@ For more information on algorithms and formulations, see [#f1]_.
 .. note::
 
    Running pycombia for large dimensions of :math:`b_\mathrm{rel}` and/or bigger values in :math:`\sigma_\mathrm{max}` might results in high solution times and memory consumption due to exponentially increasing problem complexity.
-   
+
 
 Description of the class ``pycombina.Combina``
 ----------------------------------------------

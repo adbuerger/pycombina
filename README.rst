@@ -31,8 +31,8 @@ pycombina - Combinatorial Integral Approximation
 Combinatorial integral approximation problems can be formulated and solved
 
 1. by a custom Branch-and-Bound algorithm (using fast implementation in C++, recommended),
-2. by SCIP (using an MILP formulation, requires SCIP and pyscipopt)
-3. by Gurobi (using an MILP formulation, requires Gurobi and gurobipy)
+2. by SCIP (using an MILP formulation, requires SCIP and pyscipopt), or
+3. by Gurobi (using an MILP formulation, requires Gurobi and gurobipy),
 
 while the problem setup is widely automatized.
 

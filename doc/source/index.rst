@@ -34,11 +34,13 @@ pycombina - Combinatorial Integral Approximation
     :target: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/commits/master
     :alt: Gitlab CI pipeline status master branch
 
-**pycombina** is a Python module for solving combinatorial integral approximation problems. Combinatorial integral approximation problems can be formulated and solved
+**pycombina** is a Python module for solving combinatorial integral approximation problems.
 
-1. by a custom Branch-and-Bound algorithm (using fast implementation in C++, recommended),
-2. by SCIP (using an MILP formulation, requires SCIP and pyscipopt)
-3. by Gurobi (using an MILP formulation, requires Gurobi and gurobipy)
+Combinatorial integral approximation problems can be formulated and solved
+
+1) by a custom Branch-and-Bound algorithm (using fast implementation in C++, recommended),
+2) by SCIP (using an MILP formulation, requires SCIP and pyscipopt), or
+3) by Gurobi (using an MILP formulation, requires Gurobi and gurobipy),
 
 while the problem setup is widely automatized. 
 
