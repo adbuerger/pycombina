@@ -54,15 +54,7 @@ For more information on algorithms and formulations, see [#f1]_.
 .. note::
 
    Running pycombia for large dimensions of :math:`b_\mathrm{rel}` and/or bigger values in :math:`\sigma_\mathrm{max}` might results in high solution times and memory consumption due to exponentially increasing problem complexity.
-
-
-Preprocessing
--------------
-
-[Once implemented, there goes information on the preprocessing heuristics]
-
-tbd
-
+   
 
 Description of the class ``pycombina.Combina``
 ----------------------------------------------
