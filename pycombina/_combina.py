@@ -19,6 +19,7 @@
 
 import os
 import numpy as np
+import time
 
 class Combina():
 
@@ -28,7 +29,13 @@ class Combina():
 
         '''Discrete time points.'''
 
-        return self._t
+        if hasattr(self, "_t_orig"):
+
+            return self._t_orig
+
+        else:
+
+            return self._t
 
 
     @property
@@ -40,11 +47,11 @@ class Combina():
 
 
     @property
-    def dt(self):
+    def tol(self):
 
-        '''Duration between sequent time points.'''
+        '''If a value b_rel,k,i is smaller than tol it is considered 0, if it is bigger than 1-tol it is considered 1.'''
 
-        return self._dt
+        return self._tol
 
 
     @property
@@ -73,6 +80,19 @@ class Combina():
 
         except AttributeError:
            raise AttributeError("max_switches not yet available, call solve() first.")
+
+
+    @property
+    def dt(self):
+
+        '''Duration between sequent time points.'''
+
+        try:
+
+            return self._dt
+
+        except AttributeError:
+           raise AttributeError("dt not yet available, call solve() first.")
 
 
     @property
@@ -203,16 +223,6 @@ class Combina():
             raise ValueError("All elements of the relaxed binary input must be 0 <= b <= 1.")
 
 
-    def _determine_number_of_control_intervals(self):
-
-        self._n_b = self._t.size - 1
-
-
-    def _determine_number_of_controls(self):
-
-        self._n_c = self._b_rel.shape[0]
-
-
     def _validate_input_values(self):
 
         self._validate_input_values_t()
@@ -231,22 +241,28 @@ class Combina():
         self._validate_input_values()
 
 
+    def _round_input_data_to_tolerance(self):
+
+        self.b_rel[self.b_rel < self._tol] = 0
+        self.b_rel[self.b_rel > 1.0-self._tol] = 1
+
+
+    def _determine_number_of_control_intervals(self):
+
+        self._n_b = self._t.size - 1
+
+
+    def _determine_number_of_controls(self):
+
+        self._n_c = self._b_rel.shape[0]
+
+
     def _compute_time_grid_from_time_points(self):
 
         self._dt = self._t[1:] - self._t[:-1]
 
 
-    def _numpy_arrays_to_lists(self):
-
-        # For now, the solver interfaces expect lists, so we need to convert
-        # the numpy arrays accordingly
-
-        self._t = self._t.tolist()
-        self._b_rel = self._b_rel.tolist()
-        self._dt = self._dt.tolist()
-
-
-    def __init__(self, t, b_rel):
+    def __init__(self, t, b_rel, tol = 1e-4):
 
         r'''
         :raises: ValueError, RuntimeError
@@ -262,18 +278,174 @@ class Combina():
                       must be 0 <= b_k,i <= 1.
         :type b_rel: numpy.ndarray
 
+        :param tol: If a value b_rel,k,i is smaller than tol it is considered 0,
+                    and if it is bigger than 1-tol it is considered 1.
+        :type tol: float
+
         '''
 
         self._initialize_combina()
 
         self._t = t
         self._b_rel = b_rel
+        self._tol = tol
 
         self._validate_input_data()
+        self._round_input_data_to_tolerance()
         self._determine_number_of_controls()
         self._determine_number_of_control_intervals()
         self._compute_time_grid_from_time_points()
-        self._numpy_arrays_to_lists()
+
+
+    def _reduce_element_count(self):
+
+        if not hasattr(self, "_t_orig"):
+
+            self._t_orig = self._t
+            self._b_rel_orig = self._b_rel
+
+        idx_b_rel_reduced = np.ones((self._n_b,), dtype = bool)
+
+        for k in range(self._n_b-5):
+
+            if np.all(np.isin(self._b_rel[:,k:k+5], [0, 1])):
+
+                if np.all(np.all(self._b_rel[:,k:k+5] == \
+                    np.atleast_2d(self._b_rel[:,k]).T, axis=1)):
+
+                    if np.all(idx_b_rel_reduced[k+1] == True):
+                        
+                        idx_b_rel_reduced[k+2] = False
+
+
+        self._t = np.append(self._t[:-1][idx_b_rel_reduced], self._t[-1])
+        self._b_rel = self._b_rel[:, idx_b_rel_reduced]
+
+
+    def _print_reduction_info(self):
+
+        previous_size = self._n_b
+        new_size = self._b_rel.shape[1]
+
+        print("  Problem size reduced from " + str(previous_size) + " to " + \
+            str(new_size) + " unknowns (" + str(round(float(previous_size - new_size)/(previous_size), 2) * 100.0) + " %)")
+
+
+    def reduce_problem_size(self, max_reduction = False):
+
+        reduce_count = True
+        count = 0
+
+        print ("\n- Reducing problem size ...")
+
+        t_start = time.time()
+
+        while reduce_count:
+
+            self._reduce_element_count()
+            self._compute_time_grid_from_time_points()
+            self._print_reduction_info()
+
+            reduce_count = (self._n_b > self._b_rel.shape[1]) and max_reduction
+
+            self._determine_number_of_control_intervals()
+
+        t_end = time.time()
+
+        print("  Problem size reduction finished after " + str(round(t_end - t_start, 5)) + " s")
+
+
+    def _numpy_arrays_to_lists(self):
+
+        # For now, the solver interfaces expect lists, so we need to convert
+        # the numpy arrays accordingly
+
+        self._t = self._t.tolist()
+        self._b_rel = self._b_rel.tolist()
+        self._dt = self._dt.tolist()
+
+
+    def _lists_to_numpy_arrays(self):
+
+        # For now, the solver interfaces return lists, so we need to convert
+        # those into numpy arrays accordingly
+
+        self._t = np.asarray(self._t)
+        self._b_rel = np.asarray(self._b_rel)
+        self._dt = np.asarray(self._dt)
+
+
+    def _validate_max_switches_input(self, max_switches):
+
+        try:
+            if not np.atleast_1d(np.squeeze(max_switches)).ndim == 1:
+                raise ValueError
+
+            max_switches = list(max_switches)
+            self._max_switches = [int(s) for s in max_switches]
+
+            if not len(self._max_switches) == len(self._b_rel):
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("The number of integer values in max_switches must be equal to the number of binary controls.")
+
+
+    def _validate_min_up_time_input(self, min_up_time):
+
+        if not min_up_time:
+
+           min_up_time = [0.0] * self._n_c
+
+        try:
+
+            if not np.atleast_1d(np.squeeze(min_up_time)).ndim == 1:
+                raise ValueError
+
+            min_up_time = list(min_up_time)
+            self._min_up_time = [float(m) for m in min_up_time]
+
+            if not len(self._min_up_time) == len(self._b_rel):
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("The number of values in min_up_time must be equal to the number of binary controls.")
+
+
+    def _solve_combinatorial_integral_approximation_problem(self, solver):
+
+        try:
+            self._solver = self._available_solvers[solver]( \
+                self._dt, self._b_rel, self._n_c, self._n_b)
+
+        except KeyError:
+            raise ValueError("Unknown solver '" + solver + "', valid options are:\n" + \
+                str(self._available_solvers.keys()))
+
+        self._solver.run(max_switches = self._max_switches, min_up_time = self._min_up_time)
+
+
+    def _retrieve_solution(self):
+
+        self._eta = self._solver.get_eta()
+
+        if not hasattr(self, "_t_orig"):
+
+            self._b_bin = np.asarray(self._solver.get_b_bin())
+
+        else:
+
+            b_bin_reduced = np.asarray(self._solver.get_b_bin())
+            self._b_bin = np.full(self._b_rel_orig.shape, np.nan)
+
+            idx_b_bin_reduced = np.in1d(self._t_orig[:-1], self._t[:-1])
+            self._b_bin[:, idx_b_bin_reduced] = b_bin_reduced
+
+            for k, b_bin_k in enumerate(self._b_bin.T):
+
+                if np.all(np.isnan(b_bin_k)):
+
+                    self._b_bin[:,k] = self._b_bin[:,k-1]
 
 
     def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None):
@@ -305,50 +477,11 @@ class Combina():
 
         '''
 
-        try:
-            if not np.atleast_1d(np.squeeze(max_switches)).ndim == 1:
-                raise ValueError
+        self._numpy_arrays_to_lists()
+        self._validate_max_switches_input(max_switches)
+        self._validate_min_up_time_input(min_up_time)
 
-            max_switches = list(max_switches)
-            self._max_switches = [int(s) for s in max_switches]
-
-            if not len(self._max_switches) == len(self._b_rel):
-                raise ValueError
-
-        except ValueError:
-            raise ValueError("The number of integer values in max_switches must be equal to the number of binary controls.")
-
-
-        if not min_up_time:
-
-           min_up_time = [0.0] * self._n_c
-
-        try:
-
-            if not np.atleast_1d(np.squeeze(min_up_time)).ndim == 1:
-                raise ValueError
-
-            min_up_time = list(min_up_time)
-            self._min_up_time = [float(m) for m in min_up_time]
-
-            if not len(self._min_up_time) == len(self._b_rel):
-                raise ValueError
-
-        except ValueError:
-            raise ValueError("The number of values in min_up_time must be equal to the number of binary controls.")
-
-
-        try:
-            self._solver = self._available_solvers[solver]( \
-                self._dt, self._b_rel, self._n_c, self._n_b)
-
-        except KeyError:
-            raise ValueError("Unknown solver '" + solver + "', valid options are:\n" + \
-                str(self._available_solvers.keys()))
-
-        self._solver.run(max_switches = self._max_switches, min_up_time = self._min_up_time)
-
-        self._eta = self._solver.get_eta()
-        self._b_bin = self._solver.get_b_bin()
-
-        self._b_bin = np.asarray(self._b_bin)
+        self._solve_combinatorial_integral_approximation_problem(solver)
+        self._retrieve_solution()
+        self._lists_to_numpy_arrays()
+        self._determine_number_of_control_intervals()
