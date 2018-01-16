@@ -72,7 +72,6 @@ CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& dt,
 
 CombinaBnBSolver::~CombinaBnBSolver(){
 
-    delete ptr_best_node;
 }
 
 
@@ -85,6 +84,7 @@ void CombinaBnBSolver::run(std::vector<unsigned int> max_switches,
     initialize_bnb_queue();
     run_bnb();
     retrieve_solution();
+    clean_up_nodes();
 }
 
 
@@ -114,8 +114,8 @@ void CombinaBnBSolver::prepare_bnb_data() {
 
     t_end = clock();
 
-    py::print("  Preparation phase finished after ", 
-        double(t_end - t_start) / CLOCKS_PER_SEC, " s");
+    py::print("  Preparation phase finished after", 
+        double(t_end - t_start) / CLOCKS_PER_SEC, "s");
 
 }
 
@@ -158,8 +158,8 @@ void CombinaBnBSolver::initialize_bnb_queue() {
 
     t_end = clock();
 
-    py::print("  Initialization finished after ", 
-        double(t_end - t_start) / CLOCKS_PER_SEC, " s");
+    py::print("  Initialization finished after", 
+        double(t_end - t_start) / CLOCKS_PER_SEC, "s");
 }
 
 
@@ -244,6 +244,7 @@ void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
         ptr_child_node = new BnBNode(ptr_parent_node, active_control, 
             sigma_node, depth_node, eta_node, lb_node);
         bnb_node_queue.push(ptr_child_node);
+        bnb_node_index.push_back(ptr_child_node);
     }
 }
 
@@ -283,15 +284,15 @@ void CombinaBnBSolver::run_bnb() {
 
         else {
 
-            delete_node(ptr_active_node);
+            // delete_node(ptr_active_node);
 
         }
     }
 
     t_end = clock();
 
-    py::print("  Branch and Bound finished after ", 
-        double(t_end - t_start) / CLOCKS_PER_SEC," s");
+    py::print("  Branch and Bound finished after", 
+        double(t_end - t_start) / CLOCKS_PER_SEC,"s");
 }
 
 
@@ -306,7 +307,7 @@ void CombinaBnBSolver::set_new_best_node(BnBNode * ptr_active_node) {
 
     if (ptr_best_node) {
 
-        delete_node(ptr_best_node);
+        // delete_node(ptr_best_node);
     }
 
     ptr_best_node = ptr_active_node;
@@ -317,8 +318,8 @@ void CombinaBnBSolver::set_new_best_node(BnBNode * ptr_active_node) {
 
 void CombinaBnBSolver::display_solution_update() {
 
-    py::print("  Solution with eta_max = ",
-        ptr_best_node->get_lb_branch(), " at iteration ", n_iterations);
+    py::print("  Solution with eta_max =",
+        ptr_best_node->get_lb_branch(), "at iteration", n_iterations);
 }
 
 
@@ -442,9 +443,29 @@ void CombinaBnBSolver::retrieve_solution() {
 
     t_end = clock();
 
-    py::print("  Reconstructing the solution finished after ", 
-        double(t_end - t_start) / CLOCKS_PER_SEC , " s");
+    py::print("  Reconstructing the solution finished after", 
+        double(t_end - t_start) / CLOCKS_PER_SEC , "s");
 
+}
+
+void CombinaBnBSolver::clean_up_nodes() {
+
+    clock_t t_start;
+    clock_t t_end;
+
+    py::print("\n- Cleaning up nodes ...");
+
+    t_start = clock();
+
+    for(auto bnb_node: bnb_node_index){
+
+        delete_node(bnb_node);
+    }
+
+    t_end = clock();
+
+    py::print("  Cleaning up finished after", 
+        double(t_end - t_start) / CLOCKS_PER_SEC, "s");
 }
 
 

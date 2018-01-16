@@ -75,7 +75,7 @@ void BnBNode::child_node_becomes_inactive() {
 
     if(n_active_children == 0) {
 
-        delete this;
+        // delete this;
     }
 
     // return; // why did Jung add this return-statement?

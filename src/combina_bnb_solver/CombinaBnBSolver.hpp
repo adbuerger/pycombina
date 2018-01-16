@@ -90,6 +90,7 @@ private:
     void delete_node(BnBNode * ptr_active_node);
 
     void retrieve_solution();
+    void clean_up_nodes();
 
     std::vector<double> dt;
     std::vector<std::vector<double>> b_rel;
@@ -107,6 +108,7 @@ private:
 
     std::priority_queue<BnBNode*, std::vector<BnBNode*>, 
         BnBNodeComparison> bnb_node_queue;
+    std::vector<BnBNode*> bnb_node_index;
     BnBNode * ptr_best_node;
 
     std::vector<std::vector<unsigned int>> b_bin;
