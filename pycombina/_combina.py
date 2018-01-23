@@ -282,6 +282,8 @@ class Combina():
                     and if it is bigger than 1-tol it is considered 1.
         :type tol: float
 
+        Specifies a combinatorial integral approximation problem.
+
         '''
 
         self._initialize_combina()
@@ -297,7 +299,32 @@ class Combina():
         self._compute_time_grid_from_time_points()
 
 
-    def _reduce_element_count(self):
+    def _remove_controls(self):
+
+        self._inactive_controls = []
+
+        for k, b_rel_k in enumerate(self._b_rel):
+
+            if np.all(b_rel_k == 0):
+
+                self._inactive_controls.append(k)
+
+        self._active_controls = [idx for idx in range(self._n_c) if idx not in self._inactive_controls]
+
+        self._b_rel = self._b_rel[self._active_controls, :]
+
+
+    def _remove_inactive_controls(self):
+
+        print ("\n  - Removing inactive controls ...")
+
+        self._remove_controls()
+        self._determine_number_of_controls()
+
+        print ("    Removed "+ str(len(self._inactive_controls)) + " inactive control(s).")
+
+
+    def _reduce_nodes(self):
 
         if not hasattr(self, "_t_orig"):
 
@@ -322,37 +349,63 @@ class Combina():
         self._b_rel = self._b_rel[:, idx_b_rel_reduced]
 
 
-    def _print_reduction_info(self):
+    def _print_node_reduction_info(self):
 
         previous_size = self._n_b
         new_size = self._b_rel.shape[1]
 
-        print("  Problem size reduced from " + str(previous_size) + " to " + \
-            str(new_size) + " unknowns (" + str(round(float(previous_size - new_size)/(previous_size), 2) * 100.0) + " %)")
+        print("    Node count reduced from " + str(previous_size) + " to " + \
+            str(new_size) + " (" + str(round(float(new_size - previous_size)/(previous_size), 2) * 100.0) + " %)")
 
 
-    def reduce_problem_size(self, max_reduction = False):
+    def _reduce_node_count(self):
 
         reduce_count = True
         count = 0
+
+        print ("\n  - Reducing node count ...")
+
+        while reduce_count:
+
+            self._reduce_nodes()
+            self._compute_time_grid_from_time_points()
+            self._print_node_reduction_info()
+
+            reduce_count = (self._n_b > self._b_rel.shape[1])
+
+            self._determine_number_of_control_intervals()
+
+
+    def reduce_problem_size(self):
+
+        r'''
+
+        This function reduces the problem size in order to facilitate lower
+        computation times and memory consumption by doing the following:
+
+        1.) Reduction of number of controls
+            Controls that are inactive during the whole time horizon
+            are removed from the problem formulation.
+        2.) Reduction of time grid size
+            Successive time point with equal values for b_rel,k and all values
+            b_rel,k = {0, 1} are grouped to reduced the time grid size.
+
+        The values available after the solution of the integral approximation
+        problem are automatically adjusted to match the original time grid and
+        number of controls, again.
+
+        '''
 
         print ("\n- Reducing problem size ...")
 
         t_start = time.time()
 
-        while reduce_count:
-
-            self._reduce_element_count()
-            self._compute_time_grid_from_time_points()
-            self._print_reduction_info()
-
-            reduce_count = (self._n_b > self._b_rel.shape[1]) and max_reduction
-
-            self._determine_number_of_control_intervals()
+        self._remove_inactive_controls()
+        self._reduce_node_count()
 
         t_end = time.time()
 
-        print("  Problem size reduction finished after " + str(round(t_end - t_start, 5)) + " s")
+        print("\n  Problem size reduction finished after " + str(round(t_end - t_start, 5)) + " s")
 
 
     def _numpy_arrays_to_lists(self):
@@ -381,7 +434,10 @@ class Combina():
             if not np.atleast_1d(np.squeeze(max_switches)).ndim == 1:
                 raise ValueError
 
-            max_switches = list(max_switches)
+            if hasattr(self, "_active_controls"):
+                max_switches = list(np.asarray(max_switches)[self._active_controls])
+            else:
+                max_switches = list(np.asarray(max_switches))
             self._max_switches = [int(s) for s in max_switches]
 
             if not len(self._max_switches) == len(self._b_rel):
@@ -402,7 +458,10 @@ class Combina():
             if not np.atleast_1d(np.squeeze(min_up_time)).ndim == 1:
                 raise ValueError
 
-            min_up_time = list(min_up_time)
+            if hasattr(self, "_active_controls"):
+                min_up_time = list(np.asarray(min_up_time)[self._active_controls])
+            else:
+                min_up_time = list(np.asarray(min_up_time))
             self._min_up_time = [float(m) for m in min_up_time]
 
             if not len(self._min_up_time) == len(self._b_rel):
@@ -447,6 +506,13 @@ class Combina():
 
                     self._b_bin[:,k] = self._b_bin[:,k-1]
 
+        if hasattr(self, "_inactive_controls"):
+
+            b_bin_all_controls = np.zeros((self._n_c + len(self._inactive_controls), self._b_bin.shape[1]))
+            b_bin_all_controls[self._active_controls, :] = self._b_bin
+
+            self._b_bin = b_bin_all_controls
+
 
     def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None):
 
@@ -474,6 +540,9 @@ class Combina():
                             pass in between two switching actions. If None,
                             no minimum time is considered.
         :type min_up_time: None, list, numpy.ndarray
+
+        Solve the combinatorial integral approximation problem considering
+        the specified options.
 
         '''
 
