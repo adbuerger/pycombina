@@ -2,8 +2,6 @@
  *
  * BnBNodeComparison.cpp
  *
- * -*- coding: utf-8 -*-
- *
  * This file is part of pycombina.
  *
  * Copyright 2017-2018 Adrian Bürger, Clemens Zeile, Sebastian Sager, Moritz Diehl
