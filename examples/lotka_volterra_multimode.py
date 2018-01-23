@@ -1,9 +1,27 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# This file is part of pycombina.
+#
+# Copyright 2017-2018 Adrian Bürger, Clemens Zeile, Sebastian Sager, Moritz Diehl
+#
+# pycombina is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pycombina is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import pylab as pl
 from pycombina import Combina
 
-# pl.close("all")
+pl.close("all")
 
 data = pl.loadtxt("data/mmlotka_nt_12000_400.csv", delimiter = " ", skiprows = 1)
 
@@ -16,20 +34,32 @@ max_switches = [2, 2, 2]
 
 combina = Combina(t, b_rel)
 combina.solve(solver = "bnb", max_switches = max_switches)
-b_bin_full = combina.b_bin
+b_bin_orig = combina.b_bin
 
-combina.reduce_problem_size(max_reduction = True)
+combina.reduce_problem_size()
 combina.solve(solver = "bnb", max_switches = max_switches)
 b_bin_red = combina.b_bin
 
+
 f, (ax1, ax2, ax3) = pl.subplots(3, sharex = True)
-ax1.step(combina.t[:-1], b_bin_full[0,:], color = "r", where = "post")
-ax1.scatter(t[:-1], b_bin_red[0,:], color = "r", marker = "x")
-ax1.scatter(t[:-1], b_rel[:,0], color = "k", marker = "x")
-ax2.step(combina.t[:-1], b_bin_full[1,:], color = "g", where = "post")
-ax2.scatter(t[:-1], b_bin_red[1,:], color = "g", marker = "x")
-ax2.scatter(t[:-1], b_rel[:,1], color = "k", marker = "x")
-ax3.step(combina.t[:-1], b_bin_full[2,:], color = "b", where = "post")
-ax3.scatter(t[:-1], b_bin_red[2,:], color = "b", marker = "x")
-ax3.scatter(t[:-1], b_rel[:,2], color = "k", marker = "x")
+
+ax1.step(combina.t[:-1], b_bin_orig[0,:], label = "b_bin_orig", color = "C0", where = "post")
+ax1.step(t[:-1], b_bin_red[0,:], label = "b_bin_red", color = "C0", linestyle = "dashed", where = "post")
+ax1.scatter(t[:-1], b_rel[:,0], label = "b_rel", color = "C0", marker = "x")
+ax1.legend(loc = "upper left")
+ax1.set_ylabel("b_0")
+
+ax2.step(combina.t[:-1], b_bin_orig[1,:], label = "b_bin_orig", color = "C1", where = "post")
+ax2.step(t[:-1], b_bin_red[1,:], label = "b_bin_red", color = "C1", linestyle = "dashed", where = "post")
+ax2.scatter(t[:-1], b_rel[:,1], label = "b_rel", color = "C1", marker = "x")
+ax2.legend(loc = "upper left")
+ax2.set_ylabel("b_1")
+
+ax3.step(combina.t[:-1], b_bin_orig[2,:], label = "b_bin_orig", color = "C2", where = "post")
+ax3.step(t[:-1], b_bin_red[2,:], label = "b_bin_red", color = "C2", linestyle = "dashed", where = "post")
+ax3.scatter(t[:-1], b_rel[:,2], label = "b_rel", color = "C2", marker = "x")
+ax3.legend(loc = "lower left")
+ax3.set_ylabel("b_2")
+ax3.set_xlabel("t")
+
 pl.show()
