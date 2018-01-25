@@ -18,8 +18,8 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import numpy as np
 import time
+import numpy as np
 
 class Combina():
 
@@ -29,13 +29,7 @@ class Combina():
 
         '''Discrete time points.'''
 
-        if hasattr(self, "_t_orig"):
-
-            return self._t_orig
-
-        else:
-
-            return self._t
+        return self._t
 
 
     @property
@@ -296,7 +290,98 @@ class Combina():
         self._round_input_data_to_tolerance()
         self._determine_number_of_controls()
         self._determine_number_of_control_intervals()
-        self._compute_time_grid_from_time_points()
+
+
+    def _raise_error_if_reduced_problem(self):
+
+        if hasattr(self, "_t_orig") or hasattr(self, "_inactive_controls"):
+
+            raise NotImplementedError('''
+Locking the initial binary control sequence for a reduced problem is not possible
+yet. Please lock the control sequence first, and then reduce the problem.
+''')
+
+
+    def _raise_error_if_already_locked(self):
+
+        if hasattr(self, "_t_orig") or hasattr(self, "_inactive_controls"):
+
+            raise NotImplementedError("The initial binary control sequence has already been locked.")
+
+
+    def _validate_input_dt_lock(self, dt_lock):
+
+        try:
+            self._dt_lock = float(dt_lock)
+
+        except ValueError, TypeError:
+            raise ValueError("Input dt_lock must be a scalar value.")
+
+
+    def _validate_input_b_bin_lock(self, b_bin_lock):
+
+        try:
+
+            if not np.atleast_1d(np.squeeze(b_bin_lock)).ndim == 1:
+                raise ValueError
+
+            b_bin_lock = list(np.atleast_1d(np.squeeze(b_bin_lock)))
+            b_bin_lock = [int(b) for b in b_bin_lock]
+
+            if not len(b_bin_lock) == self._n_c:
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("The number of values in b_bin_lock must be equal to the number of binary controls.")
+
+        if not np.all(np.isin(b_bin_lock, [0, 1])):
+
+            raise ValueError("All elements of b_bin_lock must be either 0 or 1.")
+
+        self._b_bin_lock = np.atleast_2d(b_bin_lock)
+
+
+    def _lock_initial_binary_sequence(self):
+
+        self._t_locked = self._t[self._t <= self._dt_lock]
+
+        self._b_rel = self._b_rel[:, self._t[:-1] > self._dt_lock]
+        self._t =  self._t[self._t > self._dt_lock]
+
+
+    def lock_initial_binary_sequence(self, dt_lock, b_bin_lock):
+
+        r'''
+        :raises: NotImplementedError
+
+        :param dt_lock: Specifies the duration of the locked initial sequence.
+        :type dt_lock: float
+
+        :param b_bin_lock: Array of binary values that specifies the values
+                             of the controls over the locked initial sequence.
+        :type b_bin_lock: list, numpy.ndarray
+
+        This function can be used to lock the binary values of the solution,
+        of the combinatorial integral approximation problem, starting from the
+        initial time point and for all time points <= dt_lock, to a certain
+        configuration b_bin_lock.
+
+        This functionality is necessary to, e. g., preserve compliance with
+        required min-up-times within MPC applications.
+
+        '''
+
+        print ("\n- Locking initial binary sequence ...")
+
+        self._raise_error_if_reduced_problem()
+        self._raise_error_if_already_locked()
+        self._validate_input_dt_lock(dt_lock)
+        self._validate_input_b_bin_lock(b_bin_lock)
+        self._lock_initial_binary_sequence()
+        self._determine_number_of_control_intervals()
+
+        print ("  Locked the values of the binary solution to be \n    " \
+            + str(self._b_bin_lock)) + " for all time points <= " + str(self._dt_lock)
 
 
     def _remove_controls(self):
@@ -368,7 +453,6 @@ class Combina():
         while reduce_count:
 
             self._reduce_nodes()
-            self._compute_time_grid_from_time_points()
             self._print_node_reduction_info()
 
             reduce_count = (self._n_b > self._b_rel.shape[1])
@@ -512,6 +596,13 @@ class Combina():
             b_bin_all_controls[self._active_controls, :] = self._b_bin
 
             self._b_bin = b_bin_all_controls
+            self._t = self._t_orig
+
+        if hasattr(self, "_dt_lock"):
+
+            self._t = np.concatenate([self._t_locked, self._t])
+            self._b_bin = np.concatenate([np.repeat( \
+                self._b_bin_lock, self._t_locked.size, 0).T, self._b_bin], 1)
 
 
     def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None):
@@ -546,6 +637,7 @@ class Combina():
 
         '''
 
+        self._compute_time_grid_from_time_points()
         self._numpy_arrays_to_lists()
         self._validate_max_switches_input(max_switches)
         self._validate_min_up_time_input(min_up_time)
