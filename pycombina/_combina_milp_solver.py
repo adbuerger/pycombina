@@ -33,7 +33,7 @@ class CombinaMilpSolverBaseClass(object):
         return self.b_bin
 
 
-    def __init__(self, dt, b_rel, n_c, n_b):
+    def __init__(self, dt, b_rel, n_c, n_b, *args):
 
         self.dt = dt
         self.b_rel = b_rel
