@@ -73,6 +73,8 @@ private:
     void add_initial_nodes_to_bnb_queue();
     void compute_eta_of_current_node(BnBNode * ptr_parent_node);
     void increas_eta_node();
+    void increment_sigma_on_init_active_control_change();
+    void increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status);
     void set_lower_bound_of_branch();
     void add_node_to_bnb_queue(BnBNode * ptr_parent_node);
 
@@ -84,7 +86,6 @@ private:
     void display_solution_update();
     void add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node);
     void increment_sigma_and_eta_on_active_control_change(BnBNode * ptr_active_node);
-    void increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status);
     void delete_node(BnBNode * ptr_active_node);
 
     void retrieve_solution();
@@ -98,6 +99,8 @@ private:
 
     unsigned int n_c;
     unsigned int n_b;
+
+    unsigned int init_active_control;
 
     double eta_max;
 

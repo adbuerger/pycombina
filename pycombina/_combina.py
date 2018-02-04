@@ -557,6 +557,14 @@ yet. Please lock the control sequence first, and then reduce the problem.
 
     def _solve_combinatorial_integral_approximation_problem(self, solver):
 
+        if not np.all(np.isin(self._min_up_time, [0])) and solver is not "bnb":
+
+            raise NotImplementedError("Min up times are only supported for solver bnb.")
+
+        if hasattr(self, "_dt_lock") and solver is not "bnb":
+
+            raise NotImplementedError("Locking of initial binary sequences is only supported for solver bnb.")
+
         try:
             self._solver = self._available_solvers[solver]( \
                 self._dt, self._b_rel, self._n_c, self._n_b)

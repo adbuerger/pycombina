@@ -40,13 +40,16 @@ namespace py = pybind11;
 
 CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& dt, 
         const std::vector<std::vector<double>>& b_rel,
-        const unsigned int& n_c, const unsigned int& n_b)
+        const unsigned int& n_c, const unsigned int& n_b,
+        const unsigned int& init_active_control)
 
     : dt(dt),
       b_rel(b_rel),
 
       n_c(n_c),
       n_b(n_b),
+
+      init_active_control(init_active_control),
 
       eta_max(0.0),
 
@@ -173,6 +176,7 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
         depth_node = 0;
 
         compute_eta_of_current_node(NULL);
+        increment_sigma_on_initially_active_control_change();
         set_lower_bound_of_branch();
         add_node_to_bnb_queue(NULL);
 
@@ -217,6 +221,35 @@ void CombinaBnBSolver::increas_eta_node() {
     }
 
     depth_node++;
+}
+
+
+void CombinaBnBSolver::increment_sigma_on_init_active_control_change() {
+
+    if(active_control != init_active_control){
+
+        increment_sigma_and_eta(init_active_control, 0);
+        increment_sigma_and_eta(active_control, 1);
+
+        if(sigma_node == sigma_max) {
+
+            depth_node = n_b;
+        }
+    }
+}
+
+
+void CombinaBnBSolver::increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status) {
+
+    if(switched_control != n_c){
+
+        sigma_node[switched_control]++;
+
+        if(sigma_node[switched_control] == sigma_max[switched_control]) {
+
+            eta_node[switched_control] += sum_eta[control_status][switched_control][depth_node];
+        }
+    }
 }
 
 
@@ -372,20 +405,6 @@ void CombinaBnBSolver::increment_sigma_and_eta_on_active_control_change(BnBNode 
         if(sigma_node == sigma_max) {
 
             depth_node = n_b;
-        }
-    }
-}
-
-
-void CombinaBnBSolver::increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status) {
-
-    if(switched_control != n_c){
-
-        sigma_node[switched_control]++;
-
-        if(sigma_node[switched_control] == sigma_max[switched_control]) {
-
-            eta_node[switched_control] += sum_eta[control_status][switched_control][depth_node];
         }
     }
 }
