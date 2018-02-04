@@ -47,7 +47,7 @@ class CombinaBnBSolver {
 public:
 
     CombinaBnBSolver(const std::vector<double>& dt, const std::vector<std::vector<double>>& b_rel,
-        const unsigned int& n_c, const unsigned int& n_b);
+        const unsigned int& n_c, const unsigned int& n_b, const unsigned int& init_active_control);
 
     ~CombinaBnBSolver();
 

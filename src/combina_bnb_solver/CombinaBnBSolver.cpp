@@ -174,9 +174,10 @@ void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
     while(active_control <= n_c) {
 
         depth_node = 0;
+        std::fill(sigma_node.begin(), sigma_node.end(), 0);
 
         compute_eta_of_current_node(NULL);
-        increment_sigma_on_initially_active_control_change();
+        increment_sigma_on_init_active_control_change();
         set_lower_bound_of_branch();
         add_node_to_bnb_queue(NULL);
 
@@ -226,14 +227,17 @@ void CombinaBnBSolver::increas_eta_node() {
 
 void CombinaBnBSolver::increment_sigma_on_init_active_control_change() {
 
-    if(active_control != init_active_control){
+    if (init_active_control != n_c){
 
-        increment_sigma_and_eta(init_active_control, 0);
-        increment_sigma_and_eta(active_control, 1);
+        if(active_control != init_active_control){
 
-        if(sigma_node == sigma_max) {
+            increment_sigma_and_eta(init_active_control, 0);
+            increment_sigma_and_eta(active_control, 1);
 
-            depth_node = n_b;
+            if(sigma_node == sigma_max) {
+
+                depth_node = n_b;
+            }
         }
     }
 }

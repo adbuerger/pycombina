@@ -566,8 +566,19 @@ yet. Please lock the control sequence first, and then reduce the problem.
             raise NotImplementedError("Locking of initial binary sequences is only supported for solver bnb.")
 
         try:
+
+            init_active_control = np.where(np.squeeze(self._b_bin_lock) == 1)[0][0]
+
+        except AttributeError:
+
+            # if no control is initially active, set the value to n_c, which in
+            # the bnb solver is interpreted as no initially active binary
+
+            init_active_control = self._n_c
+
+        try:
             self._solver = self._available_solvers[solver]( \
-                self._dt, self._b_rel, self._n_c, self._n_b)
+                self._dt, self._b_rel, self._n_c, self._n_b, init_active_control)
 
         except KeyError:
             raise ValueError("Unknown solver '" + solver + "', valid options are:\n" + \
