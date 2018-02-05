@@ -274,12 +274,25 @@ void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     BnBNode * ptr_child_node = NULL;
 
-    if(lb_node < eta_max) {
+    bool add_node = true;
 
-        ptr_child_node = new BnBNode(ptr_parent_node, active_control, 
-            sigma_node, depth_node, eta_node, lb_node);
-        bnb_node_queue.push(ptr_child_node);
-        bnb_node_index.push_back(ptr_child_node);
+    for(unsigned int i; i < n_c; i++) {
+
+        if(sigma_node[i] > sigma_max[i]) {
+
+            add_node = false;
+        }
+    }
+
+    if(add_node) {
+
+        if(lb_node < eta_max) {
+
+            ptr_child_node = new BnBNode(ptr_parent_node, active_control, 
+                sigma_node, depth_node, eta_node, lb_node);
+            bnb_node_queue.push(ptr_child_node);
+            bnb_node_index.push_back(ptr_child_node);
+        }
     }
 }
 
