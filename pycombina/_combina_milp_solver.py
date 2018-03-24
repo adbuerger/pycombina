@@ -109,6 +109,7 @@ class CombinaMilpSolverBaseClass(object):
         self.setup_objective()
         self.setup_maximum_switching_constraints()
         self.setup_approximation_inequalites()
+        self.setup_sos1_constraints()
 
 
     @abstractmethod
