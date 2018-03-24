@@ -63,6 +63,13 @@ class CombinaScipSolver(CombinaMilpSolverBaseClass):
                     [self.dt[k] * (self.b_rel[i][k] - self.b_bin_sym[(i,k)]) for k in range(j+1)]))
 
 
+    def setup_sos1_constraints(self):
+
+        for j in range(self.n_b):
+
+            self.model.addCons(1 >= self.quicksum([self.b_bin_sym[(i,j)] for i in range(self.n_c)]))
+
+
     def solve_milp(self):
 
         # self.model.setRealParam("numerics/lpfeastol", 1e-17)
