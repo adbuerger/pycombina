@@ -156,7 +156,7 @@ class Combina():
 
         try:
             import pyscipopt
-            from _combina_milp_solver import CombinaScipSolver
+            from _combina_scip_solver import CombinaScipSolver
             self._available_solvers["scip"] = CombinaScipSolver
         except ImportError:
             if self._prompt_init_messages:
@@ -164,7 +164,7 @@ class Combina():
 
         try:
             import gurobipy
-            from _combina_milp_solver import CombinaGurobiSolver
+            from _combina_gurobi_solver import CombinaGurobiSolver
             self._available_solvers["gurobi"] = CombinaGurobiSolver
         except ImportError:
             if self._prompt_init_messages:
