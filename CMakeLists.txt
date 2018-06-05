@@ -36,4 +36,4 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3")
+set(CMAKE_CXX_FLAGS "-Wpedantic -Wextra -O3")

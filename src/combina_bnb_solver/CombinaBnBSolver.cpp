@@ -276,7 +276,7 @@ void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
 
     bool add_node = true;
 
-    for(unsigned int i; i < n_c; i++) {
+    for(unsigned int i = 0; i < n_c; i++) {
 
         if(sigma_node[i] > sigma_max[i]) {
 
