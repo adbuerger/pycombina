@@ -343,10 +343,12 @@ yet. Please lock the control sequence first, and then reduce the problem.
 
     def _lock_initial_binary_sequence(self):
 
-        self._t_locked = self._t[self._t <= self._dt_lock]
+        self._t_locked = self._t[self._t < self._dt_lock]
 
-        self._b_rel = self._b_rel[:, self._t[:-1] > self._dt_lock]
-        self._t =  self._t[self._t > self._dt_lock]
+        self._b_rel = self._b_rel[:, self._t[:-1] >= self._dt_lock]
+        self._t =  self._t[self._t >= self._dt_lock]
+
+        print "Using new version!"
 
 
     def lock_initial_binary_sequence(self, dt_lock, b_bin_lock):
@@ -381,7 +383,7 @@ yet. Please lock the control sequence first, and then reduce the problem.
         self._determine_number_of_control_intervals()
 
         print ("  Locked the values of the binary solution to be \n    " \
-            + str(self._b_bin_lock)) + " for all time points <= " + str(self._dt_lock)
+            + str(self._b_bin_lock)) + " for all time points < " + str(self._dt_lock)
 
 
     def _remove_controls(self):
