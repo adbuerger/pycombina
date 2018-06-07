@@ -535,7 +535,7 @@ yet. Please lock the control sequence first, and then reduce the problem.
 
     def _validate_min_up_time_input(self, min_up_time):
 
-        if not min_up_time:
+        if min_up_time is None:
 
            min_up_time = [0.0] * self._n_c
 
@@ -557,11 +557,39 @@ yet. Please lock the control sequence first, and then reduce the problem.
             raise ValueError("The number of values in min_up_time must be equal to the number of binary controls.")
 
 
+    def _validate_w_b_input(self, w_b):
+
+        if w_b is None:
+
+           w_b = [1.0] * self._n_c
+
+        try:
+
+            if not np.atleast_1d(np.squeeze(w_b)).ndim == 1:
+                raise ValueError
+
+            w_b = list(np.asarray(w_b))
+            
+            self._w_b = [float(w) for w in w_b]
+
+            if not len(self._w_b) == len(self._b_rel):
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("The number of values in w_b must be equal to the number of binary controls.")
+
+
     def _solve_combinatorial_integral_approximation_problem(self, solver):
 
         if not np.all(np.isin(self._min_up_time, [0])) and solver is not "bnb":
 
             raise NotImplementedError("Min up times are only supported for solver bnb.")
+
+
+        if not np.all(np.isin(self._w_b, [1.0])) and solver is not "bnb":
+
+            raise NotImplementedError("Use of different weightings for binary controls is only supported for solver bnb.")
+
 
         if hasattr(self, "_dt_lock") and solver is not "bnb":
 
@@ -580,7 +608,7 @@ yet. Please lock the control sequence first, and then reduce the problem.
 
         try:
             self._solver = self._available_solvers[solver]( \
-                self._dt, self._b_rel, self._n_c, self._n_b, init_active_control)
+                self._dt, self._b_rel, self._n_c, self._n_b, self._w_b, init_active_control)
 
         except KeyError:
             raise ValueError("Unknown solver '" + solver + "', valid options are:\n" + \
@@ -626,7 +654,7 @@ yet. Please lock the control sequence first, and then reduce the problem.
                 self._b_bin_lock, self._t_locked.size, 0).T, self._b_bin], 1)
 
 
-    def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None):
+    def solve(self, solver = 'bnb', max_switches = [2], min_up_time = None, w_b = None):
 
         r'''
         :raises: ValueError, NotImplementedError
@@ -653,6 +681,10 @@ yet. Please lock the control sequence first, and then reduce the problem.
                             no minimum time is considered.
         :type min_up_time: None, list, numpy.ndarray
 
+        :param w_b: Weighting of the controls for the integral approximation
+                    problem.
+        :type w_b: None, list, numpy.ndarray
+
         Solve the combinatorial integral approximation problem considering
         the specified options.
 
@@ -662,6 +694,7 @@ yet. Please lock the control sequence first, and then reduce the problem.
         self._numpy_arrays_to_lists()
         self._validate_max_switches_input(max_switches)
         self._validate_min_up_time_input(min_up_time)
+        self._validate_w_b_input(w_b)
 
         self._solve_combinatorial_integral_approximation_problem(solver)
         self._retrieve_solution()
