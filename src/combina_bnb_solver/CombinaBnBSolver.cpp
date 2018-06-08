@@ -101,6 +101,7 @@ void CombinaBnBSolver::set_sigma_max(std::vector<unsigned int> n_max_switches) {
 void CombinaBnBSolver::set_dwell_time(std::vector<double> min_up_time) {
 
     dwell_time = min_up_time;
+    dwell_time.push_back(0.0);
 }
 
 
@@ -199,6 +200,10 @@ void CombinaBnBSolver::compute_eta_of_current_node(BnBNode * ptr_parent_node) {
 
             dwell_time_fulfilled = dwell_time[active_control];
         }
+
+    } else if (active_control == init_active_control) {
+
+        dwell_time_fulfilled = dwell_time[active_control];
     }
 
     eta_node = eta_parent;

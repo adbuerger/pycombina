@@ -363,13 +363,17 @@ yet. Please lock the control sequence first, and then reduce the problem.
                              of the controls over the locked initial sequence.
         :type b_bin_lock: list, numpy.ndarray
 
-        This function can be used to lock the binary values of the solution,
+        This function can be used to lock the binary values of the solution
         of the combinatorial integral approximation problem, starting from the
-        initial time point and for all time points <= dt_lock, to a certain
+        initial time point and for all time points < dt_lock, to a certain
         configuration b_bin_lock.
 
         This functionality is necessary to, e. g., preserve compliance with
         required min-up-times within MPC applications.
+
+        Specifying dt_lock = 0.0 will not result in locking of an initial
+        sequence, but the values specified within b_bin_lock will be
+        considered as initially active controls.
 
         '''
 
