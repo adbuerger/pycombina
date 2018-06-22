@@ -41,9 +41,3 @@ class RoundingSurSolver(RoundingSolverBaseClass):
                 mysum = mysum - 1.0 * self.dt[i]
             
             self.eta = mysum
-
-    def retrieve_solutions(self):
-        
-        self.b_bin = self.b_bin
-        self.eta = self.eta
-

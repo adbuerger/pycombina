@@ -49,13 +49,6 @@ class RoundingSolverBaseClass(object):
         pass
 
 
-    @abstractmethod
-    def retrieve_solutions(self):
-        
-        pass
-
-
     def run(self):
 
         self.run_rounding_approximation()
-        self.retrieve_solutions()
