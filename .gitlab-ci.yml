@@ -8,7 +8,7 @@ testing:
     before_script:
       - apt-get clean && apt-get update
       - apt-get install -y cmake g++ python-dev python-pip
-      - pip install numpy unittest2
+      - pip install numpy unittest2 mock
 
     script:
       - python setup.py test
