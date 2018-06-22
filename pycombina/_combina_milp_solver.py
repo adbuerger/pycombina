@@ -106,6 +106,10 @@ class CombinaMilpSolverBaseClass(object):
 
         self.initialize_model()
         self.setup_model_variables()
+
+        # Here try/except still to add for Gurobi version 6.5
+        #self.model.update()
+        
         self.setup_objective()
         self.setup_maximum_switching_constraints()
         self.setup_approximation_inequalites()

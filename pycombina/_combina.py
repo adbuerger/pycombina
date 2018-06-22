@@ -155,6 +155,13 @@ class Combina():
                 print("- pycombina C++ extension not built, BnB solver disabled.")
 
         try:
+            from _combina_sur_solver import CombinaSurSolver
+            self._available_solvers["sur"] = CombinaSurSolver
+        except ImportError:
+            if self._prompt_init_messages:
+                print("- pycombina SUR extension not built, SUR solver disabled.")
+
+        try:
             import pyscipopt
             from _combina_scip_solver import CombinaScipSolver
             self._available_solvers["scip"] = CombinaScipSolver
