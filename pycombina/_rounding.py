@@ -30,11 +30,11 @@ class Rounding(BinaryApproximationBaseClass):
         self._available_solvers = {}
 
         try:
-            from _combina_sur_solver import CombinaSurSolver
-            self._available_solvers["sur"] = CombinaSurSolver
+            from _rounding_sur_solver import RoundingSurSolver
+            self._available_solvers["sur"] = RoundingSurSolver
         except ImportError:
             if self._prompt_init_messages:
-                print("- pycombina SUR extension not found, SUR solver disabled.")
+                print("- pycombina Sum-Up-Rounding extension not found, SUR solver disabled.")
 
         if not self._available_solvers:
             raise RuntimeError("No solvers available for pycombina.")
@@ -53,7 +53,7 @@ class Rounding(BinaryApproximationBaseClass):
         self._solver.run()
 
 
-    def solve(self, solver = 'sur', max_switches = [2], min_up_time = None, w_b = None):
+    def solve(self, solver = 'sur'):
 
         r'''
         :raises: ValueError, NotImplementedError
