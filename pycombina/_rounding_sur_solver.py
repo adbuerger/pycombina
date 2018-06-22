@@ -25,19 +25,19 @@ class RoundingSurSolver(RoundingSolverBaseClass):
 
         self.b_bin = []
     
-        mysum = 0.0
+        eta = 0.0
 
         for i in range(self.n_b):
             
-            mysum = mysum + self.b_rel[0][i] * self.dt[i] 
+            eta = eta + self.b_rel[0][i] * self.dt[i] 
 
-            if (mysum < 0.5 * self.dt[i]):
+            if (eta < 0.5 * self.dt[i]):
             
                 self.b_bin.append(0) 
             
             else:
             
                 self.b_bin.append(1)
-                mysum = mysum - 1.0 * self.dt[i]
+                eta = eta - 1.0 * self.dt[i]
             
-            self.eta = mysum
+            self.eta = eta
