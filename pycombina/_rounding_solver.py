@@ -17,32 +17,45 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
-from _combina_rounding_solver import CombinaRoundingSolverBaseClass
+from abc import ABCMeta, abstractmethod, abstractproperty
 
-class CombinaSurSolver(CombinaRoundingSolverBaseClass):
+class RoundingSolverBaseClass(object):
 
-    #Standard Sum Up Rounding, just 1D and decoupled!
+    __metaclass__ = ABCMeta
 
 
+    def get_eta(self):
 
-    def solve_sur(self):
+        return self.eta
 
-    
-        self.b_bin = []
-    
-        mysum=0.0
 
-        for i in range(self.n_b):
-            mysum = mysum + self.b_rel[0][i]*self.dt[i] 
+    def get_b_bin(self):
 
-            if (mysum < 0.5*self.dt[i]):
-                self.b_bin.append(0) 
-            else:
-                self.b_bin.append(1)
-                mysum = mysum - 1*self.dt[i]
-            self.eta=mysum
+        return self.b_bin
 
+
+    def __init__(self, dt, b_rel, n_c, n_b):
+
+        self.dt = dt
+        self.b_rel = b_rel
+        
+        self.n_c = n_c
+        self.n_b = n_b
+
+
+    @abstractmethod
+    def run_rounding_approximation(self):
+        
+        pass
+
+
+    @abstractmethod
     def retrieve_solutions(self):
-        self.b_bin=self.b_bin
-        self.eta=self.eta
+        
+        pass
 
+
+    def run(self):
+
+        self.run_rounding_approximation()
+        self.retrieve_solutions()
