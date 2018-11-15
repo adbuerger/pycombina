@@ -1,5 +1,5 @@
 /*
- * BnBNode.hpp
+ * Node.hpp
  *
  * This file is part of pycombina.
  *
@@ -30,46 +30,60 @@
 #include <algorithm>
 #endif
 
-class BnBNode {
-    friend class BnBNodeComparison;
+class Node {
+    friend class NodeComparison;
 
 public:
 
-    BnBNode(BnBNode * const ptr_parent_node, unsigned int const active_control,
-            std::vector<unsigned int> const sigma, unsigned int const depth,
-            std::vector<double> const eta_node, double const lb_branch);
+    Node(Node* const parent_node,
+
+         unsigned int const b_active,
+         unsigned int const n_c,
+         std::vector<unsigned int> const sigma,
+         std::vector<double> const min_down_time,
+         
+         unsigned int const depth,
+         std::vector<double> const eta,
+         double const lb);
+
+    ~Node();
 
 
-    ~BnBNode();
+    void set_child(Node* child_node, unsigned int b_active);
+    bool no_children_left();
 
-    void child_node_becomes_active();
-    void child_node_becomes_inactive();
-
+    Node* get_parent();
+    std::vector<Node*> get_child_nodes();
+    
+    unsigned int get_b_active();
     unsigned int get_max_sigma() const;
-
-    // get-functions
-
-    BnBNode* get_ptr_parent_node();
-    unsigned int get_active_control();
-    double get_duration();
     std::vector<unsigned int> get_sigma();
+    std::vector<double> get_min_down_time();
+
     unsigned int get_depth();
-    std::vector<double> get_eta_node();
-    double get_lb_branch();
+    std::vector<double> get_eta();
+    double get_lb();
 
-    int get_n_active_children();
 
+    #ifndef NDEBUG
+    static unsigned int n_add;
+    static unsigned int n_delete_self;
+    static unsigned int n_delete_other;
+    #endif
 
 private:
 
-    BnBNode * ptr_parent_node;
-    unsigned int active_control;
-    double duration;
-    std::vector<unsigned int> sigma;
-    unsigned int depth;
-    std::vector<double> eta_node;
-    double lb_branch;
+    Node* parent_node;
+    std::vector<Node*> child_nodes;
 
-    unsigned int n_active_children;
+    unsigned int b_active;
+    std::vector<unsigned int> sigma;
+    std::vector<double> min_down_time;
+
+    unsigned int depth;
+    std::vector<double> eta;
+    double lb;
+
 
 };
+

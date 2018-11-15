@@ -36,11 +36,23 @@ namespace py = pybind11;
 PYBIND11_MODULE(_combina_bnb_solver, m)
 {
     py::class_<CombinaBnBSolver>(m, "CombinaBnBSolver")
-        .def(py::init<const std::vector<double> &, const std::vector<std::vector<double>> &, 
-            const unsigned int&, const unsigned int&, const std::vector<double>&, const unsigned int&>())
+        .def(py::init<std::vector<double> const &,
+                      std::vector<std::vector<double>> const &,
+
+                      unsigned int const &,
+                      unsigned int const &,
+
+                      std::vector<unsigned int> const &,
+                      std::vector<double> const &,
+                      std::vector<double> const &,
+                      std::vector<std::vector<unsigned int>> &,
+
+                      std::vector<double> const &,
+                      unsigned int const &>())
 
         .def("get_eta", &CombinaBnBSolver::get_eta)
         .def("get_b_bin", &CombinaBnBSolver::get_b_bin)
 
-        .def("run", &CombinaBnBSolver::run, py::arg("max_switches"), py::arg("min_up_time"));
+        .def("run", &CombinaBnBSolver::run, py::arg("use_warm_start"),
+                                      py::arg("bnb_opts"));
 }

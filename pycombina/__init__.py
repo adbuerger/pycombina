@@ -1,2 +1,3 @@
-from _combina import Combina
-from _rounding import Rounding
+from _binary_approximation import BinApprox
+from _combina_milp import CombinaMILP
+from _combina_bnb import CombinaBnB

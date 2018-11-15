@@ -20,56 +20,59 @@
  * along with pycombina. If not, see <http://www.gnu.org/licenses/>.
  *
  */
- 
-#include <iostream>
-
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
-#include <algorithm>
-#endif
-
-#ifndef BNB_NODE_H
-#define BNB_NODE_H
-#include "BnBNode.hpp"
-#endif
 
 #include "CombinaBnBSolver.hpp"
 
 namespace py = pybind11;
 
+#ifndef NDEBUG
+unsigned int Node::n_add = 0;
+unsigned int Node::n_delete_self = 0;
+unsigned int Node::n_delete_other = 0;
+#endif
 
-CombinaBnBSolver::CombinaBnBSolver(const std::vector<double>& dt, 
-        const std::vector<std::vector<double>>& b_rel,
-        const unsigned int& n_c, const unsigned int& n_b,
-        const std::vector<double>& w_b,
-        const unsigned int& init_active_control)
+CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt, 
+                       std::vector<std::vector<double>> const & b_rel,
+                       
+                       unsigned int const & n_c,
+                       unsigned int const & n_t,
+
+                       std::vector<unsigned int> const & n_max_switches,
+                       std::vector<double> const & min_up_time,
+                       std::vector<double> const & min_down_time,
+                       std::vector<std::vector<unsigned int>> const & b_valid,
+
+                       std::vector<double> const & min_down_time_pre,
+                       unsigned int const & b_active_pre)
 
     : dt(dt),
       b_rel(b_rel),
 
-      w_b(w_b),
-
       n_c(n_c),
-      n_b(n_b),
+      n_t(n_t),
 
-      init_active_control(init_active_control),
+      n_max_switches(n_max_switches),
+      min_up_time(min_up_time),
+      min_down_time(min_down_time),
+      b_valid(b_valid),
 
-      eta_max(0.0),
+      min_down_time_pre(min_down_time_pre),
+      b_active_pre(b_active_pre),
 
-      ptr_best_node(NULL),
+      sum_eta(2, std::vector<std::vector<double>> (b_rel.size(), 
+        std::vector<double> (b_rel[0].size()))),
+
+      best_node(nullptr),
+      ub_bnb(0.0),
 
       b_bin(b_rel.size(), std::vector<unsigned int>(b_rel[0].size(), 0)),
-
-      eta_node(b_rel.size()),
-      
-      eta_parent(b_rel.size()),
-      sigma_node(b_rel.size()),
-
-      sum_eta(2, std::vector<std::vector<double>> (b_rel.size(), std::vector<double> (b_rel[0].size()))),
-
-      n_iterations(0)
+  
+      n_iter(0),
+      n_ub_updates(0)
 
 {
+
+    prepare_bnb();
 
 }
 
@@ -79,57 +82,19 @@ CombinaBnBSolver::~CombinaBnBSolver(){
 }
 
 
-void CombinaBnBSolver::run(std::vector<unsigned int> max_switches, 
-    std::vector<double> min_up_time) {
-
-    set_sigma_max(max_switches);
-    set_dwell_time(min_up_time);
-    prepare_bnb_data();
-    initialize_bnb_queue();
-    run_bnb();
-    retrieve_solution();
-    clean_up_nodes();
-}
-
-
-void CombinaBnBSolver::set_sigma_max(std::vector<unsigned int> n_max_switches) {
-
-    sigma_max = n_max_switches;
-}
-
-
-void CombinaBnBSolver::set_dwell_time(std::vector<double> min_up_time) {
-
-    dwell_time = min_up_time;
-    dwell_time.push_back(0.0);
-}
-
-
-void CombinaBnBSolver::prepare_bnb_data() {
-
-    clock_t t_start;
-    clock_t t_end;
-
-    py::print("\n- Preparing data for Branch and Bound ...");
-
-    t_start = clock();
+void CombinaBnBSolver::prepare_bnb() {
 
     compute_initial_upper_bound();
     precompute_sum_of_etas();
-
-    t_end = clock();
-
-    py::print("  Preparation phase finished after", 
-        double(t_end - t_start) / CLOCKS_PER_SEC, "s");
 
 }
 
 
 void CombinaBnBSolver::compute_initial_upper_bound() {
 
-    for(unsigned int i = 0; i < n_b; i++) {
+    for(unsigned int i = 0; i < n_t; i++) {
 
-        eta_max += dt[i];
+        ub_bnb += dt[i];
     }
 }
 
@@ -138,10 +103,10 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
 
     for(unsigned int i = 0; i < n_c; i++) {
 
-        sum_eta[0][i][n_b-1] = dt[n_b-1] * (b_rel[i][n_b-1]);
-        sum_eta[1][i][n_b-1] = dt[n_b-1] * (b_rel[i][n_b-1] - 1.0);
+        sum_eta[0][i][n_t-1] = dt[n_t-1] * (b_rel[i][n_t-1]);
+        sum_eta[1][i][n_t-1] = dt[n_t-1] * (b_rel[i][n_t-1] - 1.0);
 
-        for(int j = n_b-2; j >= 0; j--) {
+        for(int j = n_t-2; j >= 0; j--) {
 
             sum_eta[0][i][j] = sum_eta[0][i][j+1] + dt[j] * b_rel[i][j];
             sum_eta[1][i][j] = sum_eta[1][i][j+1] + dt[j] * (b_rel[i][j] - 1.0);
@@ -149,321 +114,327 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
     }
 }
 
+void CombinaBnBSolver::run(bool use_warm_start, 
+    std::map<std::string, std::string> bnb_opts) {
 
-void CombinaBnBSolver::initialize_bnb_queue() {
+    add_initial_nodes_to_queue();
+    run_bnb();
+    retrieve_solution();
 
-    clock_t t_start;
-    clock_t t_end;
+    #ifndef NDEBUG
+    py::print("Debug information:");
+    py::print("Nodes added:", Node::n_add);
+    py::print("Nodes deleted:", Node::n_delete_self + Node::n_delete_other);
+    py::print("Nodes not deleted:", Node::n_add - (Node::n_delete_self + Node::n_delete_other));
+    py::print("Nodes deleted by themselves:", Node::n_delete_self);
+    py::print("Nodes deleted by BnB:", Node::n_delete_other);
+    #endif
 
-    py::print("\n- Initializing Branch and Bound queue ...");
-
-    t_start = clock();
-
-    add_initial_nodes_to_bnb_queue();
-
-    t_end = clock();
-
-    py::print("  Initialization finished after", 
-        double(t_end - t_start) / CLOCKS_PER_SEC, "s");
 }
 
+void CombinaBnBSolver::add_initial_nodes_to_queue() {
 
-void CombinaBnBSolver::add_initial_nodes_to_bnb_queue() {
+    unsigned int b_active_parent(b_active_pre);
+    double lb_parent(0.0);
 
-    std::fill(eta_parent.begin(), eta_parent.end(), 0);
-    lb_parent = 0.0;
+    for(unsigned int b_active_child = 0; b_active_child < n_c; b_active_child++) {
 
-    active_control = 0;
+        std::vector<double> eta_child(n_c, 0.0);
+        std::vector<unsigned int> sigma_child(n_c, 0);
+        std::vector<double> min_down_time_child = min_down_time_pre;
+        unsigned int depth_child(0);
+        double lb_child(0.0);
 
-    while(active_control <= n_c) {
+        if (!control_activation_forbidden(b_active_child, b_active_parent, 
+            sigma_child, min_down_time_child)) {
 
-        depth_node = 0;
-        std::fill(sigma_node.begin(), sigma_node.end(), 0);
+            compute_child_node_properties(b_active_child, b_active_parent, 
+                eta_child, sigma_child, min_down_time_child,
+                lb_parent, &lb_child, &depth_child);
 
-        compute_eta_of_current_node(NULL);
-        increment_sigma_on_init_active_control_change();
-        set_lower_bound_of_branch();
-        add_node_to_bnb_queue(NULL);
-
-        active_control++;
-    }
-}
-
-
-void CombinaBnBSolver::compute_eta_of_current_node(BnBNode * ptr_parent_node) {
-
-    double dwell_time_fulfilled(0.0);
-
-    if (ptr_parent_node) {
-
-        if(active_control == ptr_parent_node->get_active_control()){
-
-            dwell_time_fulfilled = dwell_time[active_control];
+            add_child_node_to_queue(nullptr, b_active_child, sigma_child, 
+                min_down_time_child, depth_child, eta_child, lb_child);
         }
-
-    } else if (active_control == init_active_control) {
-
-        dwell_time_fulfilled = dwell_time[active_control];
     }
+}
 
-    eta_node = eta_parent;
+
+bool CombinaBnBSolver::control_activation_forbidden(
+    unsigned int const b_active_child, unsigned int const b_active_parent,
+    std::vector<unsigned int> const & sigma_child,
+    std::vector<double> const & min_down_time_parent) {
+
+    return (sigma_child[b_active_child] >= n_max_switches[b_active_child] ||
+        (b_active_parent < n_c && sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
+        min_down_time_parent[b_active_child] > 0.0);
+}
+
+
+void CombinaBnBSolver::compute_child_node_properties(
+    unsigned int const b_active_child, unsigned int const b_active_parent,
+    std::vector<double> & eta_child, std::vector<unsigned int> & sigma_child,
+    std::vector<double> & min_down_time_child,
+    double const lb_parent, double* lb_child, unsigned int* depth_child) {
+
+    double min_up_time_fulfilled(0.0);
+
+    if (b_active_child == b_active_parent) {
+        min_up_time_fulfilled = min_up_time[b_active_child];
+    }
 
     do {
 
-        increas_eta_node();
-        dwell_time_fulfilled += dt[depth_node];
-        depth_node++;
+        for(unsigned int i = 0; i < n_c; i++){
 
-
-    } while((dwell_time[active_control] > dwell_time_fulfilled) && (depth_node < n_b));
-}
-
-
-void CombinaBnBSolver::increas_eta_node() {
-
-    for(unsigned int i = 0; i < n_c; i++){
-
-        if(sigma_node[i] < sigma_max[i]) {
-        
-            eta_node[i] += w_b[i] * dt[depth_node] * 
-                (b_rel[i][depth_node] - double(active_control == i));
-        }
-    }
-}
-
-
-void CombinaBnBSolver::increment_sigma_on_init_active_control_change() {
-
-    if (init_active_control != n_c){
-
-        if(active_control != init_active_control){
-
-            increment_sigma_and_eta(init_active_control, 0);
-            increment_sigma_and_eta(active_control, 1);
-
-            if(sigma_node == sigma_max) {
-
-                depth_node = n_b;
+            if(sigma_child[i] < n_max_switches[i]) {
+            
+                eta_child[i] += dt[*depth_child] * 
+                    (b_rel[i][*depth_child] - double(b_active_child == i));
+                
             }
+
+            min_down_time_child[i] -= dt[*depth_child];
+        }
+
+        min_up_time_fulfilled += dt[*depth_child];
+        (*depth_child)++;
+
+
+    } while((min_up_time[b_active_child] > min_up_time_fulfilled) && (*depth_child < n_t));
+
+
+    if ((b_active_child != b_active_parent) && (b_active_parent < n_c)) {
+
+        sigma_child[b_active_parent]++;
+        sigma_child[b_active_child]++;
+
+        if (sigma_child[b_active_parent] == n_max_switches[b_active_parent]) {
+
+            eta_child[b_active_parent] += sum_eta[0][b_active_parent][*depth_child];
+        }
+
+        if (sigma_child[b_active_child] == n_max_switches[b_active_child]) {
+
+            eta_child[b_active_child] += sum_eta[1][b_active_child][*depth_child];
+        }
+
+        if (sigma_child == n_max_switches) {
+
+            *depth_child = n_t;
         }
     }
-}
-
-
-void CombinaBnBSolver::increment_sigma_and_eta(unsigned int switched_control, unsigned int control_status) {
-
-    if(switched_control != n_c){
-
-        sigma_node[switched_control]++;
-
-        if(sigma_node[switched_control] == sigma_max[switched_control]) {
-
-            eta_node[switched_control] += w_b[switched_control] * 
-                sum_eta[control_status][switched_control][depth_node];
-        }
-    }
-}
-
-
-void CombinaBnBSolver::set_lower_bound_of_branch() {
-
-    lb_node = 0.0;
 
     for(unsigned int j = 0; j < n_c; j++){
 
-        lb_node = fmax(lb_node, fabs(eta_node[j]));
+        *lb_child = fmax(*lb_child, fabs(eta_child[j]));
     }
 
-    lb_node = fmax(lb_parent, fabs(lb_node));
+    *lb_child = fmax(lb_parent, fabs(*lb_child));
 }
 
 
-void CombinaBnBSolver::add_node_to_bnb_queue(BnBNode * ptr_parent_node) {
+bool CombinaBnBSolver::add_child_node_to_queue(Node* parent_node, 
+    unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
+    std::vector<double> const & min_down_time_child, double const depth_child,
+    std::vector<double> const & eta_child, double const lb_child) {
 
-    BnBNode * ptr_child_node = NULL;
+    Node* child_node(nullptr);
 
-    bool add_node = true;
+    for (unsigned int i = 0; i < n_c; i++) {
 
-    for(unsigned int i = 0; i < n_c; i++) {
+        if(sigma_child[i] > n_max_switches[i]) {
 
-        if(sigma_node[i] > sigma_max[i]) {
-
-            add_node = false;
+            throw std::runtime_error( 
+                std::string("Node switches exceeds n_max-switches, this should not happen.") 
+                + std::string("\n Please contact the developers."));
         }
     }
 
-    if(add_node) {
+    if(lb_child < ub_bnb) {
 
-        if(lb_node < eta_max) {
+        child_node = new Node(parent_node, b_active_child, n_c, sigma_child,
+            min_down_time_child, depth_child, eta_child, lb_child);
 
-            ptr_child_node = new BnBNode(ptr_parent_node, active_control, 
-                sigma_node, depth_node, eta_node, lb_node);
-            bnb_node_queue.push(ptr_child_node);
-            bnb_node_index.push_back(ptr_child_node);
-        }
+        node_queue.push(child_node);
+
+        #ifndef NDEBUG
+        Node::n_add++;
+        #endif
+
+        return true;
     }
+
+    return false;
 }
 
 
 void CombinaBnBSolver::run_bnb() {
 
     clock_t t_start;
+    clock_t t_update;
     clock_t t_end;
-
-    py::print("\n- Running Branch and Bound ...");
+    
+    py::print("-----------------------------------------------------------");
+    py::print("                                                           ");
+    py::print("                 pycombina Branch and Bound                ");
+    py::print("                                                           ");
 
     t_start = clock();
 
+    Node * active_node;
 
-    BnBNode * ptr_active_node;
+    while (!node_queue.empty()) {
 
-    while (!bnb_node_queue.empty()) {
+        n_iter++;
 
-        n_iterations++;
+        active_node = node_queue.top();
+        node_queue.pop();
 
-        ptr_active_node = bnb_node_queue.top();
-        bnb_node_queue.pop();
+        if(active_node->get_lb() < ub_bnb) {
 
-        if(ptr_active_node->get_lb_branch() < eta_max) {
-
-            if(ptr_active_node->get_depth() == n_b) {     
+            if(active_node->get_depth() == n_t) {     
                 
-                update_best_solution(ptr_active_node);
-                break;
+                t_update = clock();
+                update_best_solution(active_node, 
+                    double(t_update - t_start) / CLOCKS_PER_SEC);
+                // break;
             }
 
             else {
 
-                add_child_nodes_to_bnb_queue(ptr_active_node);
+                add_nodes_to_queue(active_node);
             }
         }
 
         else {
 
-            // delete_node(ptr_active_node);
-
+            delete_node(active_node);
         }
     }
 
     t_end = clock();
 
-    py::print("  Branch and Bound finished after", 
-        double(t_end - t_start) / CLOCKS_PER_SEC,"s");
+
+    std::string s_n_iter = std::to_string(n_iter);
+    s_n_iter.insert(0, 12 - s_n_iter.length(), ' ');
+
+    std::ostringstream streamObj;
+
+    streamObj << std::scientific << "\n    Best solution:    " << best_node->get_lb()
+        << "\n    Total iterations: " << s_n_iter 
+        << "\n    Total runtime:    " << double(t_end - t_start) / CLOCKS_PER_SEC
+        << " s\n";
+
+    py::print(streamObj.str());
+    py::print("-----------------------------------------------------------");
+
 }
 
 
-void CombinaBnBSolver::update_best_solution(BnBNode * ptr_active_node) {
+void CombinaBnBSolver::update_best_solution(Node* active_node, double runtime) {
 
-    set_new_best_node(ptr_active_node);
-    display_solution_update();
+    set_new_best_node(active_node);
+    display_solution_update(runtime);
 }
 
 
-void CombinaBnBSolver::set_new_best_node(BnBNode * ptr_active_node) {
+void CombinaBnBSolver::set_new_best_node(Node* active_node) {
 
-    if (ptr_best_node) {
+    if (best_node) {
 
-        // delete_node(ptr_best_node);
+        delete_node(best_node);
     }
 
-    ptr_best_node = ptr_active_node;
-    eta_max = ptr_best_node->get_lb_branch();
+    best_node = active_node;
+    ub_bnb = best_node->get_lb();
+
+    n_ub_updates++;
 
 }
 
 
-void CombinaBnBSolver::display_solution_update() {
+void CombinaBnBSolver::display_solution_update(double runtime) {
 
-    py::print("  Solution with eta_max =",
-        ptr_best_node->get_lb_branch(), "at iteration", n_iterations);
-}
+    if (n_ub_updates % 10 == 1) {
 
+        py::print("-----------------------------------------------------------");
+        py::print("    Iteration |  Upper bound |  Branches  |  Runtime (s)   ");
+        py::print("-----------------------------------------------------------");
+    }
 
-void CombinaBnBSolver::add_child_nodes_to_bnb_queue(BnBNode * ptr_parent_node) {
+    std::string s_n_iter = std::to_string(n_iter);
+    s_n_iter.insert(0, 10 - s_n_iter.length(), ' ');
+
+    std::string s_node_queue_size = std::to_string(node_queue.size());
+    s_node_queue_size.insert(0, 10 - s_node_queue_size.length(), ' ');
+
+    std::ostringstream streamObj;
+
+    streamObj << std::scientific << "   " << s_n_iter
+        << " | " << best_node->get_lb() << " | "
+        << s_node_queue_size << " | " << runtime;
     
-    eta_parent = ptr_parent_node->get_eta_node();
-    lb_parent = ptr_parent_node->get_lb_branch();
+    py::print(streamObj.str());
 
-    active_control = 0;
-
-    while(active_control < n_c) {
-
-        sigma_node = ptr_parent_node->get_sigma();
-
-        if(sigma_node[active_control] < sigma_max[active_control]) {
-
-            depth_node = ptr_parent_node->get_depth();
-
-            compute_eta_of_current_node(ptr_parent_node);
-            increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
-            set_lower_bound_of_branch();
-            add_node_to_bnb_queue(ptr_parent_node);
-
-        }
-        
-        active_control++;
-    }
-
-    sigma_node = ptr_parent_node->get_sigma();
-
-    if(sigma_node != sigma_max) {
-
-        active_control = n_c;
-
-        depth_node = ptr_parent_node->get_depth();
-
-        compute_eta_of_current_node(ptr_parent_node);
-        increment_sigma_and_eta_on_active_control_change(ptr_parent_node);
-        set_lower_bound_of_branch();
-        add_node_to_bnb_queue(ptr_parent_node);
-    }
 }
 
 
-void CombinaBnBSolver::increment_sigma_and_eta_on_active_control_change(BnBNode * ptr_parent_node) {
+void CombinaBnBSolver::add_nodes_to_queue(Node* parent_node) {
 
-    if(active_control != ptr_parent_node->get_active_control()){
+    unsigned int b_active_parent = parent_node->get_b_active();
+    double lb_parent = parent_node->get_lb();
+    bool has_children(false);
 
-        increment_sigma_and_eta(ptr_parent_node->get_active_control(), 0);
-        increment_sigma_and_eta(active_control, 1);
+    for(unsigned int b_active_child = 0; b_active_child < n_c; b_active_child++){
 
-        if(sigma_node == sigma_max) {
+        std::vector<double> eta_child = parent_node->get_eta();
+        std::vector<unsigned int> sigma_child = parent_node->get_sigma();
+        std::vector<double> min_down_time_child = parent_node->get_min_down_time();
+        unsigned int depth_child = parent_node->get_depth();
+        double lb_child = parent_node->get_lb();
 
-            depth_node = n_b;
+        bool child_added(false);
+
+        if (!control_activation_forbidden(b_active_child,
+            b_active_parent, sigma_child, min_down_time_child)) {
+
+            compute_child_node_properties(b_active_child, b_active_parent, 
+                eta_child, sigma_child, min_down_time_child,
+                lb_parent, &lb_child, &depth_child);
+
+            child_added = add_child_node_to_queue(parent_node, b_active_child, sigma_child, 
+                min_down_time_child, depth_child, eta_child, lb_child);
+
+        }
+
+        if (child_added) {
+
+            has_children = true;
         }
     }
-}
 
+    if (!has_children) {
 
-void CombinaBnBSolver::delete_node(BnBNode * ptr_active_node) {
-
-    delete ptr_active_node;
-    ptr_active_node = NULL;
+        delete_node(parent_node);
+    }
 }
 
 
 void CombinaBnBSolver::retrieve_solution() {
 
-    clock_t t_start;
-    clock_t t_end;
-
     int node_range_end;
     int node_range_begin;
 
-    py::print("\n- Retrieving Branch and Bound solution ...");
+    Node* active_node = best_node;
 
-    t_start = clock();
+    while(active_node){
 
-    BnBNode * ptr_active_node = ptr_best_node;
+        node_range_end = (active_node->get_depth() - 1);
+        Node* preceding_node = active_node->get_parent();
 
-    while(ptr_active_node){
+        if(preceding_node) {
 
-        node_range_end = (ptr_active_node->get_depth() - 1);
-        BnBNode * ptr_preceding_node = ptr_active_node->get_ptr_parent_node();
-
-        if(ptr_preceding_node) {
-
-            node_range_begin = ptr_preceding_node->get_depth();
+            node_range_begin = preceding_node->get_depth();
         }
 
         else {
@@ -471,51 +442,32 @@ void CombinaBnBSolver::retrieve_solution() {
             node_range_begin = 0;
         }
 
-        if(ptr_active_node->get_active_control() != n_c) {
+        for(int i = node_range_end; i >= node_range_begin; i--) {
 
-            for(int i = node_range_end; i >= node_range_begin; i--) {
-
-                b_bin[ptr_active_node->get_active_control()][i] = 1;
-            }
+            b_bin[active_node->get_b_active()][i] = 1;
         }
 
-        ptr_active_node = ptr_preceding_node;
+        active_node = preceding_node;
     }
-
-
-    t_end = clock();
-
-    py::print("  Reconstructing the solution finished after", 
-        double(t_end - t_start) / CLOCKS_PER_SEC , "s");
-
-}
-
-void CombinaBnBSolver::clean_up_nodes() {
-
-    clock_t t_start;
-    clock_t t_end;
-
-    py::print("\n- Cleaning up nodes ...");
-
-    t_start = clock();
-
-    for(auto bnb_node: bnb_node_index){
-
-        delete_node(bnb_node);
-    }
-
-    t_end = clock();
-
-    py::print("  Cleaning up finished after", 
-        double(t_end - t_start) / CLOCKS_PER_SEC, "s");
+    
+    delete_node(best_node);
 }
 
 
-// get-functions
+void CombinaBnBSolver::delete_node(Node *& active_node) {
+
+    delete active_node;
+    active_node = nullptr;
+
+    #ifndef NDEBUG
+    Node::n_delete_other++; 
+    #endif
+}
+
 
 double CombinaBnBSolver::get_eta() {
 
-    return eta_max;
+    return ub_bnb;
 }
 
 

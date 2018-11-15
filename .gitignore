@@ -11,3 +11,5 @@ gurobi.log
 implementierung_seminar/
 doc/build/*
 dist/
+callgrind.out*
+massif.out*

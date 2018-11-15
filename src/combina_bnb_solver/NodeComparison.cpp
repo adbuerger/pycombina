@@ -1,6 +1,6 @@
 /*
  *
- * BnBNodeComparison.hpp
+ * NodeComparison.cpp
  *
  * This file is part of pycombina.
  *
@@ -21,18 +21,24 @@
  *
  */
 
-#ifndef BNB_NODE_H
-#define BNB_NODE_H
-#include "BnBNode.hpp"
-#endif
+#include "NodeComparison.hpp"
 
-class BnBNodeComparison {
 
-public:
+bool NodeComparison::operator() (Node const *node_a, Node const *node_b) const {
 
-    BnBNodeComparison() {};
 
-    ~BnBNodeComparison() {};
+    if(node_a->depth != node_b->depth) {
 
-    bool operator() (BnBNode const *node_a, BnBNode const *node_b) const;
-};
+        return (node_a->depth < node_b->depth);
+    }
+
+    else if(node_a->lb != node_b->lb) {
+
+        return(node_a->lb > node_b->lb);
+    }
+    
+    else {
+
+        return(node_a->get_max_sigma() > node_b->get_max_sigma());
+    }
+}
