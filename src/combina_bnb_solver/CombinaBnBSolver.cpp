@@ -68,7 +68,10 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       b_bin(b_rel.size(), std::vector<unsigned int>(b_rel[0].size(), 0)),
   
       n_iter(0),
-      n_ub_updates(0)
+      n_print(0),
+
+      terminate(false),
+      user_interrupt(false)
 
 {
 
@@ -114,21 +117,21 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
     }
 }
 
-void CombinaBnBSolver::run(bool use_warm_start, 
-    std::map<std::string, std::string> bnb_opts) {
 
+void CombinaBnBSolver::set_solver_settings(std::map<std::string, double> bnb_opts) {
+
+    max_iter = (long)bnb_opts["max_iter"];
+    max_cpu_time = bnb_opts["max_cpu_time"];
+}
+
+
+void CombinaBnBSolver::run(bool use_warm_start, 
+    std::map<std::string, double> bnb_opts) {
+
+    set_solver_settings(bnb_opts);
     add_initial_nodes_to_queue();
     run_bnb();
     retrieve_solution();
-
-    #ifndef NDEBUG
-    py::print("Debug information:");
-    py::print("Nodes added:", Node::n_add);
-    py::print("Nodes deleted:", Node::n_delete_self + Node::n_delete_other);
-    py::print("Nodes not deleted:", Node::n_add - (Node::n_delete_self + Node::n_delete_other));
-    py::print("Nodes deleted by themselves:", Node::n_delete_self);
-    py::print("Nodes deleted by BnB:", Node::n_delete_other);
-    #endif
 
 }
 
@@ -272,6 +275,7 @@ void CombinaBnBSolver::run_bnb() {
 
     clock_t t_start;
     clock_t t_update;
+    clock_t t_current;
     clock_t t_end;
     
     py::print("-----------------------------------------------------------");
@@ -285,19 +289,23 @@ void CombinaBnBSolver::run_bnb() {
 
     while (!node_queue.empty()) {
 
-        n_iter++;
+        check_it_termination_criterion_reached(n_iter, t_start);
+        
+        if  (!terminate) {
+
+            n_iter++;
+        }
 
         active_node = node_queue.top();
         node_queue.pop();
 
-        if(active_node->get_lb() < ub_bnb) {
+        if(!terminate && (active_node->get_lb() < ub_bnb)) {
 
             if(active_node->get_depth() == n_t) {     
                 
                 t_update = clock();
-                update_best_solution(active_node, 
-                    double(t_update - t_start) / CLOCKS_PER_SEC);
-                // break;
+                set_new_best_node(active_node); 
+                display_solution_update(true, double(t_update - t_start) / CLOCKS_PER_SEC);
             }
 
             else {
@@ -310,6 +318,12 @@ void CombinaBnBSolver::run_bnb() {
 
             delete_node(active_node);
         }
+
+        if (!terminate && (n_iter % (int)1e6 == 0)) {
+
+            t_current = clock();
+            display_solution_update(false, double(t_current - t_start) / CLOCKS_PER_SEC);
+        }
     }
 
     t_end = clock();
@@ -320,21 +334,55 @@ void CombinaBnBSolver::run_bnb() {
 
     std::ostringstream streamObj;
 
-    streamObj << std::scientific << "\n    Best solution:    " << best_node->get_lb()
+    streamObj << std::scientific << "\n    Best solution:    " << ub_bnb
         << "\n    Total iterations: " << s_n_iter 
         << "\n    Total runtime:    " << double(t_end - t_start) / CLOCKS_PER_SEC
         << " s\n";
 
+    if (n_iter >= max_iter) {
+
+        streamObj << "\n    --> Maximum number of iterations exceeded";
+
+    } else if ((double(t_end- t_start) / CLOCKS_PER_SEC) >= max_cpu_time) {
+
+        streamObj << "\n    --> Maximum CPU time exceeded";
+
+    } else if (user_interrupt) {
+
+        streamObj << "\n    --> User interrupt";
+
+    } else {
+
+        streamObj << "\n    --> Optimal solution found";
+    }
+
     py::print(streamObj.str());
-    py::print("-----------------------------------------------------------");
+    py::print("\n-----------------------------------------------------------");
+
+    /*
+
+    Restart is still bugyy and therefore disabled for now
+
+    user_interrupt = false;
+    terminate = false;
+    n_print = 0;
+    
+    */
 
 }
 
 
-void CombinaBnBSolver::update_best_solution(Node* active_node, double runtime) {
+void CombinaBnBSolver::check_it_termination_criterion_reached(int n_iter, clock_t t_start) {
 
-    set_new_best_node(active_node);
-    display_solution_update(runtime);
+    if (!terminate) {
+
+        clock_t t_current = clock();
+
+        terminate = ((n_iter >= max_iter) || 
+            ((double(t_current - t_start) / CLOCKS_PER_SEC) >= max_cpu_time) ||
+            user_interrupt);
+
+    }
 }
 
 
@@ -348,14 +396,12 @@ void CombinaBnBSolver::set_new_best_node(Node* active_node) {
     best_node = active_node;
     ub_bnb = best_node->get_lb();
 
-    n_ub_updates++;
-
 }
 
 
-void CombinaBnBSolver::display_solution_update(double runtime) {
+void CombinaBnBSolver::display_solution_update(bool solution_update, double runtime) {
 
-    if (n_ub_updates % 10 == 1) {
+    if (n_print++ % 10 == 0) {
 
         py::print("-----------------------------------------------------------");
         py::print("    Iteration |  Upper bound |  Branches  |  Runtime (s)   ");
@@ -370,8 +416,19 @@ void CombinaBnBSolver::display_solution_update(double runtime) {
 
     std::ostringstream streamObj;
 
-    streamObj << std::scientific << "   " << s_n_iter
-        << " | " << best_node->get_lb() << " | "
+    streamObj << std::scientific;
+
+    if (solution_update) {
+        
+        streamObj << " U ";
+
+    } else {
+
+        streamObj << "   ";
+    }
+
+    streamObj << s_n_iter
+        << " | " << ub_bnb << " | "
         << s_node_queue_size << " | " << runtime;
     
     py::print(streamObj.str());
@@ -451,6 +508,18 @@ void CombinaBnBSolver::retrieve_solution() {
     }
     
     delete_node(best_node);
+    best_node = nullptr;
+
+
+    #ifndef NDEBUG
+    py::print("Debug information:");
+    py::print("Nodes added:", Node::n_add);
+    py::print("Nodes deleted:", Node::n_delete_self + Node::n_delete_other);
+    py::print("Nodes not deleted:", Node::n_add - (Node::n_delete_self + Node::n_delete_other));
+    py::print("Nodes deleted by themselves:", Node::n_delete_self);
+    py::print("Nodes deleted by BnB:", Node::n_delete_other);
+    #endif
+
 }
 
 
@@ -462,6 +531,17 @@ void CombinaBnBSolver::delete_node(Node *& active_node) {
     #ifndef NDEBUG
     Node::n_delete_other++; 
     #endif
+}
+
+
+void CombinaBnBSolver::stop() {
+
+    // very dirty hack, should be improved
+
+    user_interrupt = true;
+
+    run_bnb();
+    retrieve_solution();
 }
 
 

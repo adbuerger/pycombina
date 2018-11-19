@@ -80,7 +80,8 @@ public:
 
     ~CombinaBnBSolver();
 
-    void run(bool use_warm_start, std::map<std::string, std::string> bnb_opts);
+    void run(bool use_warm_start, std::map<std::string, double> bnb_opts);
+    void stop();
 
     double get_eta();
     std::vector<std::vector<unsigned int>> get_b_bin();
@@ -92,6 +93,7 @@ private:
     void compute_initial_upper_bound();
     void precompute_sum_of_etas();
 
+    void set_solver_settings(std::map<std::string, double> bnb_opts);
     void add_initial_nodes_to_queue();
 
     bool control_activation_forbidden(unsigned int const b_active_child,
@@ -111,9 +113,9 @@ private:
         std::vector<double> const & eta_child, double const lb_child);
 
     void run_bnb();
-    void update_best_solution(Node* active_node, double runtime);
+    void check_it_termination_criterion_reached(int n_iter, clock_t t_start);
     void set_new_best_node(Node* active_node);
-    void display_solution_update(double runtime);
+    void display_solution_update(bool solution_update, double runtime);
     void add_nodes_to_queue(Node* parent_node);
 
     void retrieve_solution();
@@ -148,7 +150,13 @@ private:
 
     std::vector<std::vector<unsigned int>> b_bin;
 
-    unsigned int n_iter;
-    unsigned int n_ub_updates;
+    long n_iter;
+    long n_print;
+
+    long max_iter;
+    double max_cpu_time;
+
+    bool terminate;
+    bool user_interrupt;
 
 };
