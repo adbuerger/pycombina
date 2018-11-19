@@ -99,7 +99,8 @@ private:
     bool control_activation_forbidden(unsigned int const b_active_child,
         unsigned int const b_active_parent,
         std::vector<unsigned int> const & sigma_child,
-        std::vector<double> const & min_down_time_parent);
+        std::vector<double> const & min_down_time_parent,
+        unsigned int const depth_child);
 
     void compute_child_node_properties(
         unsigned int const b_active_child, unsigned int const b_active_parent,
