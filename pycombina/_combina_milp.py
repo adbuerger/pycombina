@@ -2,7 +2,7 @@ import numpy as np
 import gurobipy as gp
 import ipdb
 
-from _binary_approximation import BinApproxPreprocessed
+from ._binary_approximation import BinApproxPreprocessed
 
 class CombinaMILP:
 

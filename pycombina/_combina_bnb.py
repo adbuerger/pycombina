@@ -1,8 +1,8 @@
 import signal
 import numpy as np
 
-from _binary_approximation import BinApproxPreprocessed
-from _combina_bnb_solver import CombinaBnBSolver
+from ._binary_approximation import BinApproxPreprocessed
+from ._combina_bnb_solver import CombinaBnBSolver
 
 
 def handle_interrupt(signum, frame):
@@ -86,6 +86,8 @@ class CombinaBnB():
         except KeyboardInterrupt:
 
             self._bnb_solver.stop()
+
+        self._binapprox_p._b_bin = self._bnb_solver.get_b_bin()
     
 
 

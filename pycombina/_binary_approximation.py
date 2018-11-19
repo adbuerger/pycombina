@@ -103,7 +103,7 @@ class BinApproxBase(ABC):
 
         except AttributeError:
 
-            return self.n_t * np.ones(self.n_c)
+            return self.n_t * np.ones(self.n_c, dtype = int)
 
 
     @property
