@@ -64,9 +64,30 @@ class BinApproxBase(ABC):
     @property
     def b_valid(self) -> np.ndarray:
 
-        '''Minimum down time per control.'''
+        '''Valid controls per time interval.'''
 
         return self._b_valid
+
+
+    @property
+    def b_adjacencies(self) -> np.ndarray:
+
+        '''Adjacencies for allowed switching transitions of binary controls,
+        reads as
+
+                    from
+
+                  . . . . .
+                  . . . . .
+            to    . . . . .
+                  . . . . .
+                  . . . . .
+
+        where 1 marks valid transitions and 0 marks invalid transitions.
+
+        '''
+
+        return self._b_adjacencies
 
 
     @property
@@ -250,6 +271,11 @@ class BinApprox(BinApproxBase):
         self._b_valid = np.ones((self.n_c, self.n_t), dtype = int)
 
 
+    def _initialize_control_adjacency(self) -> None:
+
+        self._b_adjacencies = np.ones((self.n_c, self.n_c), dtype = int)
+
+
     def _set_off_state(self, off_state_included: bool) -> None:
 
         if off_state_included and \
@@ -282,6 +308,7 @@ class BinApprox(BinApproxBase):
         self._compute_time_grid_from_time_points()
 
         self._initialize_valid_controls()
+        self._initialize_control_adjacency()
 
         self._set_off_state(off_state_included = off_state_included)
         self._set_problem_size_reduction(reduce_problem_size_before_solve = \
@@ -417,6 +444,43 @@ class BinApprox(BinApproxBase):
             npm.repmat(b_bin_valid, 1, np.sum(idx_interval))
 
 
+    def set_valid_control_transitions(self, b_i: int, \
+        b_valid_upcoming: Union[list, np.ndarray]) -> None:
+
+        if self.n_c <= 1:
+            raise RuntimeError("Setting of valid binary control transitions (i. e. adjacencies) " + \
+                "only possible if number of binary controls is bigger than 1.")
+
+        try:
+            if not b_i < self.n_c:
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("Binary control index b_i " + \
+                "must be smaller than the number of binary controls.")
+
+        b_valid_upcoming = np.asarray(b_valid_upcoming)
+
+        try:
+            if not np.atleast_1d(np.squeeze(b_valid_upcoming)).ndim == 1:
+                raise ValueError
+
+            if not np.asarray(b_valid_upcoming).size == self.n_c:
+                raise ValueError
+            
+        except ValueError:
+            raise ValueError("The number of values in b_valid_upcoming " + \
+                "must be equal to the number of binary controls.")
+
+        if not np.all((b_valid_upcoming == 0) | (b_valid_upcoming == 1)):
+
+            raise ValueError("All elements in b_valid_upcoming " + \
+                "must be either 0 or 1.")
+
+
+        self._b_adjacencies[:, b_i] = b_valid_upcoming
+
+
 class BinApproxPreprocessed(BinApproxBase):
 
     def _set_orignal_binapprox_problem(self, binapprox: BinApprox) -> None:
@@ -445,6 +509,12 @@ class BinApproxPreprocessed(BinApproxBase):
 
             self._b_valid = np.vstack([self._b_valid, \
                 np.ones(self._binapprox.n_t, dtype = int)])
+
+            b_adjacencies = np.ones((self._binapprox.n_c + 1, \
+                self._binapprox.n_c + 1), dtype = int)
+            b_adjacencies[:self._binapprox.n_c, :self._binapprox.n_c] = \
+                self._binapprox.b_adjacencies
+            self._b_adjacencies = b_adjacencies
 
             self._n_max_switches = np.append(self._n_max_switches, \
                 self._binapprox.n_t)
@@ -489,6 +559,7 @@ class BinApproxPreprocessed(BinApproxBase):
 
         self._b_rel = self._b_rel[np.ix_(self._b_active, self._t_active)]
         self._b_valid = self._b_valid[np.ix_(self._b_active, self._t_active)]
+        self._b_adjacencies = self._b_adjacencies[np.ix_(self._b_active, self._b_active)]
 
         self._n_max_switches = self._n_max_switches[self._b_active]
         self._min_up_times = self._min_up_times[self._b_active]

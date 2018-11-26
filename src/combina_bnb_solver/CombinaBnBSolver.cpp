@@ -41,6 +41,7 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
                        std::vector<double> const & min_up_time,
                        std::vector<double> const & min_down_time,
                        std::vector<std::vector<unsigned int>> const & b_valid,
+                       std::vector<std::vector<unsigned int>> const & b_adjacencies,
 
                        std::vector<double> const & min_down_time_pre,
                        unsigned int const & b_active_pre)
@@ -55,6 +56,7 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       min_up_time(min_up_time),
       min_down_time(min_down_time),
       b_valid(b_valid),
+      b_adjacencies(b_adjacencies),
 
       min_down_time_pre(min_down_time_pre),
       b_active_pre(b_active_pre),
@@ -185,7 +187,8 @@ bool CombinaBnBSolver::control_activation_forbidden(
 
     return (sigma_child[b_active_child] >= n_max_switches[b_active_child] ||
         (b_active_parent < n_c && sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
-        min_down_time_parent[b_active_child] > 0.0);
+        min_down_time_parent[b_active_child] > 0.0 ||
+        (b_active_parent < n_c && b_adjacencies[b_active_child][b_active_parent] == 0));
 }
 
 

@@ -36,4 +36,5 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-O3 -Wpedantic -Wextra -I/usr/include/python3.6m")
+# set(CMAKE_CXX_FLAGS "-O3 -Wpedantic -Wextra -I/usr/include/python3.6m")
+set(CMAKE_CXX_FLAGS "-O3 -Wpedantic -Wextra")

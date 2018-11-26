@@ -74,6 +74,7 @@ public:
                std::vector<double> const & min_up_time,
                std::vector<double> const & min_down_time,
                std::vector<std::vector<unsigned int>> const & b_valid,
+               std::vector<std::vector<unsigned int>> const & b_adjacencies,
 
                std::vector<double> const & min_down_time_pre,
                unsigned int const & b_active_pre);
@@ -137,6 +138,7 @@ private:
     std::vector<double> min_up_time;
     std::vector<double> min_down_time;
     std::vector<std::vector<unsigned int>> b_valid;
+    std::vector<std::vector<unsigned int>> b_adjacencies;
 
     std::vector<double> min_down_time_pre;
     unsigned int b_active_pre;
