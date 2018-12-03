@@ -1,7 +1,27 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# This file is part of pycombina.
+#
+# Copyright 2017-2018 Adrian Bürger, Clemens Zeile, Sebastian Sager, Moritz Diehl
+#
+# pycombina is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pycombina is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with pycombina. If not, see <http://www.gnu.org/licenses/>.
+
 import signal
 import numpy as np
 
-from ._binary_approximation import BinApproxPreprocessed
+from ._binary_approximation import BinApprox, BinApproxPreprocessed
 from ._combina_bnb_solver import CombinaBnBSolver
 
 
@@ -16,12 +36,13 @@ def handle_interrupt(signum, frame):
 
 class CombinaBnB():
 
-    def _apply_preprocessing(self, binapprox):
+    def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
+        self._binapprox = binapprox
         self._binapprox_p = BinApproxPreprocessed(binapprox)
 
 
-    def _initialize_bnb(self):
+    def _initialize_bnb(self) -> None:
 
         if self._binapprox_p.b_bin_pre.sum() < 1:
 
@@ -50,18 +71,18 @@ class CombinaBnB():
             )
 
 
-    def _setup_bnb(self, binapprox):
+    def _setup_bnb(self, binapprox: BinApprox) -> None:
 
         self._apply_preprocessing(binapprox)
         self._initialize_bnb()
 
 
-    def __init__(self, binapprox_p):
+    def __init__(self, binapprox: BinApprox) -> None:
 
-        self._setup_bnb(binapprox_p)
+        self._setup_bnb(binapprox)
 
 
-    def solve(self, use_warm_start = False , bnb_opts = {}):
+    def _run_solver(self, use_warm_start: bool, bnb_opts: dict) -> None:
 
         bnb_opts_default = {
 
@@ -87,4 +108,18 @@ class CombinaBnB():
 
             self._bnb_solver.stop()
 
-        self._binapprox_p._b_bin = self._bnb_solver.get_b_bin()
+        self._binapprox_p.set_b_bin(self._bnb_solver.get_b_bin())
+        self._binapprox_p.set_eta(self._bnb_solver.get_eta())
+
+
+    def _set_solution(self):
+
+        self._binapprox_p.inflate_solution()
+        self._binapprox.set_b_bin(self._binapprox_p.b_bin)
+        self._binapprox.set_eta(self._binapprox_p.eta)
+
+
+    def solve(self, use_warm_start: bool = False , bnb_opts: dict = {}):
+
+        self._run_solver(use_warm_start = use_warm_start, bnb_opts = bnb_opts)
+        self._set_solution()

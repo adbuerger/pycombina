@@ -38,15 +38,15 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
     def run(self):
+        if sys.version_info < (3,4):
+            raise RuntimeError(
+                "Python 3.5 or higher is required for using pycombina.")            
         try:
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
             raise RuntimeError(
                 "CMake must be installed to build the following extensions: " +
                 ", ".join(e.name for e in self.extensions))
-
-        if platform.system() == "Windows":
-            raise RuntimeError("Installation on Windows is currently not supported.")
 
         for ext in self.extensions:
             self.build_extension(ext)

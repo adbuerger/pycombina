@@ -25,25 +25,25 @@ pl.close("all")
 
 data = pl.loadtxt("data/mmlotka_nt_12000_400.csv", delimiter = " ", skiprows = 1)
 
-dN = 160
+dN = 8
 
 t = data[::dN,0]
 b_rel = data[:-1:dN, 3:]
 
-# max_switches = [100, 100, 100]
+max_switches = [5, 2, 3]
 
 binapprox = BinApprox(t = t, b_rel = b_rel, binary_threshold = 1e-3, \
         off_state_included = False)
-# binapprox.set_n_max_switches(n_max_switches = max_switches)
+binapprox.set_n_max_switches(n_max_switches = max_switches)
 
-binapprox.set_valid_controls_for_interval((0, 2), [1,0,0])
-binapprox.set_valid_control_transitions(0, [1,0,1])
-binapprox.set_min_up_times([2.0, 2.0, 2.0])
+# binapprox.set_valid_controls_for_interval((0, 2), [1,0,0])
+# binapprox.set_valid_control_transitions(0, [1,0,1])
+# binapprox.set_min_up_times([2.0, 2.0, 2.0])
 
 combina = CombinaBnB(binapprox)
 combina.solve()
 
-b_bin_orig = pl.asarray(combina._binapprox_p.b_bin)
+b_bin_orig = pl.asarray(binapprox.b_bin)
 
 f, (ax1, ax2, ax3) = pl.subplots(3, sharex = True)
 
