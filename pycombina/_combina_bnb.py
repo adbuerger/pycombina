@@ -27,7 +27,7 @@ from ._combina_bnb_solver import CombinaBnBSolver
 
 def handle_interrupt(signum, frame):
     
-    # very dirty hack, should be improved
+    # pretty hacky, should be improved
 
     if signum == signal.SIGINT:
     
@@ -35,6 +35,23 @@ def handle_interrupt(signum, frame):
 
 
 class CombinaBnB():
+
+    '''
+    Solve a binary approximation problem by combinatorial integral approximation
+    using branch-and-bound.
+
+    The following options of :class:`pycombina.BinApprox` are supported:
+
+    - Maximum number of switches
+    - Minimum up-times
+    - Minimum down-times
+    - ...
+
+    All other options are ignore without further notice.
+
+    :param BinApprox: Binary approximation problem
+
+    '''
 
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
@@ -120,6 +137,22 @@ class CombinaBnB():
 
 
     def solve(self, use_warm_start: bool = False , bnb_opts: dict = {}):
+
+        '''
+        Solve the combinatorial integral approximation problem.
+
+        :param use_warm_start: If a binary solution is already contained in the
+                               given binary approximation problem, use it to
+                               warm-start the solver.
+
+        :param bnb_opts: Options to be passed for the branch-and-bound solver:
+
+            - **max_iter**: Maximum number of solver iterations. Once reached,
+              the best solution found so far is returned. *Default:* 5e6.
+            - **max_cpu_time**: Maximum CPU seconds for the solver. Once reached,
+              the best solution found so far is returned. *Default:* 3e2.
+
+        '''
 
         self._run_solver(use_warm_start = use_warm_start, bnb_opts = bnb_opts)
         self._set_solution()

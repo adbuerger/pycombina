@@ -35,10 +35,11 @@ if prompt_init_message:
 
     print("\n-----------------------------------------------------------")
     print("|                                                         |")
+    print("|                     You are using                       |")
+    print("|                                                         |")
     print("|                       pycombina                         |")
     print("|                                                         |")
     print("|     A collection of methods for binary approximation    |")
-    print("|                                                         |")
     print("|       by A. Buerger, C. Zeile, S. Sager, M. Diehl       |")
     print("|                                                         |")
     print("-----------------------------------------------------------\n")

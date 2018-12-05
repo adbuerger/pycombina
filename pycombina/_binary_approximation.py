@@ -30,7 +30,7 @@ class BinApproxBase(ABC):
     @property
     def t(self) -> np.ndarray:
 
-        '''Discrete time points.'''
+        '''Get discrete time grid points.'''
 
         return self._t
 
@@ -38,7 +38,7 @@ class BinApproxBase(ABC):
     @property
     def b_rel(self) -> np.ndarray:
 
-        '''Relaxed binary controls.'''
+        '''Get relaxed binary controls.'''
 
         return self._b_rel
 
@@ -46,7 +46,7 @@ class BinApproxBase(ABC):
     @property
     def off_state_included(self) -> bool:
 
-        '''Flag whether the off-state is included in the problem definition.'''
+        '''Get flag whether the off-state is included in the problem definition.'''
 
         return self._off_state_included
 
@@ -54,7 +54,7 @@ class BinApproxBase(ABC):
     @property
     def reduce_problem_size_before_solve(self) -> bool:
 
-        '''Reduce problem size prior to solving by merging certain time intervals.'''
+        '''Get flag whether problem size is reduced prior to solving by merging certain time intervals.'''
 
         return self._reduce_problem_size_before_solve
 
@@ -62,13 +62,15 @@ class BinApproxBase(ABC):
     @property
     def dt(self) -> np.ndarray:
 
+        '''Get time intervals between time grid points.'''
+
         return self._dt
 
 
     @property
     def n_t(self) -> int:
 
-        '''Number of time intervals.'''
+        '''Get number of time intervals.'''
 
         return self._n_t
 
@@ -76,7 +78,7 @@ class BinApproxBase(ABC):
     @property
     def n_c(self) -> int:
 
-        '''Number of mutually exclusive controls.'''
+        '''Get number of mutually exclusive binaries.'''
 
         return self._n_c
 
@@ -84,7 +86,7 @@ class BinApproxBase(ABC):
     @property
     def b_valid(self) -> np.ndarray:
 
-        '''Valid controls per time interval.'''
+        '''Get valid binaries controls per time interval.'''
 
         return self._b_valid
 
@@ -92,19 +94,20 @@ class BinApproxBase(ABC):
     @property
     def b_adjacencies(self) -> np.ndarray:
 
-        '''Adjacencies for allowed switching transitions of binary controls,
-        reads as
-
-                    from
-
-                  . . . . .
-                  . . . . .
-            to    . . . . .
-                  . . . . .
-                  . . . . .
-
+        '''
+        Get the adjacencies for allowed switching transitions of binary controls, 
         where 1 marks valid transitions and 0 marks invalid transitions.
+        E. g., the following output
 
+            >>> print(binapprox.b_adjacencies)
+            [[1, 0, 0],
+             [1, 1, 1],
+             [0, 1, 1]])
+
+        indicates that switching from control 0 to 1 is allowed as well
+        as switching from control 1 to 2 and back, but neither from control 1 to 0
+        nor from control 2 to 0 or back. Zeros on diagonal elements of this matrix indicate
+        that a binary control cannot stay active for more that one subsequent time interval.
         '''
 
         return self._b_adjacencies
@@ -113,7 +116,7 @@ class BinApproxBase(ABC):
     @property
     def eta(self) -> float:
 
-        '''Objective value of the binary approximation problem.'''
+        '''Get the objective value of the binary approximation problem.'''
 
         try:
             return self._eta
@@ -125,7 +128,7 @@ class BinApproxBase(ABC):
     @property
     def b_bin(self) -> np.ndarray:
 
-        '''Binary solution of the binary approximation problem.'''
+        '''Get the binary solution of the binary approximation problem.'''
 
         try:
             return self._b_bin
@@ -137,7 +140,7 @@ class BinApproxBase(ABC):
     @property
     def n_max_switches(self) -> np.ndarray:
 
-        '''Maximum possible amount of switches per control.'''
+        '''Get the maximum possible amount of switches per control.'''
 
         try:
             return self._n_max_switches
@@ -150,7 +153,7 @@ class BinApproxBase(ABC):
     @property
     def min_up_times(self) -> np.ndarray:
 
-        '''Minimum up time per control.'''
+        '''Get the minimum up times per control.'''
 
         try:
             return self._min_up_times
@@ -163,7 +166,7 @@ class BinApproxBase(ABC):
     @property
     def min_down_times(self) -> np.ndarray:
 
-        '''Minimum down time per control.'''
+        '''Get the minimum down times per control.'''
 
         try:
             return self._min_down_times
@@ -176,7 +179,7 @@ class BinApproxBase(ABC):
     @property
     def b_bin_pre(self) -> np.ndarray:
 
-        '''Binary control active at time grid point "-1".'''
+        '''Get the binary control active at time grid point "t-1".'''
 
         try:
             return self._b_bin_pre
@@ -189,7 +192,7 @@ class BinApproxBase(ABC):
     @property
     def min_down_times_pre(self) -> np.ndarray:
 
-        '''Remaining minimum down time per control from time grid point "-1".'''
+        '''Get the remaining minimum down time per control from time grid point "t-1".'''
 
         try:
             return self._min_down_times_pre
@@ -249,6 +252,46 @@ class BinApproxBase(ABC):
 
 
 class BinApprox(BinApproxBase):
+
+    r'''
+    Specifies a binary approximation problem.
+
+    :param t: One-dimensional array that contains the discrete time points
+              of the binary approximation problem. The
+              values in t must be strictly increasing.
+
+    :param b_rel: Two-dimensional array that contains the relaxed binary
+                  controls to be approximated. One dimension of the array
+                  must be of size len(t)-1 and all entries of the array 
+                  must be 0 <= b_k,i <= 1.
+
+    :param binary_threshold: If a value b_rel,k,i is smaller than binary_threshold
+                             it is considered 0, and if it is bigger than
+                             1-binary_threshold it is considered 1.
+
+    :param off_state_included: If the sum of the relaxed binaries per time point i
+                               is sum(b[i])<1, this flag must be set to True
+                               to automatically include an artificial off-state to
+                               fulfill the SOS1-constraint sum(b[i])=1. This does
+                               not change the problem dimension for the user.
+
+    :param reduce_problem_size_before_solve: If set to True, the size of the
+                                             binary approximation problem is
+                                             reduced according to the methods
+                                             described in [#f6]_. This can be
+                                             beneficial if the problem has many
+                                             binaries and time points and takes
+                                             a long time to solve.
+
+    :raises: ValueError, AttributeError, RuntimeError
+
+    .. rubric:: References
+    .. [#f6] |linkf6|_
+    
+    .. _linkf6:  http://www.optimization-online.org/DB_HTML/2018/07/6713.html,
+    .. |linkf6| replace:: Bürger A, Zeile C, Altmann-Dieses A, Sager S, Diehl M: Design, Implementation and Simulation of an MPC algorithm for Switched Nonlinear Systems under Combinatorial Constraints, 2018.
+    '''
+
 
     def _set_time_points_t(self, t: Union[list, np.ndarray]) -> None:
 
@@ -337,7 +380,34 @@ class BinApprox(BinApproxBase):
             reduce_problem_size_before_solve)
 
 
-    def set_n_max_switches(self, n_max_switches: Union[int, list, np.ndarray]) -> None:
+    def set_n_max_switches(self, n_max_switches: Union[int, float, list, np.ndarray]) -> None:
+
+
+        '''
+        Set the maximum number of allowed switches per control for solution of
+        the binary approximation problem. By default, the maximum number of
+        switches per control is not limited.
+
+        Usage::
+
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+            >>> binapprox.set_n_max_switches([3, 2, 5])
+
+            >>> print(binapprox.n_max_switches)
+            [3, 2, 5]
+
+        :param n_max_switches: Maximum number of switches allowed per control
+                               for solution of the binary approximation problem.
+                               Non-integer entries are rounded down.
+        '''
 
         try:
 
@@ -358,6 +428,29 @@ class BinApprox(BinApproxBase):
 
     def set_min_up_times(self, min_up_times: Union[float, list, np.ndarray]) -> None:
 
+        '''
+        Set the minimum up-times per control, i. e., the minimum time that a
+        control must stay active once it has been activated. By default,
+        the minimum up-times are 0.
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+            >>> binapprox.set_min_up_times([2.4, 4.3, 1.4])
+        
+            >>> print(binapprox.min_up_times)
+            [2.4, 4.3, 1.4]
+
+        :param min_up_times: Minimum up-times per binary control. 
+        '''
+
         min_up_times = np.asarray(min_up_times)
 
         try:
@@ -376,6 +469,29 @@ class BinApprox(BinApproxBase):
 
     def set_min_down_times(self, min_down_times: Union[float, list, np.ndarray]) -> None:
 
+        '''
+        Set the minimum down-times per control, i. e., the minimum time that a
+        control must stay inactive once it has been deactivated. By default,
+        the minimum down-times are 0.
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+            >>> binapprox.set_min_down_times([1.3, 3.3, 2.1])
+
+            >>> print(binapprox.min_down_times)
+            [1.3, 3.3, 2.1]
+        
+        :param min_down_times: Minimum down-times per binary control. 
+        '''
+
         min_down_times = np.asarray(min_down_times)
 
         try:
@@ -392,8 +508,32 @@ class BinApprox(BinApproxBase):
         self._min_down_times = min_down_times
 
 
-    def set_previously_active_control(self, \
-        b_bin_pre: Union[list, np.ndarray]) -> None:
+    def set_b_bin_pre(self, b_bin_pre: Union[list, np.ndarray]) -> None:
+
+        '''
+        Define the binary control combination active at time point t-1, i. e.,
+        the control active at the time before the first time point of the time grid.
+        This influences the number of switches needed to activate and deactivate
+        binary controls at the first time point, which otherwise does not
+        influence the switch count.
+        
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+            >>> binapprox.set_b_bin_pre([1, 0, 0])
+
+            >>> print(binapprox.b_bin_pre)
+            [1, 0, 0]
+
+        :param b_bin_pre: Binary control combination active at time point t-1. 
+        '''
 
         b_bin_pre = np.asarray(b_bin_pre)
 
@@ -416,6 +556,10 @@ class BinApprox(BinApproxBase):
 
     def set_min_down_times_pre(self, min_down_times_pre: Union[float, list, np.ndarray]) -> None:
 
+        '''
+        Deprecated, use set_valid_controls_for_interval instead().
+        '''
+
         min_down_times_pre = np.asarray(min_down_times_pre)
 
         try:
@@ -434,6 +578,29 @@ class BinApprox(BinApproxBase):
 
     def set_valid_controls_for_interval(self, dt: tuple, \
         b_bin_valid: Union[list, np.ndarray]) -> None:
+
+        '''
+        This function can be used to allow activation of only a certain subset
+        of the binary controls in between to time points on the grid.
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+
+            >>> # Allow activation of only control 1 and 2 for all discrete time
+            >>> # points bigger than or equal to 0.2 and smaller than 1.8
+            >>> binapprox.set_valid_controls_for_interval((0.2, 1.8), [0, 1, 1])
+
+        :param dt: Lower and upper bound of the time interval.
+        :param b_bin_valid: Allowed binary controls on the time interval. 
+        '''        
 
         if not len(dt) == 2:
             raise ValueError("dt must have exactly two entries.")
@@ -468,6 +635,33 @@ class BinApprox(BinApproxBase):
 
     def set_valid_control_transitions(self, b_i: int, \
         b_valid_upcoming: Union[list, np.ndarray]) -> None:
+
+        '''
+        Specify the allowed transitions from control b_i to other controls. By
+        default, transitions from all binary controls to each control are
+        allowed.
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+
+            >>> # Allow transition from control 1 only to control 1 and 2
+            >>> binapprox.set_valid_control_transitions(1, [0, 1, 1])
+
+            >>> # Allow transition from control 1 only to control 0 and 2, i. e.,
+            >>> # control 1 cannot be active on two subsequent time intervals
+            >>> binapprox.set_valid_control_transitions(1, [1, 0, 1])
+
+        :param b_i: Controls for which the allowed transitions are specified.
+        :param b_valid_upcoming: Valid upcoming controls for control b_i. 
+        '''   
 
         if self.n_c <= 1:
             raise RuntimeError("Setting of valid binary control transitions (i. e. adjacencies) " + \
@@ -520,6 +714,7 @@ class BinApproxPreprocessed(BinApproxBase):
         self._min_down_times = self._binapprox.min_down_times
           
         self._b_bin_pre = self._binapprox.b_bin_pre
+        self._b_adjacencies = self._binapprox.b_adjacencies
 
 
     def _append_off_state(self) -> None:

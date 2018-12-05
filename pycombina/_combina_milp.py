@@ -6,6 +6,20 @@ from ._binary_approximation import BinApproxPreprocessed
 
 class CombinaMILP:
 
+    '''
+    Solve a binary approximation problem by combinatorial integral approximation
+    using mixed-integer linear programming and Gurobi.
+
+    The following options of :class:`pycombina.BinApprox` are supported:
+
+    - ...
+
+    All other options are ignore without further notice.
+
+    :param BinApprox: Binary approximation problem
+
+    '''
+
     @property
     def cia_norm(self):
 

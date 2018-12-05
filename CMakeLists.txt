@@ -36,7 +36,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# set(CMAKE_CXX_FLAGS "-O3 -Wpedantic -Wextra -I/usr/include/python3.6m")
 IF (WIN32)
     set(CMAKE_CXX_FLAGS "/O2")
 ELSE()
