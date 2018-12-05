@@ -16,20 +16,21 @@
 .. along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 
-Combinatorial integral approximation
-====================================
+Binary approximation problems
+=============================
 
-**pycombina** includes two classes for solution of binary approximation problems using combinatorial integral approximation:
+**pycombina** can solve binary approximation problems as they arise, e. g., within efficient solution of Mixed Integer Optimal Control Problems (MIOCPs), using different methods such as Sum-Up-Rounding or Combinatorial Integral Approximation [#f1]_.
 
-* :class:`pycombina.CombinaBnB`
-* :class:`pycombina.CombinaMILP`
+Prior to solving, a binary approximation problem has to be formulated using :class:`pycombina.BinApprox`. The resulting object can then later be passed to one of the solvers contained in **pycombina**.
 
-which int he following are described in more detail.
-
-.. autoclass:: pycombina.CombinaBnB
+.. autoclass:: pycombina.BinApprox
     :members:
     :inherited-members:
 
-.. autoclass:: pycombina.CombinaMILP
-    :members:
-    :inherited-members:
+.. rubric:: References
+
+.. [#f1] |linkf1|_
+
+.. _linkf1: https://mathopt.de/Sager/publications.php
+
+.. |linkf1| replace:: Sager et al.: Combinatorial Integral Approximation. *Mathematical Methods of Operations Research*, 2011

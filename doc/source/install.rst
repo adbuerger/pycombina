@@ -19,73 +19,47 @@
 How to install
 ==============
 
-pycombina has been tested with Python2.7 on Ubuntu 16.04. 
-
-Required Python modules
+Install on Ubuntu 16.04
 -----------------------
 
-The following Python modules are required:
+Python version >= 3.5 is required to run pycombina.
 
-- ``setuptools``
-- ``numpy``
-- ``unittest2`` (optional, for running automated tests)
-- ``pyscipopt`` (optional, required for using SCIP (solver license required), see [#f2]_ and [#f3]_)
-- ``gurobipy`` (optional, required for using Gurobi (solver license required), see  [#f4]_)
+.. code:: Bash
 
+    sudo apt-get install python3-pip python3-dev cmake g++ git
+    sudo pip3 install setuptools numpy unittest2
+    
+    git clone https://github.com/adbuerger/pycombina.git
+    cd pycombina
+    sudo python3 setup.py install
 
-Required build software
------------------------
-
-For building the C++ extension, the following packages are required
-
-- ``python-dev``
-- ``g++``
-- ``cmake``
 
 **Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
 
-
-Installation
-------------
-
-For system-wide installation of the Python module, run
-
-.. code-block:: bash
-
-   sudo python setup.py install
+For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaBnB```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
 
 
-If you're working on development of the module, it's better to just set a link
-to the containing folder, which can be done by running
+Install on Windows 10
+---------------------
 
-.. code-block:: bash
+For obtaining Python 3 on Windows, using Anaconda [#f7]_ is recommended. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained free of charge for private and/or academic use within Visual Studio Community [#f8]_.
 
-   sudo python setup.py develop
+After that, clone or download and unzip the pycombina repository from https://github.com/adbuerger/pycombina, open an Anaconda Prompt an run 
 
+.. code:: Bash
 
-To run the the automated tests, run
+    python setup.py install
 
-.. code-block:: bash
+from within the pycombina folder.
 
-   python setup.py test
-
-
-Tests for SCIP and Gurobi will be skipped automatically if they're not available.
-
-.. rubric:: References
-
-.. [#f2] |linkf2|_
-
-.. _linkf2: https://github.com/SCIP-Interfaces/PySCIPOpt
-
-.. |linkf2| replace:: PySCIPOpt - Python interface for the SCIP Optimization Suite (website)
+For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaBnB```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
 
 
-.. [#f3] |linkf3|_
+.. [#f5] |linkf5|_
 
-.. _linkf3: http://scip.zib.de/
+.. _linkf5: https://github.com/pybind/pybind11
 
-.. |linkf3| replace:: SCIP - Solving Constraint Integer Programs (website)
+.. |linkf5| replace:: pybind11 - Seamless operability between C++11 and Python (website)
 
 
 .. [#f4] |linkf4|_
@@ -94,9 +68,18 @@ Tests for SCIP and Gurobi will be skipped automatically if they're not available
 
 .. |linkf4| replace:: The Gurobi Python Interface for Python Users (website)
 
+.. [#f7] |linkf7|_
 
-.. [#f5] |linkf5|_
 
-.. _linkf5: https://github.com/pybind/pybind11
+.. _linkf7: https://www.anaconda.com/download/#windows
 
-.. |linkf5| replace:: pybind11 - Seamless operability between C++11 and Python (website)
+.. |linkf7| replace:: Download Anaconda Distribution (website)
+
+
+.. [#f8] |linkf8|_
+
+.. _linkf8: https://visualstudio.microsoft.com/de/vs/community/
+
+.. |linkf8| replace:: Visual Studio Community (website)
+
+

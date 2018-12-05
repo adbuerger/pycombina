@@ -15,32 +15,10 @@
 .. You should have received a copy of the GNU Lesser General Public License
 .. along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
-.. pycombina documentation master file, created by
-.. sphinx-quickstart on Mon Dec  8 09:36:29 2014.
-.. You can adapt this file completely to your liking, but it should at least
-.. contain the root `toctree` directive.
 
+Sum-up rounding
+===============
 
-.. image:: ../../logo/logo.png
+**pycombina** includes ... classes for solution of binary approximation problems using sum-up rounding:
 
-|
-
-**pycombina** is a Python module for solving binary approximation problems.
-
-|gitlab-ci|
-
-.. |gitlab-ci| image:: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/badges/master/pipeline.svg
-    :target: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/commits/master
-    :alt: Gitlab CI pipeline status master branch
-
-.. toctree::
-   :maxdepth: 2
-   :numbered:
-   :caption: Contents
-
-   install
-   binapprox
-   rounding
-   combina
-   pycombina_sample_application
-   
+tbd ...
