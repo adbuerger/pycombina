@@ -76,7 +76,6 @@ public:
                std::vector<std::vector<unsigned int>> const & b_valid,
                std::vector<std::vector<unsigned int>> const & b_adjacencies,
 
-               std::vector<double> const & min_down_time_pre,
                unsigned int const & b_active_pre);
 
     ~CombinaBnBSolver();

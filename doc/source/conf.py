@@ -25,14 +25,8 @@ import sphinx_rtd_theme
 
 from mock import MagicMock
 
-MOCK_MODULES = ['numpy', 'gurobipy']
+MOCK_MODULES = ['gurobipy']
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
-
-numpy_mock = MagicMock()
-numpy_mock.matlib = MagicMock()
-
-sys.modules.update({'numpy.matlib': numpy_mock})
-
 
 # -- General configuration ------------------------------------------------
 

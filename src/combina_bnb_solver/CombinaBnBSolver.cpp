@@ -43,7 +43,6 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
                        std::vector<std::vector<unsigned int>> const & b_valid,
                        std::vector<std::vector<unsigned int>> const & b_adjacencies,
 
-                       std::vector<double> const & min_down_time_pre,
                        unsigned int const & b_active_pre)
 
     : dt(dt),
@@ -58,7 +57,6 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       b_valid(b_valid),
       b_adjacencies(b_adjacencies),
 
-      min_down_time_pre(min_down_time_pre),
       b_active_pre(b_active_pre),
 
       sum_eta(2, std::vector<std::vector<double>> (b_rel.size(), 
@@ -146,7 +144,7 @@ void CombinaBnBSolver::add_initial_nodes_to_queue() {
 
         std::vector<double> eta_child(n_c, 0.0);
         std::vector<unsigned int> sigma_child(n_c, 0);
-        std::vector<double> min_down_time_child = min_down_time_pre;
+        std::vector<double> min_down_time_child(n_c, 0.0);
         unsigned int depth_child(0);
         double lb_child(0.0);
 

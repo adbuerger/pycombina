@@ -20,46 +20,72 @@
 import unittest
 import numpy as np
 
-from mock import patch
-
-from pycombina._binary_approximation import BinaryApproximationBaseClass
+from pycombina._binary_approximation import BinApprox
 
 class InputTest(unittest.TestCase):
 
-    @patch.multiple(BinaryApproximationBaseClass, __abstractmethods__=set())
-    def test_input_valid(self):
+    def test_single_control_sos1_fulfilled(self):
 
         T = np.array([0, 1, 2, 3])
         b_rel = np.array([0.1, 0.3, 0.2])
 
-        BinaryApproximationBaseClass(T, b_rel)
+        BinApprox(T, b_rel, off_state_included = False)
 
 
-    @patch.multiple(BinaryApproximationBaseClass, __abstractmethods__=set())
-    def test_input_invalid_dimensions(self):
+    def test_single_control_sos1_violated(self):
+
+        T = np.array([0, 1, 2, 3])
+        b_rel = np.array([0.1, 0.3, 0.2])
+
+        self.assertRaises(ValueError, BinApprox, T, b_rel, off_state_included = True)
+
+
+    def test_single_control_invalid_dimensions(self):
 
         T = np.array([0, 1, 2, 3])
         b_rel = np.array([0.1, 0.3, 0.2, 0.5])
 
-        self.assertRaises(ValueError, BinaryApproximationBaseClass, T, b_rel)
+        self.assertRaises(ValueError, BinApprox, T, b_rel)
 
         
-    @patch.multiple(BinaryApproximationBaseClass, __abstractmethods__=set())
-    def test_input_T_not_increasing(self):
+    def test_single_control_T_not_increasing(self):
 
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([0.1, 0.3, 0.2])
 
-        self.assertRaises(ValueError, BinaryApproximationBaseClass, T, b_rel)
+        self.assertRaises(ValueError, BinApprox, T, b_rel)
 
 
-    @patch.multiple(BinaryApproximationBaseClass, __abstractmethods__=set())
-    def test_input_b_rel_not_relaxed_binary_solution(self):
+    def test_single_control_b_rel_not_relaxed_binary_solution(self):
 
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([0.1, 0.3, 1.2])
 
-        self.assertRaises(ValueError, BinaryApproximationBaseClass, T, b_rel)
+        self.assertRaises(ValueError, BinApprox, T, b_rel)
+
+
+    def test_multiple_controls_sos1_fulfilled_manual(self):
+
+        T = np.array([0, 2, 1, 3])
+        b_rel = np.array([[0.1, 0.3, 0.3], [0.9, 0.7, 0.7]])
+
+        self.assertRaises(ValueError, BinApprox, T, b_rel, off_state_included = True)
+
+
+    def test_multiple_controls_sos1_fulfilled_auto(self):
+
+        T = np.array([0, 2, 1, 3])
+        b_rel = np.array([[0.1, 0.3, 0.3], [0.2, 0.4, 0.5]])
+
+        self.assertRaises(ValueError, BinApprox, T, b_rel, off_state_included = False)
+
+
+    def test_multiple_controls_sos1_violated(self):
+
+        T = np.array([0, 2, 1, 3])
+        b_rel = np.array([[0.1, 0.3, 0.3], [0.3, 0.4, 0.5]])
+
+        self.assertRaises(ValueError, BinApprox, T, b_rel,  off_state_included = True)
 
 
 if __name__ == '__main__':

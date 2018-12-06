@@ -189,19 +189,6 @@ class BinApproxBase(ABC):
             return np.zeros(self.n_c)
 
 
-    @property
-    def min_down_times_pre(self) -> np.ndarray:
-
-        '''Get the remaining minimum down time per control from time grid point "t-1".'''
-
-        try:
-            return self._min_down_times_pre
-
-        except AttributeError:
-
-            return np.zeros(self.n_c)
-
-
     def _determine_number_of_control_intervals(self) -> None:
 
         self._n_t = self._t.size - 1
@@ -382,14 +369,12 @@ class BinApprox(BinApproxBase):
 
     def set_n_max_switches(self, n_max_switches: Union[int, float, list, np.ndarray]) -> None:
 
-
         '''
         Set the maximum number of allowed switches per control for solution of
         the binary approximation problem. By default, the maximum number of
         switches per control is not limited.
 
         Usage::
-
 
             >>> from pycombina import BinApprox
 
@@ -552,28 +537,6 @@ class BinApprox(BinApproxBase):
                 "must be either 0 or 1.")
 
         self.b_bin_pre = b_bin_pre
-
-
-    def set_min_down_times_pre(self, min_down_times_pre: Union[float, list, np.ndarray]) -> None:
-
-        '''
-        Deprecated, use set_valid_controls_for_interval instead().
-        '''
-
-        min_down_times_pre = np.asarray(min_down_times_pre)
-
-        try:
-            if not np.atleast_1d(np.squeeze(min_down_times_pre)).ndim == 1:
-                raise ValueError
-
-            if not min_down_times_pre.size == self.n_c:
-                raise ValueError
-
-        except ValueError:
-            raise ValueError("The number of values in min_down_times_pre " + \
-                "must be equal to the number of binary controls.")
-
-        self._min_down_times_pre = min_down_times_pre
 
 
     def set_valid_controls_for_interval(self, dt: tuple, \

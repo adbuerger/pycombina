@@ -48,7 +48,6 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
                       std::vector<std::vector<unsigned int>> &,
                       std::vector<std::vector<unsigned int>> &,
 
-                      std::vector<double> const &,
                       unsigned int const &>())
 
         .def("get_eta", &CombinaBnBSolver::get_eta)

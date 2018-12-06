@@ -82,7 +82,6 @@ class CombinaBnB():
                 self._binapprox_p.b_valid.tolist(), \
                 self._binapprox_p.b_adjacencies.tolist(), \
 
-                self._binapprox_p.min_down_times_pre.tolist(), \
                 b_bin_pre, \
 
             )
