@@ -67,8 +67,7 @@ class CombinaBnB():
 
         else:
 
-            b_bin_pre = int(np.where(self._binapprox_p.b_bin_pre == 1))
-
+            b_bin_pre = int(self._binapprox_p.b_bin_pre[np.where(self._binapprox_p.b_bin_pre == 1)])
         self._bnb_solver = CombinaBnBSolver( \
                 self._binapprox_p.dt.tolist(), \
                 self._binapprox_p.b_rel.tolist(), \

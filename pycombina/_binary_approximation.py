@@ -189,6 +189,18 @@ class BinApproxBase(ABC):
             return np.zeros(self.n_c)
 
 
+    @property
+    def cia_norm(self):
+
+        '''Applied CIA norm for objective'''
+
+        try:
+            return self._cia_norm
+
+        except AttributeError:
+            return "max_norm"
+
+
     def _determine_number_of_control_intervals(self) -> None:
 
         self._n_t = self._t.size - 1
@@ -536,7 +548,7 @@ class BinApprox(BinApproxBase):
             raise ValueError("All elements in b_bin_pre " + \
                 "must be either 0 or 1.")
 
-        self.b_bin_pre = b_bin_pre
+        self._b_bin_pre = b_bin_pre
 
 
     def set_valid_controls_for_interval(self, dt: tuple, \
@@ -660,6 +672,38 @@ class BinApprox(BinApproxBase):
         self._b_adjacencies[:, b_i] = b_valid_upcoming
 
 
+    def set_cia_norm(self, cia_norm: str) -> None:
+
+        '''
+        Specify the norm applied to || integral_t_0^t_f (b_rel-b_bin)*dt ||
+
+        Allowed choices:
+
+        - "max_norm": maximum over all time points and controls
+        - "column_sum_norm": maximum over all time points of the sum (over all controls) of absolute accumulated values (b_rel-b_bin)*dt
+        - "row_sum_norm": maximum over all controls of the sum (over all time points) of absolute accumulated values (b_rel-b_bin)*dt
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+
+            >>> # Induxe max_norm:
+            >>> binapprox.set_cia_norm("max_norm")
+
+        :param cia_norm: norm choice.
+        '''   
+        if not ((cia_norm == "max_norm") or (cia_norm == "column_sum_norm") or (cia_norm == "row_sum_norm")):
+            raise ValueError("cia_norm must be set either to 'max_norm' or 'column_sum_norm' or 'row_sum_norm'")
+
+        self._cia_norm = cia_norm
+
 class BinApproxPreprocessed(BinApproxBase):
 
     def _set_orignal_binapprox_problem(self, binapprox: BinApprox) -> None:
@@ -678,6 +722,8 @@ class BinApproxPreprocessed(BinApproxBase):
           
         self._b_bin_pre = self._binapprox.b_bin_pre
         self._b_adjacencies = self._binapprox.b_adjacencies
+        self._cia_norm = self._binapprox.cia_norm
+
 
 
     def _append_off_state(self) -> None:
