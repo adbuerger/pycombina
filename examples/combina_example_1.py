@@ -19,7 +19,7 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import pylab as pl
-from pycombina import BinApprox, CombinaBnB, CombinaMILP
+from pycombina import BinApprox, CombinaBnB, CombinaMILP, CombinaSUR
 
 pl.close("all")
 
@@ -29,15 +29,15 @@ max_switches = [8]
 
 binapprox = BinApprox(t = t, b_rel = b_rel, binary_threshold = 1e-3, \
     off_state_included = False)
-binapprox.set_n_max_switches(n_max_switches = max_switches)
-binapprox.set_min_up_times(min_up_times = [10])
-binapprox.set_min_down_times(min_down_times = [10])
-binapprox.set_cia_norm("column_sum_norm")
+#binapprox.set_n_max_switches(n_max_switches = max_switches)
+#binapprox.set_min_up_times(min_up_times = [10])
+#binapprox.set_min_down_times(min_down_times = [10])
+#binapprox.set_cia_norm("column_sum_norm")
 
 
-combina = CombinaBnB(binapprox)
+combina = CombinaMILP(binapprox)
 #combina.solve(gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.8})
-combina.solve()
+combina.solve(use_warm_start=False)
 
 
 b_bin = pl.squeeze(binapprox.b_bin)

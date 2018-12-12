@@ -56,3 +56,8 @@ try:
     from ._combina_bnb import CombinaBnB
 except ImportError:
     print("- BnB solver extension not found, CombinaBnB disabled.\n")
+
+try:
+    from ._combina_rounding import CombinaSUR
+except ImportError:
+    print("- Sum-Up-Rounding solver extension not found, CombinaSUR disabled.\n")

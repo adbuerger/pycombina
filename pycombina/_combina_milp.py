@@ -4,7 +4,7 @@ import ipdb
 import time
 
 from ._binary_approximation import BinApprox, BinApproxPreprocessed
-from ._combina_bnb_solver import CombinaBnBSolver
+from ._combina_rounding import CombinaSUR
 
 
 class CombinaMILP():
@@ -29,9 +29,17 @@ class CombinaMILP():
     '''
 
 
-    def _setup_warm_start(self, b_warm_start):
+    def _setup_warm_start(self, b_warm_start) -> None:
 
-        self._eta_sym_bin = b_warm_start
+        if b_warm_start:
+
+            CombinaSUR._run_sur(self)
+
+            for i in range(self._binapprox_p.n_c):
+
+                for j in range(-1,self._binapprox_p.n_t):
+
+                    self._b_bin_sym[(i,j)].start = self._binapprox_p._b_bin[i][j]
 
 
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
@@ -43,7 +51,6 @@ class CombinaMILP():
     def _initialize_milp(self):
 
         self._model = gp.Model("Combinatorial Integral Approximation MILP")
-        #self.set_cia_norm("max_norm")
 
 
     def _welcome_prompt_milp(self):
@@ -91,7 +98,7 @@ class CombinaMILP():
                 raise ValueError("Values of solver options must be of numerical type.")
 
         # TODO: Include use_warm_start 
-        # self._setup_warm_start(use_warm_start)
+        self._setup_warm_start(use_warm_start)
 
         self._model.optimize()
 
@@ -159,7 +166,6 @@ class CombinaMILP():
                     self._eta_sym_indiv[(i,j)] = self._model.addVar( \
                         vtype = "C", name = "eta_sym_indiv".format((i,j)))
                  
-
         self._b_bin_sym = {}
         self._s = {}
 

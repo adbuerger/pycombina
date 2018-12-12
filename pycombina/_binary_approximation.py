@@ -694,7 +694,7 @@ class BinApprox(BinApproxBase):
 
             >>> binapprox = BinApprox(t, b_rel)
 
-            >>> # Induxe max_norm:
+            >>> # Induce max_norm:
             >>> binapprox.set_cia_norm("max_norm")
 
         :param cia_norm: norm choice.
