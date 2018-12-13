@@ -27,7 +27,7 @@ pl.close("all")
 
 data = pl.loadtxt("data/mmlotka_nt_12000_400.csv", delimiter = " ", skiprows = 1)
 
-dN = 40
+dN = 8	
 
 t = data[::dN,0]
 b_rel = data[:-1:dN, 3:]
@@ -35,7 +35,7 @@ b_rel = data[:-1:dN, 3:]
 max_switches = [5, 2, 3]
 
 binapprox = BinApprox(t = t, b_rel = b_rel, binary_threshold = 1e-3, \
-        off_state_included = False)
+        off_state_included = True)
 #binapprox.set_n_max_switches(n_max_switches = max_switches)
 
 #binapprox.set_valid_controls_for_interval((0, 2), [1,0,0])
@@ -45,8 +45,8 @@ binapprox = BinApprox(t = t, b_rel = b_rel, binary_threshold = 1e-3, \
 	
 #binapprox.set_b_bin_pre([1,0,0])
 
-combina = CombinaSUR(binapprox)
-combina.solve()
+combina = CombinaMILP(binapprox)
+combina.solve(use_warm_start=True, gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.4})
 
 b_bin_orig = pl.asarray(binapprox.b_bin)
 

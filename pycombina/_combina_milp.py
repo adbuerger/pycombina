@@ -37,7 +37,7 @@ class CombinaMILP():
 
             for i in range(self._binapprox_p.n_c):
 
-                for j in range(-1,self._binapprox_p.n_t):
+                for j in range(self._binapprox_p.n_t):
 
                     self._b_bin_sym[(i,j)].start = self._binapprox_p._b_bin[i][j]
 

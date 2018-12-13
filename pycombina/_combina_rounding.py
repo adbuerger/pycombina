@@ -56,7 +56,7 @@ class CombinaSUR():
 
         '''
 
-        self._run_sur()
+        self._run_sur(self)
         self._set_solution()
 
     @staticmethod
