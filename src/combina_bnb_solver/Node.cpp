@@ -35,7 +35,10 @@ Node::Node(Node* const parent_node,
            unsigned int const n_c,
            
            std::vector<unsigned int> const sigma,
+
            std::vector<double> const min_down_time,
+           std::vector<double> const up_time,
+           std::vector<double> const total_up_time,
 
            unsigned int const depth,
            std::vector<double> const eta,
@@ -44,8 +47,12 @@ Node::Node(Node* const parent_node,
     : parent_node(parent_node),
 
       b_active(b_active),
+
       sigma(sigma),
+      
       min_down_time(min_down_time),
+      up_time(up_time),
+      total_up_time(total_up_time),
 
       depth(depth),
       eta(eta),
@@ -139,6 +146,18 @@ std::vector<unsigned int> Node::get_sigma() {
 std::vector<double> Node::get_min_down_time() {
 
     return min_down_time;
+}
+
+
+std::vector<double> Node::get_up_time() {
+
+    return up_time;
+}
+
+
+std::vector<double> Node::get_total_up_time() {
+
+    return total_up_time;
 }
 
 

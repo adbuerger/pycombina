@@ -73,6 +73,9 @@ public:
                std::vector<unsigned int> const & n_max_switches,
                std::vector<double> const & min_up_time,
                std::vector<double> const & min_down_time,
+               std::vector<double> const & max_up_time,
+               std::vector<double> const & total_max_up_time,
+
                std::vector<std::vector<unsigned int>> const & b_valid,
                std::vector<std::vector<unsigned int>> const & b_adjacencies,
 
@@ -100,17 +103,22 @@ private:
         unsigned int const b_active_parent,
         std::vector<unsigned int> const & sigma_child,
         std::vector<double> const & min_down_time_parent,
+        std::vector<double> const & up_time_parent,
+        std::vector<double> const & total_up_time_parent,
         unsigned int const depth_child);
 
     void compute_child_node_properties(
         unsigned int const b_active_child, unsigned int const b_active_parent,
         std::vector<double> & eta_child, std::vector<unsigned int> & sigma_child,
-        std::vector<double> & min_down_time_child,
+        std::vector<double> & min_down_time_child, std::vector<double> & up_time_child,
+        std::vector<double> & total_up_time_child,
         double const lb_parent, double* lb_child, unsigned int* depth_child);
 
     bool add_child_node_to_queue(Node* const parent_node, 
         unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
-        std::vector<double> const & min_down_time_child, double const depth_child,
+        std::vector<double> const & min_down_time_child,
+        std::vector<double> const & up_time_child,
+        std::vector<double> const & total_up_time_child, double const depth_child,
         std::vector<double> const & eta_child, double const lb_child);
 
     void run_bnb();
@@ -136,6 +144,9 @@ private:
     std::vector<unsigned int> n_max_switches;
     std::vector<double> min_up_time;
     std::vector<double> min_down_time;
+    std::vector<double> max_up_time;
+    std::vector<double> total_max_up_time;
+
     std::vector<std::vector<unsigned int>> b_valid;
     std::vector<std::vector<unsigned int>> b_adjacencies;
 

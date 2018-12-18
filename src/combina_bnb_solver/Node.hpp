@@ -40,7 +40,10 @@ public:
          unsigned int const b_active,
          unsigned int const n_c,
          std::vector<unsigned int> const sigma,
+
          std::vector<double> const min_down_time,
+         std::vector<double> const up_time,
+         std::vector<double> const total_up_time,
          
          unsigned int const depth,
          std::vector<double> const eta,
@@ -56,9 +59,13 @@ public:
     std::vector<Node*> get_child_nodes();
     
     unsigned int get_b_active();
+
     unsigned int get_max_sigma() const;
     std::vector<unsigned int> get_sigma();
+
     std::vector<double> get_min_down_time();
+    std::vector<double> get_up_time();
+    std::vector<double> get_total_up_time();
 
     unsigned int get_depth();
     std::vector<double> get_eta();
@@ -77,13 +84,15 @@ private:
     std::vector<Node*> child_nodes;
 
     unsigned int b_active;
+
     std::vector<unsigned int> sigma;
+    
     std::vector<double> min_down_time;
+    std::vector<double> up_time;
+    std::vector<double> total_up_time;
 
     unsigned int depth;
     std::vector<double> eta;
     double lb;
 
-
 };
-

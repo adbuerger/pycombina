@@ -40,6 +40,9 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
                        std::vector<unsigned int> const & n_max_switches,
                        std::vector<double> const & min_up_time,
                        std::vector<double> const & min_down_time,
+                       std::vector<double> const & max_up_time,
+                       std::vector<double> const & total_max_up_time,
+
                        std::vector<std::vector<unsigned int>> const & b_valid,
                        std::vector<std::vector<unsigned int>> const & b_adjacencies,
 
@@ -54,6 +57,9 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       n_max_switches(n_max_switches),
       min_up_time(min_up_time),
       min_down_time(min_down_time),
+      max_up_time(max_up_time),
+      total_max_up_time(total_max_up_time),
+
       b_valid(b_valid),
       b_adjacencies(b_adjacencies),
 
@@ -145,18 +151,22 @@ void CombinaBnBSolver::add_initial_nodes_to_queue() {
         std::vector<double> eta_child(n_c, 0.0);
         std::vector<unsigned int> sigma_child(n_c, 0);
         std::vector<double> min_down_time_child(n_c, 0.0);
+        std::vector<double> up_time_child(n_c, 0.0);
+        std::vector<double> total_up_time_child(n_c, 0.0);
         unsigned int depth_child(0);
         double lb_child(0.0);
 
         if (!control_activation_forbidden(b_active_child, b_active_parent, 
-            sigma_child, min_down_time_child, depth_child)) {
+            sigma_child, min_down_time_child, up_time_child, 
+            total_up_time_child, depth_child)) {
 
             compute_child_node_properties(b_active_child, b_active_parent, 
-                eta_child, sigma_child, min_down_time_child,
-                lb_parent, &lb_child, &depth_child);
+                eta_child, sigma_child, min_down_time_child, up_time_child,
+                total_up_time_child, lb_parent, &lb_child, &depth_child);
 
             add_child_node_to_queue(nullptr, b_active_child, sigma_child, 
-                min_down_time_child, depth_child, eta_child, lb_child);
+                min_down_time_child, up_time_child, total_up_time_child,
+                depth_child, eta_child, lb_child);
         }
     }
 }
@@ -165,10 +175,14 @@ void CombinaBnBSolver::add_initial_nodes_to_queue() {
 bool CombinaBnBSolver::control_activation_forbidden(
     unsigned int const b_active_child, unsigned int const b_active_parent,
     std::vector<unsigned int> const & sigma_child,
-    std::vector<double> const & min_down_time_parent, 
+    std::vector<double> const & min_down_time_parent,
+    std::vector<double> const & up_time_parent,
+    std::vector<double> const & total_up_time_parent,
     unsigned int const depth_child) {
 
     double min_up_time_fulfilled(0.0);
+    std::vector<double> up_time_child_test(up_time_parent);
+    std::vector<double> total_up_time_child_test(total_up_time_parent);
     unsigned int depth_child_test(depth_child);
 
     do {
@@ -179,21 +193,30 @@ bool CombinaBnBSolver::control_activation_forbidden(
         }
         
         min_up_time_fulfilled += dt[depth_child_test];
+        up_time_child_test[b_active_child] += dt[depth_child_test];
+        total_up_time_child_test[b_active_child] += dt[depth_child_test];
         depth_child_test++;
 
     } while((min_up_time[b_active_child] > min_up_time_fulfilled) && (depth_child_test < n_t));
 
     return (sigma_child[b_active_child] >= n_max_switches[b_active_child] ||
-        (b_active_parent < n_c && sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
+        (b_active_parent < n_c &&
+            sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
         min_down_time_parent[b_active_child] > 0.0 ||
-        (b_active_parent < n_c && b_adjacencies[b_active_child][b_active_parent] == 0));
+        (b_active_parent < n_c && 
+            b_adjacencies[b_active_child][b_active_parent] == 0) ||
+        (b_active_parent < n_c && 
+            up_time_child_test[b_active_child] > max_up_time[b_active_child]) ||
+        (b_active_parent < n_c && 
+            total_up_time_child_test[b_active_child] > total_max_up_time[b_active_child]));
 }
 
 
 void CombinaBnBSolver::compute_child_node_properties(
     unsigned int const b_active_child, unsigned int const b_active_parent,
     std::vector<double> & eta_child, std::vector<unsigned int> & sigma_child,
-    std::vector<double> & min_down_time_child,
+    std::vector<double> & min_down_time_child, std::vector<double> & up_time_child,
+    std::vector<double> & total_up_time_child,
     double const lb_parent, double* lb_child, unsigned int* depth_child) {
 
     double min_up_time_fulfilled(0.0);
@@ -217,6 +240,8 @@ void CombinaBnBSolver::compute_child_node_properties(
         }
 
         min_up_time_fulfilled += dt[*depth_child];
+        up_time_child[b_active_child] += dt[*depth_child];
+        total_up_time_child[b_active_child] += dt[*depth_child];
         (*depth_child)++;
 
 
@@ -255,7 +280,9 @@ void CombinaBnBSolver::compute_child_node_properties(
 
 bool CombinaBnBSolver::add_child_node_to_queue(Node* parent_node, 
     unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
-    std::vector<double> const & min_down_time_child, double const depth_child,
+    std::vector<double> const & min_down_time_child,
+    std::vector<double> const & up_time_child,
+    std::vector<double> const & total_up_time_child, double const depth_child,
     std::vector<double> const & eta_child, double const lb_child) {
 
     Node* child_node(nullptr);
@@ -273,7 +300,8 @@ bool CombinaBnBSolver::add_child_node_to_queue(Node* parent_node,
     if(lb_child < ub_bnb) {
 
         child_node = new Node(parent_node, b_active_child, n_c, sigma_child,
-            min_down_time_child, depth_child, eta_child, lb_child);
+            min_down_time_child, up_time_child, total_up_time_child,
+            depth_child, eta_child, lb_child);
 
         node_queue.push(child_node);
 
@@ -463,21 +491,27 @@ void CombinaBnBSolver::add_nodes_to_queue(Node* parent_node) {
 
         std::vector<double> eta_child = parent_node->get_eta();
         std::vector<unsigned int> sigma_child = parent_node->get_sigma();
+        
         std::vector<double> min_down_time_child = parent_node->get_min_down_time();
+        std::vector<double> up_time_child = parent_node->get_up_time();
+        std::vector<double> total_up_time_child = parent_node->get_total_up_time();
+
         unsigned int depth_child = parent_node->get_depth();
         double lb_child = parent_node->get_lb();
 
         bool child_added(false);
 
         if (!control_activation_forbidden(b_active_child,
-            b_active_parent, sigma_child, min_down_time_child, depth_child)) {
+            b_active_parent, sigma_child, min_down_time_child,
+            up_time_child, total_up_time_child, depth_child)) {
 
             compute_child_node_properties(b_active_child, b_active_parent, 
-                eta_child, sigma_child, min_down_time_child,
-                lb_parent, &lb_child, &depth_child);
+                eta_child, sigma_child, min_down_time_child, up_time_child,
+                total_up_time_child, lb_parent, &lb_child, &depth_child);
 
             child_added = add_child_node_to_queue(parent_node, b_active_child, sigma_child, 
-                min_down_time_child, depth_child, eta_child, lb_child);
+                min_down_time_child, up_time_child, total_up_time_child,
+                depth_child, eta_child, lb_child);
 
         }
 

@@ -45,6 +45,9 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
                       std::vector<unsigned int> const &,
                       std::vector<double> const &,
                       std::vector<double> const &,
+                      std::vector<double> const &,
+                      std::vector<double> const &,
+                      
                       std::vector<std::vector<unsigned int>> &,
                       std::vector<std::vector<unsigned int>> &,
 

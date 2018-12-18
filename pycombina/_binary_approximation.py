@@ -177,6 +177,38 @@ class BinApproxBase(ABC):
 
 
     @property
+    def max_up_times(self) -> np.ndarray:
+
+        '''
+        Get the maximum up times per control, i. e., the time a control
+        be can stay activated before it must be deactivated.
+        '''
+
+        try:
+            return self._max_up_times
+
+        except AttributeError:
+
+            return (self._t[-1] - self._t[0]) * np.ones(self.n_c)
+
+
+    @property
+    def total_max_up_times(self) -> np.ndarray:
+
+        '''
+        Get the total maximum up times per control, i. e., the total time a
+        control can be active over the whole time horizon.
+        '''
+
+        try:
+            return self._total_max_up_times
+
+        except AttributeError:
+
+            return (self._t[-1] - self._t[0]) * np.ones(self.n_c)
+
+
+    @property
     def b_bin_pre(self) -> np.ndarray:
 
         '''Get the binary control active at time grid point "t-1".'''
@@ -505,6 +537,88 @@ class BinApprox(BinApproxBase):
         self._min_down_times = min_down_times
 
 
+    def set_max_up_times(self, max_up_times: Union[float, list, np.ndarray]) -> None:
+
+        '''
+        Set the maximum up-times per control, i. e., the maximum time that a
+        control can stay active once it has been activated. By default,
+        the maximum up-times are the total duration of the time horizon.
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+            >>> binapprox.set_max_up_times([3.7, 2.4, 6.3])
+        
+            >>> print(binapprox.max_up_times)
+            [3.7, 2.4, 6.3]
+
+        :param max_up_times: Maximum up-times per binary control. 
+        '''
+
+        max_up_times = np.asarray(max_up_times)
+
+        try:
+            if not np.atleast_1d(np.squeeze(max_up_times)).ndim == 1:
+                raise ValueError
+
+            if not max_up_times.size == self.n_c:
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("The number of values in max_up_times " + \
+                "must be equal to the number of binary controls.")
+
+        self._max_up_times = max_up_times
+
+
+    def set_total_max_up_times(self, total_max_up_times: Union[float, list, np.ndarray]) -> None:
+
+        '''
+        Set the total maximum up-times per control, i. e., the maximum time
+        that a control can stay active over the whole control horizon. By default,
+        the total maximum up-times are the total duration of the time horizon.
+
+        Usage::
+
+            >>> from pycombina import BinApprox
+
+            >>> t = [0, ..., 9.0, 9.5, 10.0]
+            >>> b_rel = [[0.0      , ..., 0.558401, 0.558401, 0.558401],
+            ...          [0.0      , ..., 0.0     , 0.0     , 0.0     ],
+            ...          [1.0      , ..., 0.441599, 0.441599, 0.441599]])
+
+            >>> binapprox = BinApprox(t, b_rel)
+            >>> binapprox.set_total_max_up_times([3.7, 2.4, 6.3])
+        
+            >>> print(binapprox.total_max_up_times)
+            [3.7, 2.4, 6.3]
+
+        :param total_max_up_times: Total maximum up-times per binary control. 
+        '''
+
+        total_max_up_times = np.asarray(total_max_up_times)
+
+        try:
+            if not np.atleast_1d(np.squeeze(total_max_up_times)).ndim == 1:
+                raise ValueError
+
+            if not total_max_up_times.size == self.n_c:
+                raise ValueError
+
+        except ValueError:
+            raise ValueError("The number of values in total_max_up_times " + \
+                "must be equal to the number of binary controls.")
+
+        self._total_max_up_times = total_max_up_times
+
+
     def set_b_bin_pre(self, b_bin_pre: Union[list, np.ndarray]) -> None:
 
         '''
@@ -719,6 +833,8 @@ class BinApproxPreprocessed(BinApproxBase):
         self._n_max_switches = self._binapprox.n_max_switches
         self._min_up_times = self._binapprox.min_up_times
         self._min_down_times = self._binapprox.min_down_times
+        self._max_up_times = self._binapprox.max_up_times
+        self._total_max_up_times = self._binapprox.total_max_up_times
           
         self._b_bin_pre = self._binapprox.b_bin_pre
         self._b_adjacencies = self._binapprox.b_adjacencies
@@ -744,8 +860,15 @@ class BinApproxPreprocessed(BinApproxBase):
 
             self._n_max_switches = np.append(self._n_max_switches, \
                 self._binapprox.n_t)
+
             self._min_up_times = np.append(self._min_up_times, 0.0)
             self._min_down_times = np.append(self._min_down_times, 0.0)
+            self._max_up_times = \
+                np.append(self._max_up_times,
+                    (self._binapprox.t[-1] - self._binapprox.t[0]))
+            self._total_max_up_times = \
+                np.append(self._total_max_up_times,
+                    (self._binapprox.t[-1] - self._binapprox.t[0]))
 
             self._b_bin_pre = np.append(self._b_bin_pre, 0)
 
@@ -798,6 +921,8 @@ class BinApproxPreprocessed(BinApproxBase):
         self._n_max_switches = self._n_max_switches[self._b_active]
         self._min_up_times = self._min_up_times[self._b_active]
         self._min_down_times = self._min_down_times[self._b_active]
+        self._max_up_times = self._max_up_times[self._b_active]
+        self._total_max_up_times = self._total_max_up_times[self._b_active]
    
         self._b_bin_pre = self._b_bin_pre[self._b_active]
 

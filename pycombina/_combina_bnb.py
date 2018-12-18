@@ -78,6 +78,9 @@ class CombinaBnB():
                 self._binapprox_p.n_max_switches.tolist(), \
                 self._binapprox_p.min_up_times.tolist(), \
                 self._binapprox_p.min_down_times.tolist(), \
+                self._binapprox_p.max_up_times.tolist(), \
+                self._binapprox_p.total_max_up_times.tolist(), \
+
                 self._binapprox_p.b_valid.tolist(), \
                 self._binapprox_p.b_adjacencies.tolist(), \
 
