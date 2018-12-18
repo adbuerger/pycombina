@@ -59,6 +59,10 @@ class CombinaSUR():
         self._run_sur(self)
         self._set_solution()
 
+        print("                 Sum-Up-Rounding finished                  ");
+        print("-----------------------------------------------------------");
+
+
     @staticmethod
     def _run_sur(self):
 

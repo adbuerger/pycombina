@@ -147,6 +147,8 @@ class CombinaMILP():
         self._retrieve_solutions()
         self._set_solution()
 
+        print("-----------------------------------------------------------");
+
 
 ############## Gurobi specific variables and constraints functions #########
 
