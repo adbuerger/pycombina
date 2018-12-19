@@ -35,7 +35,7 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 #binapprox.set_cia_norm("column_sum_norm")
 
 
-combina = CombinaMILP(binapprox)
+combina = CombinaBnB(binapprox)
 #combina.solve(gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.8})
 combina.solve(use_warm_start=False)
 
