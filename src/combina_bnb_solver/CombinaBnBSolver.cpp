@@ -203,7 +203,8 @@ bool CombinaBnBSolver::control_activation_forbidden(
         (b_active_parent < n_c &&
             sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
         min_down_time_parent[b_active_child] > 0.0 ||
-        b_adjacencies[b_active_child][b_active_parent] == 0 ||
+        (b_active_parent < n_c &&
+            b_adjacencies[b_active_child][b_active_parent] == 0) ||
         up_time_child_test[b_active_child] > max_up_time[b_active_child] ||
         total_up_time_child_test[b_active_child] > total_max_up_time[b_active_child]);
 }
