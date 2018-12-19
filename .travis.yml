@@ -1,0 +1,17 @@
+dist: xenial
+language: python
+
+matrix:
+  include:
+    - python: 3.5
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y cmake g++ python-dev
+
+before_script:
+  - sudo pip install numpy unittest2
+
+script:
+  - python setup.py test
+  

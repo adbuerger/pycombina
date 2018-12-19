@@ -19,12 +19,12 @@
 Combinatorial integral approximation
 ====================================
 
-**pycombina** includes two classes for solution of binary approximation problems using combinatorial integral approximation:
+**pycombina** currently includes two classes for solution of binary approximation problems using combinatorial integral approximation:
 
 * :class:`pycombina.CombinaBnB`
 * :class:`pycombina.CombinaMILP`
 
-which int he following are described in more detail.
+which in the following are described in more detail.
 
 .. autoclass:: pycombina.CombinaBnB
     :members:

@@ -187,7 +187,7 @@ bool CombinaBnBSolver::control_activation_forbidden(
 
     do {
 
-        if (b_valid.at(b_active_child).at(depth_child_test) != 1) {
+        if (b_valid[b_active_child][depth_child_test] != 1) {
 
             return true;
         }
@@ -203,12 +203,9 @@ bool CombinaBnBSolver::control_activation_forbidden(
         (b_active_parent < n_c &&
             sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
         min_down_time_parent[b_active_child] > 0.0 ||
-        (b_active_parent < n_c && 
-            b_adjacencies[b_active_child][b_active_parent] == 0) ||
-        (b_active_parent < n_c && 
-            up_time_child_test[b_active_child] > max_up_time[b_active_child]) ||
-        (b_active_parent < n_c && 
-            total_up_time_child_test[b_active_child] > total_max_up_time[b_active_child]));
+        b_adjacencies[b_active_child][b_active_parent] == 0 ||
+        up_time_child_test[b_active_child] > max_up_time[b_active_child] ||
+        total_up_time_child_test[b_active_child] > total_max_up_time[b_active_child]);
 }
 
 
@@ -242,6 +239,7 @@ void CombinaBnBSolver::compute_child_node_properties(
         min_up_time_fulfilled += dt[*depth_child];
         up_time_child[b_active_child] += dt[*depth_child];
         total_up_time_child[b_active_child] += dt[*depth_child];
+        
         (*depth_child)++;
 
 

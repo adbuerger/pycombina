@@ -19,6 +19,13 @@
 Sum-up rounding
 ===============
 
-**pycombina** includes ... classes for solution of binary approximation problems using sum-up rounding:
+**pycombina** currently includes one classes for solution of binary approximation problems using sum-up rounding:
 
-tbd ...
+* :class:`pycombina.CombinaSUR`
+
+which in the following are described in more detail.
+
+.. autoclass:: pycombina.CombinaSUR
+    :members:
+    :inherited-members:
+    

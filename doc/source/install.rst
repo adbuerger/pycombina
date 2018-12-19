@@ -19,24 +19,28 @@
 How to install
 ==============
 
-Install on Ubuntu 16.04
------------------------
+Install on Ubuntu 18.04 / Debian 9
+----------------------------------
 
-Python version >= 3.5 is required to run pycombina.
+Python version >= 3.5 is required to use pycombina. You might need root privileges to run the following commands:
 
 .. code:: Bash
 
-    sudo apt-get install python3-pip python3-dev cmake g++ git
-    sudo pip3 install setuptools numpy unittest2
+    apt install python3-pip python3-dev cmake g++ git
     
+Depending on your setup, you might need root privileges in the following to install packages via pip and setuptools:
+
+.. code:: Bash
+
+    pip3 install setuptools numpy unittest2
     git clone https://github.com/adbuerger/pycombina.git
     cd pycombina
-    sudo python3 setup.py install
+    python3 setup.py install
 
 
 **Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
 
-For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaBnB```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
+For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaMILP```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
 
 
 Install on Windows 10
@@ -52,7 +56,7 @@ After that, clone or download and unzip the pycombina repository from https://gi
 
 from within the pycombina folder.
 
-For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaBnB```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
+For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaMILP```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
 
 
 .. [#f5] |linkf5|_

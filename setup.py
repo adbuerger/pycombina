@@ -91,7 +91,7 @@ class CMakeBuild(build_ext):
 setup(
 
     name='pycombina',
-    version='0.1',
+    version='0.2',
 
     author='Adrian Buerger, Clemens Zeile',
     author_email='adrian.buerger@hs-karlsruhe.de, clemens.zeile@ovgu.de',
@@ -100,16 +100,12 @@ setup(
 
     long_description='',
     
-    # see again: http://www.benjack.io/2017/06/12/python-cpp-tests.html
-
-    # add extension module
     ext_modules=[CMakeExtension('pycombina/_combina_bnb')],
 
     packages = find_packages(),
 
     install_requires=["numpy>=1.13"],
 
-    # add custom build_ext command
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     test_suite="test",

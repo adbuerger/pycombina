@@ -19,7 +19,7 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import pylab as pl
-from pycombina import BinApprox, CombinaBnB #, CombinaMILP, CombinaSUR
+from pycombina import BinApprox, CombinaBnB, CombinaMILP
 
 pl.close("all")
 
@@ -35,7 +35,7 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 #binapprox.set_cia_norm("column_sum_norm")
 
 
-combina = CombinaBnB(binapprox)
+combina = CombinaMILP(binapprox)
 #combina.solve(gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.8})
 combina.solve(use_warm_start=False)
 

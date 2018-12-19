@@ -100,6 +100,13 @@ class CombinaBnB():
         self._setup_bnb(binapprox)
 
 
+    def _setup_warm_start(self, use_warm_start: bool) -> None:
+
+        if use_warm_start:
+
+            raise NotImplementedError("Warm-starting not yet implemented.")
+
+
     def _run_solver(self, use_warm_start: bool, bnb_opts: dict) -> None:
 
         bnb_opts_default = {
@@ -155,5 +162,6 @@ class CombinaBnB():
 
         '''
 
+        self._setup_warm_start(use_warm_start = use_warm_start)
         self._run_solver(use_warm_start = use_warm_start, bnb_opts = bnb_opts)
         self._set_solution()

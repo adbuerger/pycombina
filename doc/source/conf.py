@@ -25,8 +25,16 @@ import sphinx_rtd_theme
 
 from mock import MagicMock
 
-MOCK_MODULES = ['gurobipy']
-sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
+def return_gurobipy_version(*args):
+
+    return (8, 0, 0)
+
+
+gurobipy_mock = MagicMock()
+gurobipy_mock.gurobi = MagicMock()
+gurobipy_mock.gurobi.version = MagicMock(side_effect = return_gurobipy_version)
+
+sys.modules.update([('gurobipy', gurobipy_mock)])
 
 # -- General configuration ------------------------------------------------
 

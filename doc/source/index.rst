@@ -27,11 +27,19 @@
 
 **pycombina** is a Python module for solving binary approximation problems.
 
-|gitlab-ci|
+Multi-dimensional binary approximation problems can be formulated including
+a variety of combinatorial constraints (such as maximum number of switches,
+dwell times and switching adjacencies) and solved using different methods.
 
-.. |gitlab-ci| image:: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/badges/master/pipeline.svg
-    :target: https://www.w.hs-karlsruhe.de/gitlab/ab/pycombina/commits/master
-    :alt: Gitlab CI pipeline status master branch
+|travis-ci| |rtd|
+
+.. |travis-ci| image:: https://travis-ci.org/adbuerger/pycombina.svg?branch=master
+    :target: https://travis-ci.org/adbuerger/pycombina
+    :alt: Travis CI pipeline status master branch
+
+.. |rtd| image:: https://readthedocs.org/projects/pycombina/badge/?version=latest
+    :target: https://pycombina.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. toctree::
    :maxdepth: 2
