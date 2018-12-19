@@ -40,10 +40,18 @@ def solve():
 
     content = request.json
 
-    raise InvalidUsage('This view is gone', status_code=500)
+    # raise InvalidUsage('This view is gone', status_code=500)
 
-    return str(content)
+    t = content["t"]
+    b_rel = content["b_rel"]
+
+    try:
+        tol = content["tol"]
+
+    binaapprox = BinApprox(t = t, b_rel = b_rel, )
+
+    return str((t, b_rel))
 
 if __name__ == '__main__':
     
-    app.run(host= '0.0.0.0', port=1234, debug=True)
+    app.run(host= '0.0.0.0', port=1234)
