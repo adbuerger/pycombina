@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install -y cmake g++
 
 before_script:
-  - sudo pip3 install numpy unittest2
+  - pip install numpy unittest2
 
 script:
   - python setup.py test
