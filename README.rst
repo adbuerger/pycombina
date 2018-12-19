@@ -17,8 +17,8 @@
 
 .. image:: logo/logo.png
 
-pycombina - Combinatorial Integral Approximation
-================================================
+pycombina - Solving binary approximation problems in Python
+===========================================================
 
 |travis-ci| |rtd|
 
@@ -31,7 +31,6 @@ pycombina - Combinatorial Integral Approximation
     :alt: Documentation Status
 
 **pycombina** is a Python module for solving binary approximation problems.
-
 Multi-dimensional binary approximation problems can be formulated including
 a variety of combinatorial constraints (such as maximum number of switches,
 dwell times and switching adjacencies) and solved using different methods.
