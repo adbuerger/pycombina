@@ -26,10 +26,10 @@ Combinatorial integral approximation
 
 which in the following are described in more detail.
 
-.. autoclass:: pycombina.CombinaBnB
+.. autoclass:: pycombina._combina_bnb.CombinaBnB
     :members:
     :inherited-members:
 
-.. autoclass:: pycombina.CombinaMILP
+.. autoclass:: pycombina._combina_milp.CombinaMILP
     :members:
     :inherited-members:

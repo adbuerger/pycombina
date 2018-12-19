@@ -23,7 +23,7 @@ Binary approximation problems
 
 Prior to solving, a binary approximation problem has to be formulated using :class:`pycombina.BinApprox`. The resulting object can then later be passed to one of the solvers contained in **pycombina**.
 
-.. autoclass:: pycombina.BinApprox
+.. autoclass:: pycombina._binary_approximation.BinApprox
     :members:
     :inherited-members:
 

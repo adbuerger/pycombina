@@ -25,7 +25,7 @@ Sum-up rounding
 
 which in the following are described in more detail.
 
-.. autoclass:: pycombina.CombinaSUR
+.. autoclass:: pycombina._combina_sur.CombinaSUR
     :members:
     :inherited-members:
     
