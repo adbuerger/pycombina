@@ -36,6 +36,8 @@ gurobipy_mock.gurobi.version = MagicMock(side_effect = return_gurobipy_version)
 
 sys.modules.update([('gurobipy', gurobipy_mock)])
 
+sys.modules.update([('pycombina._combina_bnb_solver', MagicMock())])
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
