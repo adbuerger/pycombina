@@ -53,6 +53,27 @@ class CombinaBnB():
 
     '''
 
+    _solver_status = {
+
+        1: "Initialized",
+        2: "Optimal solution found",
+        3: "Maximum number of iterations exceeded",
+        4: "Maximum CPU time exceeded",
+        5: "User interrupt"
+    }
+
+
+    @property
+    def status(self):
+
+        try:
+            return self._solver_status[self._bnb_solver.get_status()]
+
+        except KeyError:
+            raise RuntimeError("Solver status undefined, this should not happen.\n"
+                + "Please contact the developers.")
+
+
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
         self._binapprox = binapprox

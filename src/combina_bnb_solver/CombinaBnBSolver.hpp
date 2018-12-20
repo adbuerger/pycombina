@@ -88,6 +88,7 @@ public:
 
     double get_eta();
     std::vector<std::vector<unsigned int>> get_b_bin();
+    unsigned int get_status();
 
 
 private:
@@ -171,5 +172,7 @@ private:
 
     bool terminate;
     bool user_interrupt;
+
+    unsigned int status;
 
 };

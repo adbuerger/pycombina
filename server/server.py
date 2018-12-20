@@ -20,20 +20,19 @@ class InvalidUsage(Exception):
         
         self.payload = payload
 
-    def to_dict(self):
-        
-        rv = dict(self.payload or ())
-        rv['Error'] = self.message
-        
-        return rv
-
 
 pycombina_server = Flask(__name__)
 
 @pycombina_server.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
     
-    response = jsonify(error.to_dict())
+    response = jsonify({ \
+        'solver': None, \
+        'solver_status': None, \
+        'b_bin': None, \
+        'eta': None, \
+        'errors': error.message})
+
     response.status_code = error.status_code
 
     return response
@@ -81,27 +80,69 @@ def set_binapprox_options(binapprox, problem_definition):
     except Exception as e:
         raise InvalidUsage(str(e), status_code = 500)
 
+    try:
+        binapprox.set_min_up_times(problem_definition["min_up_times"])
+    except KeyError:
+        pass
+    except Exception as e:
+        raise InvalidUsage(str(e), status_code = 500)
+
+    try:
+        binapprox.set_min_down_times(problem_definition["min_down_times"])
+    except KeyError:
+        pass
+    except Exception as e:
+        raise InvalidUsage(str(e), status_code = 500)
+
+    try:
+        binapprox.set_max_up_times(problem_definition["max_up_times"])
+    except KeyError:
+        pass
+    except Exception as e:
+        raise InvalidUsage(str(e), status_code = 500)
+
+    try:
+        binapprox.set_total_max_up_times(problem_definition["total_max_up_times"])
+    except KeyError:
+        pass
+    except Exception as e:
+        raise InvalidUsage(str(e), status_code = 500)
+
+    try:
+        binapprox.set_b_bin_pre(problem_definition["b_bin_pre"])
+    except KeyError:
+        pass
+    except Exception as e:
+        raise InvalidUsage(str(e), status_code = 500)
+
+    try:
+        if ("b_bin_valid" in problem_definition.keys()) or ("dt" in problem_definition.keys()):
+            raise NotImplementedError( \
+                "Using set_valid_controls_for_interval not yet supported in server application.")
+
+        if ("b_i" in problem_definition.keys()) or ("b_valid_upcoming" in problem_definition.keys()):
+            raise NotImplementedError( \
+                "Using set_valid_control_transitions not yet supported in server application.")
+
+    except Exception as e:
+        raise InvalidUsage(str(e), status_code = 500)
+
     return binapprox
 
 
 def setup_solver(problem_definition):
 
     if not "solver" in problem_definition.keys():
-
         return CombinaBnB
 
     else:
-
         if problem_definition["solver"] == "CombinaMILP":
-
             return CombinaMILP
         
         elif problem_definition["solver"] == "CombinaSUR":
-
             return CombinaSUR
 
         else:
-
             return CombinaBnB
 
 
@@ -116,11 +157,15 @@ def solve():
     solver = setup_solver(problem_definition)(binapprox)
     solver.solve()
 
-    result = {"solver": str(type(solver)), "b_bin": binapprox.b_bin.tolist(), \
-        "eta": binapprox.eta}
+    response = jsonify({ \
+        'solver': type(solver).__name__, \
+        'solver_status': solver.status, \
+        'b_bin': binapprox.b_bin.tolist(), \
+        'eta': binapprox.eta, \
+        'errors': None})
 
-    return str((result))
+    return response
 
 if __name__ == '__main__':
     
-    pycombina_server.run(host= '0.0.0.0', port=1234, debug=True)
+    pycombina_server.run(host= '0.0.0.0', port=6789, debug=True)

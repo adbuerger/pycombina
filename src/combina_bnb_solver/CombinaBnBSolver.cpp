@@ -77,7 +77,9 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       n_print(0),
 
       terminate(false),
-      user_interrupt(false)
+      user_interrupt(false),
+
+      status(1)
 
 {
 
@@ -378,27 +380,31 @@ void CombinaBnBSolver::run_bnb() {
 
     std::ostringstream streamObj;
 
-    streamObj << std::scientific << "\n    Best solution:    " << ub_bnb
-        << "\n    Total iterations: " << s_n_iter 
-        << "\n    Total runtime:    " << double(t_end - t_start) / CLOCKS_PER_SEC
-        << " s\n";
-
     if (n_iter >= max_iter) {
 
-        streamObj << "\n    --> Maximum number of iterations exceeded";
+        streamObj << "\n    Maximum number of iterations exceeded";
+        status = 3;
 
     } else if ((double(t_end- t_start) / CLOCKS_PER_SEC) >= max_cpu_time) {
 
-        streamObj << "\n    --> Maximum CPU time exceeded";
+        streamObj << "\n    Maximum CPU time exceeded";
+        status = 4;
 
     } else if (user_interrupt) {
 
-        streamObj << "\n    --> User interrupt";
+        streamObj << "\n    User interrupt";
+        status = 5;
 
     } else {
 
-        streamObj << "\n    --> Optimal solution found";
+        streamObj << "\n    Optimal solution found";
+        status = 2;
     }
+
+    streamObj << std::scientific << "\n\n    Best solution:    " << ub_bnb
+        << "\n    Total iterations: " << s_n_iter 
+        << "\n    Total runtime:    " << double(t_end - t_start) / CLOCKS_PER_SEC
+        << " s";
 
     py::print(streamObj.str());
     py::print("\n-----------------------------------------------------------");
@@ -604,4 +610,10 @@ double CombinaBnBSolver::get_eta() {
 std::vector<std::vector<unsigned int>> CombinaBnBSolver::get_b_bin() {
 
     return b_bin;
+}
+
+
+unsigned int CombinaBnBSolver::get_status() {
+
+    return status;
 }

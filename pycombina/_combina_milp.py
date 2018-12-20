@@ -46,6 +46,27 @@ class CombinaMILP():
 
     '''
 
+    _solver_status = {
+
+        1: "Initialized",
+        2: "Optimal solution found",
+        7: "Maximum number of iterations exceeded",
+        9: "Maximum CPU time exceeded",
+        11: "User interrupt"
+    }
+
+
+    @property
+    def status(self):
+
+        try:
+            return self._solver_status[self._model.status]
+
+        except KeyError:
+            raise RuntimeError("Solver status undefined, this should not happen.\n"
+                + "Please contact the developers.")
+
+
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
         self._binapprox = binapprox

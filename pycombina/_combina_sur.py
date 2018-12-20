@@ -36,11 +36,33 @@ class CombinaSUR():
 
     '''
 
+    _solver_status = {
+
+        1: "Initialized",
+        2: "Optimal solution found",
+    }
+
+
+    @property
+    def status(self):
+
+        try:
+            return self._solver_status[self._sur_status]
+
+        except KeyError:
+            raise RuntimeError("Solver status undefined, this should not happen.\n"
+                + "Please contact the developers.")
+
 
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
         self._binapprox = binapprox
         self._binapprox_p = BinApproxPreprocessed(binapprox)
+
+
+    def _set_sur_status(self, sur_status):
+
+        self._sur_status = sur_status
 
 
     def _welcome_prompt_sur(self):
@@ -55,6 +77,7 @@ class CombinaSUR():
 
         self._welcome_prompt_sur()
         self._apply_preprocessing(binapprox)
+        self._set_sur_status(sur_status = 1)
 
 
     def __init__(self, binapprox: BinApprox) -> None:
@@ -62,7 +85,7 @@ class CombinaSUR():
         self._setup_sur(binapprox)
 
  
-    def solve(self):
+    def solve(self, *args, **kwargs):
 
         '''
         Solve the combinatorial integral approximation problem.
@@ -71,6 +94,7 @@ class CombinaSUR():
 
         self._run_sur()
         self._set_solution()
+        self._set_sur_status(sur_status = 2)
 
         print("\n-----------------------------------------------------------")
 

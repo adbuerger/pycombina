@@ -19,7 +19,7 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import pylab as pl
-from pycombina import BinApprox, CombinaBnB, CombinaMILP, CombinaSUR
+import requests
 
 pl.close("all")
 
@@ -29,26 +29,38 @@ t = data[:,0]
 b_rel = data[:-1, 1]
 n_max_switches = [4]
 
-binapprox = BinApprox(t = t, b_rel = b_rel, binary_threshold = 1e-3, \
-    off_state_included = False)
+server_address = "http://localhost:6789/api/solve/"
 
-binapprox.set_n_max_switches(n_max_switches = max_switches)
-#binapprox.set_min_up_times(min_up_times = [10])
-#binapprox.set_min_down_times(min_down_times = [10])
-#binapprox.set_cia_norm("column_sum_norm")
+problem_definition = {
+    
+    "t": t.tolist(),
+    "b_rel": b_rel.tolist(),
+    "off_state_included": False,
 
+    "n_max_switches": n_max_switches,
+    "solver": "CombinaBnB"
+}
 
-combina = CombinaMILP(binapprox)
+r = requests.post(server_address, json = problem_definition)
 
-#combina.solve(gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.8})
-combina.solve(use_warm_start=False)
+print("Status:", r.status_code)
 
-b_bin = pl.squeeze(binapprox.b_bin)
+solution = r.json()
 
-pl.figure()
-pl.step(t[:-1], b_rel, label = "b_rel", color = "C0", linestyle = "dashed", where = "post")
-pl.step(t[:-1], b_bin, label = "b_bin", color = "C0", where = "post")
-pl.xlabel("t")
-pl.ylabel("b")
-pl.legend(loc = "upper left")
-pl.show()
+print("Errors:", solution["errors"])
+
+print("Solver:", solution["solver"])
+print("Solver status:", solution["solver_status"])
+print("Objective value:", solution["eta"])
+
+if r.status_code == 200:
+
+    b_bin = pl.squeeze(r.json()["b_bin"])
+
+    pl.figure()
+    pl.step(t[:-1], b_rel, label = "b_rel", color = "C0", linestyle = "dashed", where = "post")
+    pl.step(t[:-1], b_bin, label = "b_bin", color = "C0", where = "post")
+    pl.xlabel("t")
+    pl.ylabel("b")
+    pl.legend(loc = "upper left")
+    pl.show()

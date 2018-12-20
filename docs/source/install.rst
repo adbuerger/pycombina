@@ -40,7 +40,13 @@ Depending on your setup, you might need root privileges in the following to inst
 
 **Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
 
-For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaMILP```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
+For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface ``guropbipy``  [#f4]_ must be installed.
+
+For running the webserver-example in ``server/server.py``, Flask [#f9]_ is required, which can be installed by running
+
+.. code:: Bash
+
+    pip3 install flask
 
 
 Install on Windows 10
@@ -56,7 +62,7 @@ After that, clone or download and unzip the pycombina repository from https://gi
 
 from within the pycombina folder.
 
-For using the MILP-based combinatorial integral approximation solver ```pycombina.CombinaMILP```, Gurobi and it's Python interface ```guropbipy```  [#f4]_ must be installed.
+For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface ``guropbipy``  [#f4]_ must be installed.
 
 
 .. [#f5] |linkf5|_
@@ -86,4 +92,10 @@ For using the MILP-based combinatorial integral approximation solver ```pycombin
 
 .. |linkf8| replace:: Visual Studio Community (website)
 
+
+.. [#f9] |linkf9|_
+
+.. _linkf9: http://flask.pocoo.org/
+
+.. |linkf9| replace:: Flask - web development, one drop at a time (website)
 

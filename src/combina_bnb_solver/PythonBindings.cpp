@@ -55,6 +55,7 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
 
         .def("get_eta", &CombinaBnBSolver::get_eta)
         .def("get_b_bin", &CombinaBnBSolver::get_b_bin)
+        .def("get_status", &CombinaBnBSolver::get_status)
 
         .def("run", &CombinaBnBSolver::run, py::arg("use_warm_start"),
                                       py::arg("bnb_opts"))
