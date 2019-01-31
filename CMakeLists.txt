@@ -25,7 +25,7 @@ set(SOURCE_DIR "src/combina_bnb_solver")
 
 # Tell CMake that headers are also in SOURCE_DIR
 include_directories(${SOURCE_DIR})
-file(GLOB SOURCES ${SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/*.cpp)
 set(${SOURCES})
 
 # Generate Python module

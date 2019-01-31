@@ -1,6 +1,5 @@
 /*
- *
- * NodeComparison.cpp
+ * DepthFirstNodeQueue.hpp
  *
  * This file is part of pycombina.
  *
@@ -21,24 +20,27 @@
  *
  */
 
-#include "NodeComparison.hpp"
+#ifndef __COMBINA_DEPTH_FIRST_NODE_QUEUE_HPP
+#define __COMBINA_DEPTH_FIRST_NODE_QUEUE_HPP
 
+#include <stack>
 
-bool NodeComparison::operator() (Node const *node_a, Node const *node_b) const {
+#include "../NodeQueue.hpp"
 
+class DepthFirstNodeQueue : public NodeQueue {
+public:
+    DepthFirstNodeQueue(CombinaBnBSolver* solver);
+    DepthFirstNodeQueue(const DepthFirstNodeQueue& queue);
+    DepthFirstNodeQueue(DepthFirstNodeQueue&& queue);
+    ~DepthFirstNodeQueue();
 
-    if(node_a->depth != node_b->depth) {
+    virtual size_t size() const;
+    virtual Node* top() const;
+    virtual void push(const std::vector<Node*>& nodes);
+    virtual void pop();
 
-        return (node_a->depth < node_b->depth);
-    }
+private:
+    std::stack<Node*> stack;
+};
 
-    else if(node_a->lb != node_b->lb) {
-
-        return(node_a->lb > node_b->lb);
-    }
-    
-    else {
-
-        return(node_a->get_max_sigma() > node_b->get_max_sigma());
-    }
-}
+#endif /* end of include guard: __COMBINA_DFS_NODE_QUEUE_HPP */

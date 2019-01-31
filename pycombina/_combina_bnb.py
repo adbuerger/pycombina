@@ -128,12 +128,13 @@ class CombinaBnB():
             raise NotImplementedError("Warm-starting not yet implemented.")
 
 
-    def _run_solver(self, use_warm_start: bool, bnb_opts: dict) -> None:
+    def _run_solver(self, use_warm_start: bool, bnb_search_strategy : str, bnb_opts: dict) -> None:
 
         bnb_opts_default = {
 
             "max_iter" :  5e6,
             "max_cpu_time": 3e2,
+            "dbt_beta": 0.5
         }
 
         for bnb_opt in bnb_opts.keys():
@@ -148,7 +149,7 @@ class CombinaBnB():
 
         try:
             
-            self._bnb_solver.run(use_warm_start, bnb_opts_default)
+            self._bnb_solver.run(use_warm_start, bnb_search_strategy, bnb_opts_default)
 
         except KeyboardInterrupt:
 
@@ -165,7 +166,7 @@ class CombinaBnB():
         self._binapprox.set_eta(self._binapprox_p.eta)
 
 
-    def solve(self, use_warm_start: bool = False , bnb_opts: dict = {}):
+    def solve(self, use_warm_start: bool = False , bnb_search_strategy : str = "dfs", bnb_opts: dict = {}):
 
         '''
         Solve the combinatorial integral approximation problem.
@@ -173,6 +174,8 @@ class CombinaBnB():
         :param use_warm_start: If a binary solution is already contained in the
                                given binary approximation problem, use it to
                                warm-start the solver.
+
+        :param bnb_search_strategy: TODO
 
         :param bnb_opts: Options to be passed for the branch-and-bound solver:
 
@@ -184,5 +187,5 @@ class CombinaBnB():
         '''
 
         self._setup_warm_start(use_warm_start = use_warm_start)
-        self._run_solver(use_warm_start = use_warm_start, bnb_opts = bnb_opts)
+        self._run_solver(use_warm_start = use_warm_start, bnb_search_strategy = bnb_search_strategy, bnb_opts = bnb_opts)
         self._set_solution()

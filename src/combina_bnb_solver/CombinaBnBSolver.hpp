@@ -21,6 +21,9 @@
  *
  */
 
+#ifndef __COMBINA_BNB_SOLVER_HPP
+#define __COMBINA_BNB_SOLVER_HPP
+
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 #include <algorithm>
@@ -57,7 +60,10 @@
 #include <sstream>
 #include <stdexcept>
  
-#include "NodeComparison.hpp"
+#include "NodeQueue.hpp"
+
+
+class NodeQueue;
 
 
 class CombinaBnBSolver {
@@ -83,10 +89,11 @@ public:
 
     ~CombinaBnBSolver();
 
-    void run(bool use_warm_start, std::map<std::string, double> bnb_opts);
+    void run(bool use_warm_start, const std::string& bnb_search_strategy, std::map<std::string, double> bnb_opts);
     void stop();
 
     double get_eta();
+    double get_ub() const { return ub_bnb; }
     std::vector<std::vector<unsigned int>> get_b_bin();
     unsigned int get_status();
 
@@ -115,7 +122,7 @@ private:
         std::vector<double> & total_up_time_child,
         double const lb_parent, double* lb_child, unsigned int* depth_child);
 
-    bool add_child_node_to_queue(Node* const parent_node, 
+    Node* create_or_fathom_child_node(Node* const parent_node, 
         unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
         std::vector<double> const & min_down_time_child,
         std::vector<double> const & up_time_child,
@@ -156,8 +163,7 @@ private:
 
     std::vector<std::vector<std::vector<double>>> sum_eta;
 
-    std::priority_queue<Node*, std::vector<Node*>, 
-        NodeComparison> node_queue;
+    std::shared_ptr<NodeQueue> node_queue;
     Node * best_node;
 
     double ub_bnb;
@@ -176,3 +182,5 @@ private:
     unsigned int status;
 
 };
+
+#endif /* end of include guard: __COMBINA_BNB_SOLVER_HPP */

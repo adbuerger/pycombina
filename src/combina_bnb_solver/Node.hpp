@@ -20,19 +20,13 @@
  *
  */
 
-#ifndef VECTOR_H
-#define VECTOR_H
-#include <vector>
-#endif
+#ifndef __COMBINA_NODE_HPP
+#define __COMBINA_NODE_HPP
 
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
+#include <vector>
 #include <algorithm>
-#endif
 
 class Node {
-    friend class NodeComparison;
-
 public:
 
     Node(Node* const parent_node,
@@ -71,12 +65,12 @@ public:
     std::vector<double> get_eta();
     double get_lb();
 
-
     #ifndef NDEBUG
     static unsigned int n_add;
     static unsigned int n_delete_self;
     static unsigned int n_delete_other;
     #endif
+
 
 private:
 
@@ -96,3 +90,7 @@ private:
     double lb;
 
 };
+
+bool operator<(Node& lhs, Node& rhs);
+
+#endif /* end of include guard: __COMBINA_NODE_HPP */

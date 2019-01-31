@@ -177,3 +177,13 @@ double Node::get_lb() {
 
     return lb;
 }
+
+bool operator<(Node& lhs, Node& rhs) {
+    double lhs_lb = lhs.get_lb(), rhs_lb = rhs.get_lb();
+    if(lhs_lb != rhs_lb) {
+        return(lhs_lb < rhs_lb);
+    }
+    else {
+        return(lhs.get_max_sigma() < rhs.get_max_sigma());
+    }
+}
