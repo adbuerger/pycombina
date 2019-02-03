@@ -136,19 +136,6 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
 void CombinaBnBSolver::set_solver_settings(std::map<std::string, double> bnb_opts) {
     max_iter = (long)bnb_opts["max_iter"];
     max_cpu_time = bnb_opts["max_cpu_time"];
-
-    auto dbt_queue = std::dynamic_pointer_cast<DynamicBacktrackingNodeQueue>(node_queue);
-    if(dbt_queue) {
-        auto it = bnb_opts.find("dbt_beta");
-        if(it != bnb_opts.end() && dbt_queue) {
-            dbt_queue->set_beta(it->second);
-        }
-
-        it = bnb_opts.find("dbt_gamma");
-        if(it != bnb_opts.end()) {
-            dbt_queue->set_gamma(it->second);
-        }
-    }
 }
 
 
@@ -162,7 +149,7 @@ void CombinaBnBSolver::run(bool use_warm_start,
         node_queue = std::make_shared<DepthFirstNodeQueue>(this);
     }
     else if(bnb_search_strategy == "dbt") {
-        node_queue = std::make_shared<DynamicBacktrackingNodeQueue>(0.5, 1.0, this);
+        node_queue = std::make_shared<DynamicBacktrackingNodeQueue>(this);
     }
     else {
         throw std::invalid_argument("unknown tree search strategy");

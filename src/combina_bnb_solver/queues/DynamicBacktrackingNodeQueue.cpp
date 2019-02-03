@@ -25,29 +25,26 @@
 #include <cmath>
 #include <limits>
 
-DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(double beta, double gamma, CombinaBnBSolver* solver)
+DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(CombinaBnBSolver* solver)
     : NodeQueue(solver),
-      beta(beta),
-      gamma(gamma),
       glob_lb(std::numeric_limits<double>::infinity()),
+      min_beta(1.0),
       heap(),
       stack()
 {}
 
 DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(const DynamicBacktrackingNodeQueue& queue)
     : NodeQueue(queue),
-      beta(queue.beta),
-      gamma(queue.gamma),
       glob_lb(queue.glob_lb),
+      min_beta(queue.min_beta),
       heap(queue.heap),
       stack(queue.stack)
 {}
 
 DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(DynamicBacktrackingNodeQueue&& queue)
     : NodeQueue(std::forward<NodeQueue>(queue)),
-      beta(queue.beta),
-      gamma(queue.gamma),
       glob_lb(queue.glob_lb),
+      min_beta(queue.min_beta),
       heap(std::move(queue.heap)),
       stack(std::move(queue.stack))
 {}
@@ -109,28 +106,35 @@ void DynamicBacktrackingNodeQueue::pop() {
     }
 }
 
-double DynamicBacktrackingNodeQueue::calculate_cutoff(Node* node) const {
-    // determine upper bound, maximum depth, and solution count
+double DynamicBacktrackingNodeQueue::calculate_cutoff() {
+    // determine upper bound, number of solutions, and queue size
     const double glob_ub = solver->get_eta();
-    const double max_depth = solver->get_num_t();
     const unsigned long n_sol = solver->get_num_sol();
+    const size_t n_node = size();
 
-    // calculate derived parameter beta
-    const double node_beta = beta + (1.0 - beta) * std::pow(1.0 - double(node->get_depth()) / max_depth, gamma * n_sol);
+    // perform depth-first search until first UB is found
+    if(n_sol == 0) {
+        min_beta = 1.0;
+        return glob_ub;
+    }
 
-    // return convex combination of lower and upper bound
-    return glob_lb + node_beta * (glob_ub - glob_lb);
+    // compute beta
+    double beta = 1.0 - std::min(1.0, double(n_sol) / 10.0);
+    beta += std::min(1.0 - beta, double(n_node) / 4e5);
+    if(beta < min_beta) {
+        min_beta = beta;
+    }
+
+    return glob_lb + beta * (glob_ub - glob_lb);
 }
 
 void DynamicBacktrackingNodeQueue::rearrange_nodes() {
     const double glob_ub = solver->get_eta();
+    const double cutoff = calculate_cutoff();
     Node* node;
 
     // process top stack elements, stop early if fathomable
     while(!stack.empty() && (node = stack.front())->get_lb() <= glob_ub) {
-        // compute depth-specific cutoff point
-        const double cutoff = calculate_cutoff(node);
-
         // proceed according to lower bound
         if(node->get_lb() <= cutoff) {
             break;
