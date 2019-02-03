@@ -21,7 +21,7 @@
 import argparse
 
 import pylab as pl
-from pycombina import BinApprox, CombinaBnB, CombinaMILP, CombinaSUR
+from pycombina import BinApprox
 
 
 # parse command line arguments
@@ -31,6 +31,7 @@ subparsers = parser.add_subparsers(help='solver choice')
 parser_bnb = subparsers.add_parser('bnb', help='Combina Branch-and-Bound solver')
 parser_bnb.add_argument('--search_strategy', type=str, default='dfs', choices=['bfs', 'dfs', 'dbt'], help='tree search strategy')
 parser_bnb.add_argument('--dbt_beta', metavar='F', type=float, default=0.5, help='parameter for dynamic backtracking')
+parser_bnb.add_argument('--dbt_gamma', metavar='F', type=float, default=1.0, help='parameter for dynamic backtracking')
 parser_bnb.add_argument('--max_iter', metavar='N', type=int, default=5000000, help='maximal number of branch-and-bound iterations')
 parser_bnb.set_defaults(solver='bnb')
 parser_milp = subparsers.add_parser('milp', help='Generic MILP solver')
@@ -58,12 +59,15 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 #binapprox.set_cia_norm("column_sum_norm")
 
 if args.solver == 'bnb':
+    from pycombina import CombinaBnB
     combina = CombinaBnB(binapprox)
     combina.solve(use_warm_start=False, bnb_search_strategy=args.search_strategy, bnb_opts={'dbt_beta': args.dbt_beta, 'max_iter': args.max_iter})
 elif args.solver == 'milp':
+    from pycombina import CombinaMILP
     combina = CombinaMILP(binapprox)
     combina.solve(gurobi_opts = {"TimeLimit": args.time_limit, "MIPGap": args.mip_gap})
 else:
+    from pycombina import CombinaSUR
     combina = CombinaSUR(binapprox)
     combina.solve()
 

@@ -92,10 +92,11 @@ public:
     void run(bool use_warm_start, const std::string& bnb_search_strategy, std::map<std::string, double> bnb_opts);
     void stop();
 
-    double get_eta();
-    double get_ub() const { return ub_bnb; }
-    std::vector<std::vector<unsigned int>> get_b_bin();
-    unsigned int get_status();
+    double get_eta() const;
+    std::vector<std::vector<unsigned int>> get_b_bin() const;
+    unsigned int get_status() const;
+    unsigned long get_num_sol() const;
+    unsigned int get_num_t() const;
 
 
 private:
@@ -172,6 +173,8 @@ private:
 
     long n_iter;
     long n_print;
+
+    unsigned long n_sol;
 
     long max_iter;
     double max_cpu_time;

@@ -81,6 +81,8 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       n_iter(0),
       n_print(0),
 
+      n_sol(0),
+
       terminate(false),
       user_interrupt(false),
 
@@ -132,14 +134,20 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
 
 
 void CombinaBnBSolver::set_solver_settings(std::map<std::string, double> bnb_opts) {
-
     max_iter = (long)bnb_opts["max_iter"];
     max_cpu_time = bnb_opts["max_cpu_time"];
 
-    auto it = bnb_opts.find("dbt_beta");
     auto dbt_queue = std::dynamic_pointer_cast<DynamicBacktrackingNodeQueue>(node_queue);
-    if(it != bnb_opts.end() && dbt_queue) {
-        dbt_queue->set_beta(it->second);
+    if(dbt_queue) {
+        auto it = bnb_opts.find("dbt_beta");
+        if(it != bnb_opts.end() && dbt_queue) {
+            dbt_queue->set_beta(it->second);
+        }
+
+        it = bnb_opts.find("dbt_gamma");
+        if(it != bnb_opts.end()) {
+            dbt_queue->set_gamma(it->second);
+        }
     }
 }
 
@@ -154,7 +162,7 @@ void CombinaBnBSolver::run(bool use_warm_start,
         node_queue = std::make_shared<DepthFirstNodeQueue>(this);
     }
     else if(bnb_search_strategy == "dbt") {
-        node_queue = std::make_shared<DynamicBacktrackingNodeQueue>(0.5, this);
+        node_queue = std::make_shared<DynamicBacktrackingNodeQueue>(0.5, 1.0, this);
     }
     else {
         throw std::invalid_argument("unknown tree search strategy");
@@ -335,7 +343,7 @@ void CombinaBnBSolver::run_bnb() {
             if(active_node->get_depth() == n_t) {     
                 
                 t_update = clock();
-                set_new_best_node(active_node); 
+                set_new_best_node(active_node);
                 display_solution_update(true, double(t_update - t_start) / CLOCKS_PER_SEC);
             }
 
@@ -430,6 +438,7 @@ void CombinaBnBSolver::set_new_best_node(Node* active_node) {
 
     best_node = active_node;
     ub_bnb = best_node->get_lb();
+    ++n_sol;
 
 }
 
@@ -613,19 +622,27 @@ void CombinaBnBSolver::stop() {
 }
 
 
-double CombinaBnBSolver::get_eta() {
+double CombinaBnBSolver::get_eta() const {
 
     return ub_bnb;
 }
 
 
-std::vector<std::vector<unsigned int>> CombinaBnBSolver::get_b_bin() {
+std::vector<std::vector<unsigned int>> CombinaBnBSolver::get_b_bin() const {
 
     return b_bin;
 }
 
 
-unsigned int CombinaBnBSolver::get_status() {
+unsigned int CombinaBnBSolver::get_status() const {
 
     return status;
+}
+
+unsigned long CombinaBnBSolver::get_num_sol() const {
+    return n_sol;
+}
+
+unsigned int CombinaBnBSolver::get_num_t() const {
+    return n_t;
 }

@@ -22,11 +22,13 @@
 
 #include "DynamicBacktrackingNodeQueue.hpp"
 
+#include <cmath>
 #include <limits>
 
-DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(double beta, CombinaBnBSolver* solver)
+DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(double beta, double gamma, CombinaBnBSolver* solver)
     : NodeQueue(solver),
       beta(beta),
+      gamma(gamma),
       glob_lb(std::numeric_limits<double>::infinity()),
       heap(),
       stack()
@@ -35,6 +37,7 @@ DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(double beta, CombinaB
 DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(const DynamicBacktrackingNodeQueue& queue)
     : NodeQueue(queue),
       beta(queue.beta),
+      gamma(queue.gamma),
       glob_lb(queue.glob_lb),
       heap(queue.heap),
       stack(queue.stack)
@@ -43,6 +46,7 @@ DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(const DynamicBacktrac
 DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(DynamicBacktrackingNodeQueue&& queue)
     : NodeQueue(std::forward<NodeQueue>(queue)),
       beta(queue.beta),
+      gamma(queue.gamma),
       glob_lb(queue.glob_lb),
       heap(std::move(queue.heap)),
       stack(std::move(queue.stack))
@@ -51,16 +55,15 @@ DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(DynamicBacktrackingNo
 DynamicBacktrackingNodeQueue::~DynamicBacktrackingNodeQueue()
 {}
 
-double DynamicBacktrackingNodeQueue::get_cutoff() const {
-    return glob_lb + beta * (solver->get_ub() - glob_lb);
-}
-
 size_t DynamicBacktrackingNodeQueue::size() const {
     return heap.size() + stack.size();
 }
 
 Node* DynamicBacktrackingNodeQueue::top() const {
-    // refill stack if necessary
+    // rearrange nodes internally
+    const_cast<DynamicBacktrackingNodeQueue*>(this)->rearrange_nodes();
+
+    // return next node
     if(stack.empty()) {
         return heap.top();
     }
@@ -96,7 +99,7 @@ void DynamicBacktrackingNodeQueue::pop() {
 
     // recalculate global lower bound if necessary
     if(node->get_lb() == glob_lb) {
-        glob_lb = solver->get_ub();
+        glob_lb = solver->get_eta();
         for(Node* const stack_node : stack) {
             glob_lb = std::min(stack_node->get_lb(), glob_lb);
         }
@@ -104,11 +107,37 @@ void DynamicBacktrackingNodeQueue::pop() {
             glob_lb = std::min(heap.top()->get_lb(), glob_lb);
         }
     }
+}
 
-    // move nodes above cutoff from stack to heap
-    const double cutoff = get_cutoff();
-    while(!stack.empty() && stack.front()->get_lb() > cutoff) {
-        heap.push(stack.front());
+double DynamicBacktrackingNodeQueue::calculate_cutoff(Node* node) const {
+    // determine upper bound, maximum depth, and solution count
+    const double glob_ub = solver->get_eta();
+    const double max_depth = solver->get_num_t();
+    const unsigned long n_sol = solver->get_num_sol();
+
+    // calculate derived parameter beta
+    const double node_beta = beta + (1.0 - beta) * std::pow(1.0 - double(node->get_depth()) / max_depth, gamma * n_sol);
+
+    // return convex combination of lower and upper bound
+    return glob_lb + node_beta * (glob_ub - glob_lb);
+}
+
+void DynamicBacktrackingNodeQueue::rearrange_nodes() {
+    const double glob_ub = solver->get_eta();
+    Node* node;
+
+    // process top stack elements, stop early if fathomable
+    while(!stack.empty() && (node = stack.front())->get_lb() <= glob_ub) {
+        // compute depth-specific cutoff point
+        const double cutoff = calculate_cutoff(node);
+
+        // proceed according to lower bound
+        if(node->get_lb() <= cutoff) {
+            break;
+        }
+
+        // move ignored node to heap
+        heap.push(node);
         stack.pop_front();
     }
 }

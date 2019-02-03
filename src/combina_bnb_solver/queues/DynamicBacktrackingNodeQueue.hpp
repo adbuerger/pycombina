@@ -30,15 +30,16 @@
 
 class DynamicBacktrackingNodeQueue : public NodeQueue {
 public:
-    DynamicBacktrackingNodeQueue(double beta, CombinaBnBSolver* solver);
+    DynamicBacktrackingNodeQueue(double beta, double gamma, CombinaBnBSolver* solver);
     DynamicBacktrackingNodeQueue(const DynamicBacktrackingNodeQueue& queue);
     DynamicBacktrackingNodeQueue(DynamicBacktrackingNodeQueue&& queue);
     virtual ~DynamicBacktrackingNodeQueue();
 
     void set_beta(double val) { beta = val; }
+    void set_gamma(double val) { gamma = val; }
     double get_beta() const { return beta; }
+    double get_gamma() const { return gamma; }
     double get_global_lb() const { return glob_lb; }
-    double get_cutoff() const;
 
     virtual size_t size() const;
     virtual Node* top() const;
@@ -53,7 +54,11 @@ protected:
     };
 
 private:
+    double calculate_cutoff(Node* node) const;
+    void rearrange_nodes();
+
     double beta;
+    double gamma;
     double glob_lb;
     std::priority_queue<Node*, std::vector<Node*>, compare_nodes> heap;
     std::deque<Node*> stack;
