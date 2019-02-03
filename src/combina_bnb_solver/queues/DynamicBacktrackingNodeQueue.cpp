@@ -120,7 +120,7 @@ double DynamicBacktrackingNodeQueue::calculate_cutoff() {
 
     // compute beta
     double beta = 1.0 - std::min(1.0, double(n_sol) / 10.0);
-    beta += std::min(1.0 - beta, double(n_node) / 4e5);
+    beta += std::min(1.0 - beta, (1.0 - min_beta) * (double(n_node) / 100000.0));
     if(beta < min_beta) {
         min_beta = beta;
     }
