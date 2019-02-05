@@ -179,8 +179,12 @@ double Node::get_lb() {
 }
 
 bool operator<(Node& lhs, Node& rhs) {
+    unsigned int lhs_depth = lhs.get_depth(), rhs_depth = rhs.get_depth();
     double lhs_lb = lhs.get_lb(), rhs_lb = rhs.get_lb();
-    if(lhs_lb != rhs_lb) {
+    if(lhs_depth != rhs_depth) {
+        return(rhs_depth < lhs_depth);
+    }
+    else if(lhs_lb != rhs_lb) {
         return(lhs_lb < rhs_lb);
     }
     else {

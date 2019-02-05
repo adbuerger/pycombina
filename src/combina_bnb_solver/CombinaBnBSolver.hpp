@@ -106,7 +106,6 @@ private:
     void precompute_sum_of_etas();
 
     void set_solver_settings(std::map<std::string, double> bnb_opts);
-    void add_initial_nodes_to_queue();
 
     bool control_activation_forbidden(unsigned int const b_active_child,
         unsigned int const b_active_parent,

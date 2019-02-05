@@ -18,10 +18,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
+import argparse as ap
+import sys
+
 import numpy as np
 import pylab as pl
 
-from pycombina import BinApprox, CombinaBnB, CombinaMILP, CombinaSUR
+from pycombina import BinApprox
+
+# parse command line arguments
+parser = ap.ArgumentParser()
+parser.add_argument('--solver', type=str, choices=['milp', 'bnb', 'sur'], default='bnb', help='specify CIA solver')
+parser.add_argument('--max_switches', metavar=['n_a', 'n_b', 'n_c'], type=int, nargs=3, default=[5, 2, 3], help='specify maximum number of switches')
+bnb_group = parser.add_argument_group('Branch-and-bound solver')
+bnb_group.add_argument('--max_iter', metavar='n', type=int, default=5000000, help='specify iteration limit')
+bnb_group.add_argument('--search_strategy', type=str, choices=['bfs', 'dfs', 'dbt'], default='dfs', help='specify tree search strategy')
+args = parser.parse_args()
 
 pl.close("all")
 
@@ -32,7 +44,7 @@ dN = 8
 t = data[::dN,0]
 b_rel = data[:-1:dN, 3:]
 
-max_switches = [5, 2, 3]
+max_switches = args.max_switches
 
 binapprox = BinApprox(t = t, b_rel = b_rel, binary_threshold = 1e-3, \
         off_state_included = True)
@@ -45,8 +57,23 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 	
 #binapprox.set_b_bin_pre([1,0,0])
 
-combina = CombinaBnB(binapprox)
-combina.solve(use_warm_start=False) #, gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.4})
+if args.solver == 'milp':
+    from pycombina import CombinaMILP
+    combina = CombinaMILP(binapprox)
+    combina.solve()
+elif args.solver == 'bnb':
+    from pycombina import CombinaBnB
+    combina = CombinaBnB(binapprox)
+    combina.solve(use_warm_start=False, bnb_search_strategy=args.search_strategy, bnb_opts={
+        'max_iter': args.max_iter
+    }) #, gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.4})
+elif args.solver == 'sur':
+    from pycombina import CombinaSUR
+    combina = CombinaSUR(binapprox)
+    combina.solve()
+else:
+    print('unknown solver ' + args.solver, file=sys.stderr)
+    exit(1)
 
 b_bin_orig = pl.asarray(binapprox.b_bin)
 
