@@ -23,10 +23,10 @@
 #ifndef __COMBINA_NODE_QUEUE_HPP
 #define __COMBINA_NODE_QUEUE_HPP
 
-#include "CombinaBnBSolver.hpp"
-#include "Node.hpp"
+#include <string>
+#include <vector>
 
-class CombinaBnBSolver;
+#include "combina_fwd.hpp"
 
 class NodeQueue {
 protected:
@@ -41,6 +41,11 @@ public:
     virtual void pop() = 0;
 
     bool empty() const { return size() == 0; }
+
+    static NodeQueuePtr create(CombinaBnBSolver* solver, std::string type = std::string());
+    static void register_type(const std::string& type, const NodeQueueFactory& factory, bool make_default = false);
+    static void register_default_types();
+    static const std::vector<std::string>& get_types();
 
 protected:
     CombinaBnBSolver* solver;

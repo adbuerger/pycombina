@@ -21,6 +21,7 @@
  */
 
 #include "DynamicBacktrackingNodeQueue.hpp"
+#include "../CombinaBnBSolver.hpp"
 
 #include <cmath>
 #include <limits>

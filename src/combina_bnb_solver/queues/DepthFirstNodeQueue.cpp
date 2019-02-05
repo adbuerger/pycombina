@@ -21,6 +21,7 @@
  */
 
 #include "DepthFirstNodeQueue.hpp"
+#include "../Node.hpp"
 
 DepthFirstNodeQueue::DepthFirstNodeQueue(CombinaBnBSolver* solver)
     : NodeQueue(solver),

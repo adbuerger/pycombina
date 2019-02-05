@@ -73,6 +73,9 @@ class CombinaBnB():
             raise RuntimeError("Solver status undefined, this should not happen.\n"
                 + "Please contact the developers.")
 
+    @staticmethod
+    def get_search_strategies():
+        return CombinaBnBSolver.search_strategies
 
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 

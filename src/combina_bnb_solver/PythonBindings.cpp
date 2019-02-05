@@ -30,11 +30,16 @@
 #endif
  
 #include "CombinaBnBSolver.hpp"
+#include "NodeQueue.hpp"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_combina_bnb_solver, m)
 {
+    // register default search strategies
+    NodeQueue::register_default_types();
+
+    // set up combina solver interface
     py::class_<CombinaBnBSolver>(m, "CombinaBnBSolver")
         .def(py::init<std::vector<double> const &,
                       std::vector<std::vector<double>> const &,
@@ -56,6 +61,8 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
         .def("get_eta", &CombinaBnBSolver::get_eta)
         .def("get_b_bin", &CombinaBnBSolver::get_b_bin)
         .def("get_status", &CombinaBnBSolver::get_status)
+
+        .def_property_readonly_static("search_strategies", [](py::object) { return NodeQueue::get_types(); })
 
         .def("run", &CombinaBnBSolver::run, py::arg("use_warm_start"),
                                       py::arg("bnb_search_strategy"),

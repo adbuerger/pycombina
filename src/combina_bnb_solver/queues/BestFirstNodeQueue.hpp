@@ -26,6 +26,7 @@
 #include <queue>
 #include <vector>
 
+#include "../Node.hpp"
 #include "../NodeQueue.hpp"
 
 class BestFirstNodeQueue : public NodeQueue {

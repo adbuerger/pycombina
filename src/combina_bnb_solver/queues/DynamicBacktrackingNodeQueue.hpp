@@ -26,6 +26,7 @@
 #include <queue>
 #include <deque>
 
+#include "../Node.hpp"
 #include "../NodeQueue.hpp"
 
 class DynamicBacktrackingNodeQueue : public NodeQueue {
