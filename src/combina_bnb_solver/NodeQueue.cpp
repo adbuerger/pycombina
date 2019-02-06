@@ -25,6 +25,7 @@
 
 #include "NodeQueue.hpp"
 #include "queues/BestFirstNodeQueue.hpp"
+#include "queues/BestThenDiveNodeQueue.hpp"
 #include "queues/DepthFirstNodeQueue.hpp"
 #include "queues/DynamicBacktrackingNodeQueue.hpp"
 
@@ -101,6 +102,9 @@ void NodeQueue::register_default_types() {
         }, true);
     register_type("bfs", [](CombinaBnBSolver* solver) {
             return std::make_shared<BestFirstNodeQueue>(solver);
+        });
+    register_type("btd", [](CombinaBnBSolver* solver) {
+            return std::make_shared<BestThenDiveNodeQueue>(solver);
         });
     register_type("dbt", [](CombinaBnBSolver* solver) {
             return std::make_shared<DynamicBacktrackingNodeQueue>(solver);

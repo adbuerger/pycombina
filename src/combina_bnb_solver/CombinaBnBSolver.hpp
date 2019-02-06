@@ -93,10 +93,12 @@ public:
     void stop();
 
     double get_eta() const;
+    const std::vector<double>& get_dt() const;
     std::vector<std::vector<unsigned int>> get_b_bin() const;
     unsigned int get_status() const;
     unsigned long get_num_sol() const;
     unsigned int get_num_t() const;
+    const std::vector<unsigned int>& get_num_max_switches() const;
 
 
 private:

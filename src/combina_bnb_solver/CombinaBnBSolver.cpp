@@ -142,19 +142,11 @@ void CombinaBnBSolver::set_solver_settings(std::map<std::string, double> bnb_opt
 void CombinaBnBSolver::run(bool use_warm_start,
     const std::string& bnb_search_strategy,
     std::map<std::string, double> bnb_opts) {
-    if(bnb_search_strategy == "bfs") {
-        node_queue = std::make_shared<BestFirstNodeQueue>(this);
+    try {
+        node_queue = NodeQueue::create(this, bnb_search_strategy);
+    } catch(const std::out_of_range&) {
+        throw std::out_of_range("unknown search strategy");
     }
-    else if(bnb_search_strategy == "dfs") {
-        node_queue = std::make_shared<DepthFirstNodeQueue>(this);
-    }
-    else if(bnb_search_strategy == "dbt") {
-        node_queue = std::make_shared<DynamicBacktrackingNodeQueue>(this);
-    }
-    else {
-        throw std::invalid_argument("unknown tree search strategy");
-    }
-
     set_solver_settings(bnb_opts);
     add_nodes_to_queue(nullptr);
     run_bnb();
@@ -615,6 +607,11 @@ double CombinaBnBSolver::get_eta() const {
 }
 
 
+const std::vector<double>& CombinaBnBSolver::get_dt() const {
+    return dt;
+}
+
+
 std::vector<std::vector<unsigned int>> CombinaBnBSolver::get_b_bin() const {
 
     return b_bin;
@@ -632,4 +629,9 @@ unsigned long CombinaBnBSolver::get_num_sol() const {
 
 unsigned int CombinaBnBSolver::get_num_t() const {
     return n_t;
+}
+
+
+const std::vector<unsigned int>& CombinaBnBSolver::get_num_max_switches() const {
+    return n_max_switches;
 }
