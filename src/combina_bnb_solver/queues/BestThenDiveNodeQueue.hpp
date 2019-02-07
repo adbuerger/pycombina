@@ -24,6 +24,7 @@
 #define __COMBINA_BEST_THEN_DIVE_NODE_QUEUE_HPP
 
 #include <vector>
+#include <utility>
 
 #include "../combina_fwd.hpp"
 #include "../NodeQueue.hpp"
@@ -41,12 +42,13 @@ public:
     virtual void push(const std::vector<Node*>& nodes);
 
 private:
-    bool prefer_dive(Node* const lhs, Node* const rhs);
-    bool later_root(Node* const lhs, Node* const rhs);
+    double adjusted_lower_bound(Node* const node) const;
+    bool prefer_dive(Node* const lhs, Node* const rhs) const;
+    bool later_root(const std::pair<double, Node*>& lhs, const std::pair<double, Node*>& rhs) const;
 
     Node* curtop;
     std::vector<Node*> limbo;
-    std::vector<Node*> store;
+    std::vector<std::pair<double, Node*>> store;
 };
 
 #endif /* end of include guard: __COMBINA_RESTRICTED_BEST_THEN_DIVE_NODE_QUEUE_HPP */

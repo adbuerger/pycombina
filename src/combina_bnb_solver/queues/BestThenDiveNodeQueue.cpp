@@ -65,7 +65,7 @@ Node* BestThenDiveNodeQueue::top() const {
         return curtop;
     }
     else {
-        return store.front();
+        return store.front().second;
     }
 }
 
@@ -95,7 +95,7 @@ void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
     // stash current top if still present
     size_t initial_store_size = store.size();
     if(curtop) {
-        store.push_back(curtop);
+        store.emplace_back(adjusted_lower_bound(curtop), curtop);
         curtop = nullptr;
     }
 
@@ -121,7 +121,7 @@ void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
             limbo.push_back(*it);
         }
         else {
-            store.push_back(*it);
+            store.emplace_back(adjusted_lower_bound(*it), *it);
         }
     }
     if(tgt_it != nodes.cend()) {
@@ -130,7 +130,7 @@ void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
                 limbo.push_back(*it);
             }
             else {
-                store.push_back(*it);
+                store.emplace_back(adjusted_lower_bound(*it), *it);
             }
         }
     }
@@ -143,7 +143,7 @@ void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
     }
 }
 
-double get_adjusted_lb(Node* const node, CombinaBnBSolver* solver) {
+double BestThenDiveNodeQueue::adjusted_lower_bound(Node* const node) const {
     const std::vector<double>& dt = solver->get_dt();
     const std::vector<unsigned int>& max_sigma = solver->get_num_max_switches();
     const std::vector<unsigned int>& sigma = node->get_sigma();
@@ -159,19 +159,16 @@ double get_adjusted_lb(Node* const node, CombinaBnBSolver* solver) {
     return node->get_lb() + rem_time / (3 + 2 * min_rem_sigma);
 }
 
-bool BestThenDiveNodeQueue::later_root(Node* const lhs, Node* const rhs) {
-    double lhs_adj_lb = get_adjusted_lb(lhs, solver);
-    double rhs_adj_lb = get_adjusted_lb(rhs, solver);
-
-    if(lhs_adj_lb != rhs_adj_lb) {
-        return rhs_adj_lb < lhs_adj_lb;
+bool BestThenDiveNodeQueue::later_root(const std::pair<double, Node*>& lhs, const std::pair<double, Node*>& rhs) const {
+    if(lhs.first != rhs.first) {
+        return rhs.first < lhs.first;
     }
     else {
-        return rhs->get_max_sigma() < lhs->get_max_sigma();
+        return rhs.second->get_max_sigma() < lhs.second->get_max_sigma();
     }
 }
 
-bool BestThenDiveNodeQueue::prefer_dive(Node* const lhs, Node* const rhs) {
+bool BestThenDiveNodeQueue::prefer_dive(Node* const lhs, Node* const rhs) const {
     if(lhs->get_lb() != rhs->get_lb()) {
         return lhs->get_lb() < rhs->get_lb();
     }
