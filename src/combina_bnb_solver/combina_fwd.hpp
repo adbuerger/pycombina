@@ -27,13 +27,19 @@
 #include <memory>
 
 class CombinaBnBSolver;
+class MonitorBase;
 class Node;
 class NodeQueue;
+class TimerBase;
 
+typedef std::shared_ptr<MonitorBase> MonitorPtr;
 typedef std::shared_ptr<Node> NodePtr;
 typedef std::shared_ptr<const Node> ConstNodePtr;
 typedef std::shared_ptr<NodeQueue> NodeQueuePtr;
 typedef std::shared_ptr<const NodeQueue> ConstNodeQueuePtr;
+typedef std::shared_ptr<TimerBase> TimerPtr;
+typedef std::shared_ptr<const TimerBase> ConstTimerPtr;
+
 typedef std::function<NodeQueuePtr (CombinaBnBSolver*)> NodeQueueFactory;
 
 #endif /* end of include guard: __COMBINA_FWD_HPP */

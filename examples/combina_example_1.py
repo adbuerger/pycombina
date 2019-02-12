@@ -34,6 +34,7 @@ if hasattr(pycombina, 'CombinaBnB'):
     bnb_group = parser.add_argument_group('Branch-and-Bound arguments')
     bnb_group.add_argument('--search_strategy', type=str, default='dfs', choices=pycombina.CombinaBnB.get_search_strategies(), help='specify tree search strategy')
     bnb_group.add_argument('--max_iter', type=int, metavar='n', default=5000000, help='maximal number of branch-and-bound iterations')
+    bnb_group.add_argument('--vbc', default=False, action='store_true', help='write VBC file')
 args = parser.parse_args()
 
 pl.close("all")
@@ -55,7 +56,7 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 if args.solver == 'bnb':
     from pycombina import CombinaBnB
     combina = CombinaBnB(binapprox)
-    combina.solve(use_warm_start=False, bnb_search_strategy=args.search_strategy, bnb_opts={'max_iter': args.max_iter})
+    combina.solve(use_warm_start=False, bnb_search_strategy=args.search_strategy, bnb_opts={'max_iter': args.max_iter, 'vbc': args.vbc})
 elif args.solver == 'milp':
     from pycombina import CombinaMILP
     combina = CombinaMILP(binapprox)

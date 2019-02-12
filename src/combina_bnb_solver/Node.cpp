@@ -20,16 +20,12 @@
  *
  */
 
-#ifndef NODE_H
-#define NODE_H
-#include "Node.hpp"
-#endif
+#include <algorithm>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-namespace py = pybind11;
+#include "Node.hpp"
 
 Node::Node(Node* const parent_node,
+           size_t seq_num,
 
            unsigned int const b_active,
            unsigned int const n_c,
@@ -45,6 +41,7 @@ Node::Node(Node* const parent_node,
            double const lb)
 
     : parent_node(parent_node),
+      seqnum(seq_num),
 
       b_active(b_active),
 

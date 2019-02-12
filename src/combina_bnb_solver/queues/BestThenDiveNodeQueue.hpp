@@ -51,4 +51,4 @@ private:
     std::vector<std::pair<double, Node*>> store;
 };
 
-#endif /* end of include guard: __COMBINA_RESTRICTED_BEST_THEN_DIVE_NODE_QUEUE_HPP */
+#endif /* end of include guard: __COMBINA_BEST_THEN_DIVE_NODE_QUEUE_HPP */

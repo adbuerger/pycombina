@@ -24,12 +24,12 @@
 #define __COMBINA_NODE_HPP
 
 #include <vector>
-#include <algorithm>
 
 class Node {
 public:
 
     Node(Node* const parent_node,
+         size_t seq_num,
 
          unsigned int const b_active,
          unsigned int const n_c,
@@ -51,6 +51,7 @@ public:
 
     Node* get_parent();
     std::vector<Node*> get_child_nodes();
+    size_t get_seq_num() const { return seqnum; }
     
     unsigned int get_b_active();
 
@@ -76,6 +77,7 @@ private:
 
     Node* parent_node;
     std::vector<Node*> child_nodes;
+    const size_t seqnum;
 
     unsigned int b_active;
 

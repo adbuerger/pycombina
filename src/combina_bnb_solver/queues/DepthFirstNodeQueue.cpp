@@ -20,6 +20,8 @@
  *
  */
 
+#include <algorithm>
+
 #include "DepthFirstNodeQueue.hpp"
 #include "../Node.hpp"
 

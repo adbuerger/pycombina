@@ -20,6 +20,8 @@
  *
  */
 
+#include <algorithm>
+
 #include "DynamicBacktrackingNodeQueue.hpp"
 #include "../CombinaBnBSolver.hpp"
 

@@ -21,8 +21,20 @@
  *
  */
 
-#include "CombinaBnBSolver.hpp"
+#include <algorithm>
+#include <queue>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <stdexcept>
 
+#include <pybind11/pybind11.h>
+
+#include "CombinaBnBSolver.hpp"
+#include "Monitor.hpp"
+#include "Node.hpp"
+#include "NodeQueue.hpp"
+#include "monitors/VbcMonitor.hpp"
 #include "queues/BestFirstNodeQueue.hpp"
 #include "queues/DepthFirstNodeQueue.hpp"
 #include "queues/DynamicBacktrackingNodeQueue.hpp"
@@ -34,6 +46,19 @@ unsigned int Node::n_add = 0;
 unsigned int Node::n_delete_self = 0;
 unsigned int Node::n_delete_other = 0;
 #endif
+
+
+template <class Map, class Key = typename Map::key_type, class Value = typename Map::mapped_type>
+static Value get_with_default(const Map& map, const Key& key, const Value& def) {
+    auto it = map.find(key);
+    if(it != map.end()) {
+        return (Value)it->second;
+    }
+    else {
+        return def;
+    }
+}
+
 
 CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt, 
                        std::vector<std::vector<double>> const & b_rel,
@@ -86,7 +111,9 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       terminate(false),
       user_interrupt(false),
 
-      status(1)
+      status(1),
+      monitor_(),
+      nodeseq(0)
 
 {
 
@@ -136,6 +163,13 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
 void CombinaBnBSolver::set_solver_settings(std::map<std::string, double> bnb_opts) {
     max_iter = (long)bnb_opts["max_iter"];
     max_cpu_time = bnb_opts["max_cpu_time"];
+
+    bool use_vbc = get_with_default(bnb_opts, "vbc", false);
+    if(use_vbc) {
+        auto monitor = std::make_shared<VbcMonitor>(this, "combina.vbc", true);
+        monitor->set_time_dilation(60.0);
+        set_monitor(monitor);
+    }
 }
 
 
@@ -148,8 +182,21 @@ void CombinaBnBSolver::run(bool use_warm_start,
         throw std::out_of_range("unknown search strategy");
     }
     set_solver_settings(bnb_opts);
+
+    // Notify monitor of search initiation.
+    if(monitor_) {
+        monitor_->on_start_search();
+    }
+
+    // Add root nodes to queue and run branch-and-bound algorithm
     add_nodes_to_queue(nullptr);
     run_bnb();
+
+    // Notify monitor of search end.
+    if(monitor_) {
+        monitor_->on_stop_search();
+    }
+
     retrieve_solution();
 
 }
@@ -279,9 +326,9 @@ Node* CombinaBnBSolver::create_or_fathom_child_node(Node* parent_node,
     }
 
     if(lb_child < ub_bnb) {
-        return new Node(parent_node, b_active_child, n_c, sigma_child,
-            min_down_time_child, up_time_child, total_up_time_child,
-            depth_child, eta_child, lb_child);
+        return new Node(parent_node, nodeseq++, b_active_child, n_c,
+            sigma_child, min_down_time_child, up_time_child,
+            total_up_time_child, depth_child, eta_child, lb_child);
     }
     else {
         return nullptr;
@@ -308,32 +355,41 @@ void CombinaBnBSolver::run_bnb() {
     while (!node_queue->empty()) {
 
         check_it_termination_criterion_reached(n_iter, t_start);
-        
         if  (!terminate) {
-
             n_iter++;
         }
 
+        // select next node
         active_node = node_queue->top();
         node_queue->pop();
 
-        if(!terminate && (active_node->get_lb() < ub_bnb)) {
+        // notify monitor of node selection
+        if(monitor_) {
+            monitor_->on_select(active_node);
+        }
 
-            if(active_node->get_depth() == n_t) {     
-                
+        if(!terminate && (active_node->get_lb() < ub_bnb)) {
+            if(active_node->get_depth() == n_t) {
+                // store new best solution
                 t_update = clock();
                 set_new_best_node(active_node);
                 display_solution_update(true, double(t_update - t_start) / CLOCKS_PER_SEC);
+
+                // notify monitor of integer solution
+                if(monitor_) {
+                    monitor_->on_change(active_node, NODE_INTEGER);
+                }
             }
-
             else {
-
+                // branch on non-integer solution
                 add_nodes_to_queue(active_node);
             }
         }
-
         else {
-
+            // notify monitor of fathoming
+            if(!terminate && monitor_) {
+                monitor_->on_change(active_node, NODE_FATHOMED);
+            }
             delete_node(active_node);
         }
 
@@ -463,7 +519,7 @@ void CombinaBnBSolver::add_nodes_to_queue(Node* parent_node) {
     std::vector<Node*> children;
     unsigned int b_active_parent;
     double lb_parent;
-    bool has_children = false;
+    bool node_feasible = false;
 
     if(parent_node) {
         b_active_parent = parent_node->get_b_active();
@@ -501,32 +557,57 @@ void CombinaBnBSolver::add_nodes_to_queue(Node* parent_node) {
             depth_child = 0;
         }
 
-	bool child_added(false);
-
+        // exclude any child whose control configuration is forbidden
         if (!control_activation_forbidden(b_active_child,
             b_active_parent, sigma_child, min_down_time_child,
             up_time_child, total_up_time_child, depth_child)) {
 
+            // note existence of feasible child
+            node_feasible = true;
+
+            // compute properties of node
             compute_child_node_properties(b_active_child, b_active_parent,
                 eta_child, sigma_child, min_down_time_child, up_time_child,
                 total_up_time_child, lb_parent, &lb_child, &depth_child);
 
+            // decide whether the child should be fathomed
             Node* child = create_or_fathom_child_node(parent_node, b_active_child, sigma_child,
                 min_down_time_child, up_time_child, total_up_time_child,
                 depth_child, eta_child, lb_child);
 
             if(child) {
+                // child should be enqueued
                 children.push_back(child);
+
+                // notify monitor of node creation
+                if(monitor_) {
+                    monitor_->on_create(child);
+                }
             }
 	}
     }
 
+    // enqueue children all at once (to allow sorting in node queue)
     node_queue->push(children);
 
     #ifndef NDEBUG
     Node::n_add += children.size();
     #endif
 
+    // update status of parent node based on feasibility and fathoming of children
+    if(parent_node && monitor_) {
+        if(!node_feasible) {
+            monitor_->on_change(parent_node, NODE_INFEASIBLE);
+        }
+        else if(children.empty()) {
+            monitor_->on_change(parent_node, NODE_FATHOMED);
+        }
+        else {
+            monitor_->on_change(parent_node, NODE_SOLVED);
+        }
+    }
+
+    // delete parent node if there are no children
     if (parent_node && children.empty()) {
         delete_node(parent_node);
     }
@@ -623,12 +704,19 @@ unsigned int CombinaBnBSolver::get_status() const {
     return status;
 }
 
+
 unsigned long CombinaBnBSolver::get_num_sol() const {
     return n_sol;
 }
 
-unsigned int CombinaBnBSolver::get_num_t() const {
+
+unsigned int CombinaBnBSolver::get_num_time() const {
     return n_t;
+}
+
+
+unsigned int CombinaBnBSolver::get_num_ctrl() const {
+    return n_c;
 }
 
 

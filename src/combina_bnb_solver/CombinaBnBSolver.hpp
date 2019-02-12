@@ -24,46 +24,10 @@
 #ifndef __COMBINA_BNB_SOLVER_HPP
 #define __COMBINA_BNB_SOLVER_HPP
 
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
-#include <algorithm>
-#endif
-
-#ifndef VECTOR_H
-#define VECTOR_H
-#include <vector>
-#endif
- 
-#ifndef MAP_H
-#define MAP_H
 #include <map>
-#endif
+#include <vector>
 
-#ifndef STRING_H
-#define STRING_H
-#include <string>
-#endif
-
-#ifndef NODE_H
-#define NODE_H
-#include "Node.hpp"
-#endif
-
-#ifndef PYBIND11
-#define PYBIND11
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#endif
-
-#include <queue>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
- 
-#include "NodeQueue.hpp"
-
-
-class NodeQueue;
+#include "combina_fwd.hpp"
 
 
 class CombinaBnBSolver {
@@ -89,6 +53,9 @@ public:
 
     ~CombinaBnBSolver();
 
+    MonitorPtr get_monitor() const { return monitor_; }             ///< Returns current monitor.
+    void set_monitor(MonitorPtr monitor) { monitor_ = monitor; }    ///< Sets current monitor.
+
     void run(bool use_warm_start, const std::string& bnb_search_strategy, std::map<std::string, double> bnb_opts);
     void stop();
 
@@ -97,7 +64,8 @@ public:
     std::vector<std::vector<unsigned int>> get_b_bin() const;
     unsigned int get_status() const;
     unsigned long get_num_sol() const;
-    unsigned int get_num_t() const;
+    unsigned int get_num_time() const;
+    unsigned int get_num_ctrl() const;
     const std::vector<unsigned int>& get_num_max_switches() const;
 
 
@@ -184,7 +152,8 @@ private:
     bool user_interrupt;
 
     unsigned int status;
-
+    MonitorPtr monitor_;
+    size_t nodeseq;
 };
 
 #endif /* end of include guard: __COMBINA_BNB_SOLVER_HPP */
