@@ -34,10 +34,6 @@
 #include "Monitor.hpp"
 #include "Node.hpp"
 #include "NodeQueue.hpp"
-#include "monitors/VbcMonitor.hpp"
-#include "queues/BestFirstNodeQueue.hpp"
-#include "queues/DepthFirstNodeQueue.hpp"
-#include "queues/DynamicBacktrackingNodeQueue.hpp"
 
 namespace py = pybind11;
 
@@ -108,6 +104,9 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
 
       n_sol(0),
 
+      max_iter(5000000),
+      max_cpu_time(3e2),
+
       terminate(false),
       user_interrupt(false),
 
@@ -160,28 +159,11 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
 }
 
 
-void CombinaBnBSolver::set_solver_settings(std::map<std::string, double> bnb_opts) {
-    max_iter = (long)bnb_opts["max_iter"];
-    max_cpu_time = bnb_opts["max_cpu_time"];
-
-    bool use_vbc = get_with_default(bnb_opts, "vbc", false);
-    if(use_vbc) {
-        auto monitor = std::make_shared<VbcMonitor>(this, "combina.vbc", true);
-        monitor->set_time_dilation(60.0);
-        set_monitor(monitor);
+void CombinaBnBSolver::run(bool use_warm_start) {
+    // create node queue if non-existent
+    if(!node_queue) {
+        node_queue = NodeQueue::create(this);
     }
-}
-
-
-void CombinaBnBSolver::run(bool use_warm_start,
-    const std::string& bnb_search_strategy,
-    std::map<std::string, double> bnb_opts) {
-    try {
-        node_queue = NodeQueue::create(this, bnb_search_strategy);
-    } catch(const std::out_of_range&) {
-        throw std::out_of_range("unknown search strategy");
-    }
-    set_solver_settings(bnb_opts);
 
     // Notify monitor of search initiation.
     if(monitor_) {
@@ -198,7 +180,6 @@ void CombinaBnBSolver::run(bool use_warm_start,
     }
 
     retrieve_solution();
-
 }
 
 bool CombinaBnBSolver::control_activation_forbidden(

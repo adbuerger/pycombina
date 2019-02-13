@@ -32,9 +32,12 @@ parser.add_argument('--max_switches', type=int, default=4, help='maximal number 
 parser.add_argument('--solver', type=str, choices=['bnb', 'milp', 'sur'], default='bnb', help='specify solver for CIA problem')
 if hasattr(pycombina, 'CombinaBnB'):
     bnb_group = parser.add_argument_group('Branch-and-Bound arguments')
-    bnb_group.add_argument('--search_strategy', type=str, default='dfs', choices=pycombina.CombinaBnB.get_search_strategies(), help='specify tree search strategy')
-    bnb_group.add_argument('--max_iter', type=int, metavar='n', default=5000000, help='maximal number of branch-and-bound iterations')
-    bnb_group.add_argument('--vbc', default=False, action='store_true', help='write VBC file')
+    bnb_group.add_argument('--strategy', type=str, default='dfs', choices=pycombina.CombinaBnB.get_search_strategies(), help='specify tree search strategy')
+    bnb_group.add_argument('--max_iter', type=int, metavar='n', default=5000000, help='maximum number of branch-and-bound iterations')
+    bnb_group.add_argument('--max_cpu_time', type=float, metavar='t', default=3e2, help='maximum number of CPU seconds')
+    bnb_group.add_argument('--vbc_file', type=str, default=None, help='path for VBC output')
+    bnb_group.add_argument('--no_vbc_timing', dest='vbc_timing', default=True, action='store_false', help='remove timing information from VBC output')
+    bnb_group.add_argument('--vbc_time_dilation', type=float, default=60.0, help='stretch times in VBC file by fixed factor')
 args = parser.parse_args()
 
 pl.close("all")
@@ -56,7 +59,10 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 if args.solver == 'bnb':
     from pycombina import CombinaBnB
     combina = CombinaBnB(binapprox)
-    combina.solve(use_warm_start=False, bnb_search_strategy=args.search_strategy, bnb_opts={'max_iter': args.max_iter, 'vbc': args.vbc})
+    combina.solve(use_warm_start=False, strategy=args.strategy,
+        max_iter=args.max_iter, max_cpu_time=args.max_cpu_time,
+        vbc_file=args.vbc_file, vbc_timing=args.vbc_timing,
+        vbc_time_dilation=args.vbc_time_dilation)
 elif args.solver == 'milp':
     from pycombina import CombinaMILP
     combina = CombinaMILP(binapprox)

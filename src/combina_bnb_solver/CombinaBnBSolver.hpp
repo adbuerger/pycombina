@@ -54,9 +54,16 @@ public:
     ~CombinaBnBSolver();
 
     MonitorPtr get_monitor() const { return monitor_; }             ///< Returns current monitor.
-    void set_monitor(MonitorPtr monitor) { monitor_ = monitor; }    ///< Sets current monitor.
+    void set_monitor(MonitorPtr monitor) { monitor_ = monitor; }    ///< Replaces current monitor.
+    NodeQueuePtr get_node_queue() const { return node_queue; }      ///< Returns current node queue.
+    void set_node_queue(NodeQueuePtr queue) { node_queue = queue; } ///< Replaces current node queue.
 
-    void run(bool use_warm_start, const std::string& bnb_search_strategy, std::map<std::string, double> bnb_opts);
+    long get_max_iter() const { return max_iter; }                  ///< Returns current iteration limit.
+    void set_max_iter(long n) { max_iter = n; }                     ///< Sets iteration limit.
+    double get_max_cpu_time() const { return max_cpu_time; }        ///< Returns current CPU time limit.
+    void set_max_cpu_time(double t) { max_cpu_time = t; }           ///< Sets CPU time limit.
+
+    void run(bool use_warm_start);
     void stop();
 
     double get_eta() const;
@@ -74,8 +81,6 @@ private:
     void prepare_bnb();
     void compute_initial_upper_bound();
     void precompute_sum_of_etas();
-
-    void set_solver_settings(std::map<std::string, double> bnb_opts);
 
     bool control_activation_forbidden(unsigned int const b_active_child,
         unsigned int const b_active_parent,
