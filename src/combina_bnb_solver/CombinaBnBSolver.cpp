@@ -324,10 +324,13 @@ void CombinaBnBSolver::run_bnb() {
     clock_t t_current;
     clock_t t_end;
     
-    py::print("-----------------------------------------------------------");
-    py::print("                                                           ");
-    py::print("                 pycombina Branch and Bound                ");
-    py::print("                                                           ");
+    {
+        py::gil_scoped_acquire lock;
+        py::print("-----------------------------------------------------------");
+        py::print("                                                           ");
+        py::print("                 pycombina Branch and Bound                ");
+        py::print("                                                           ");
+    }
 
     t_start = clock();
 
@@ -415,8 +418,11 @@ void CombinaBnBSolver::run_bnb() {
         << "\n    Total runtime:    " << double(t_end - t_start) / CLOCKS_PER_SEC
         << " s";
 
-    py::print(streamObj.str());
-    py::print("\n-----------------------------------------------------------");
+    {
+        py::gil_scoped_acquire lock;
+        py::print(streamObj.str());
+        py::print("\n-----------------------------------------------------------");
+    }
 
     /*
 
@@ -460,6 +466,7 @@ void CombinaBnBSolver::set_new_best_node(Node* active_node) {
 
 
 void CombinaBnBSolver::display_solution_update(bool solution_update, double runtime) {
+    py::gil_scoped_acquire lock;
 
     if (n_print++ % 10 == 0) {
 

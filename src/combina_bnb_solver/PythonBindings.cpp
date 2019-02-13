@@ -135,5 +135,8 @@ static void combina_wrap_run(CombinaBnBSolver& solver, bool use_warm_start, py::
     }
 
     // invoke run function
-    solver.run(use_warm_start);
+    {
+        py::gil_scoped_release release;
+        solver.run(use_warm_start);
+    }
 }

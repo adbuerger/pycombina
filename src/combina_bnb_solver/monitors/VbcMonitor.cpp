@@ -31,6 +31,8 @@
 #include "../Node.hpp"
 #include "../Timer.hpp"
 
+namespace py = pybind11;
+
 
 // color code table for node states (adopted from Minotaur)
 static const unsigned int color_codes[] = {
@@ -106,14 +108,13 @@ VbcMonitor::~VbcMonitor() {
 
 void VbcMonitor::on_start_search() {
     using pybind11::operator""_a;
-    using pybind11::print;
-    using pybind11::module;
 
     // attempt to open file
     out_.clear();
     out_.open(path_);
     if(!out_) {
-        print("WARNING: failed to open VBC file for output", "file"_a=module::import("sys").attr("stderr"));
+        py::gil_scoped_acquire lock;
+        py::print("WARNING: failed to open VBC file for output", "file"_a=py::module::import("sys").attr("stderr"));
         return;
     }
 
