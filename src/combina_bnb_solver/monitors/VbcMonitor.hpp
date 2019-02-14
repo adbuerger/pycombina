@@ -23,10 +23,11 @@
 #ifndef __COMBINA_VBC_MONITOR_HPP
 #define __COMBINA_VBC_MONITOR_HPP
 
+#include <config.hpp>
 #include "../combina_fwd.hpp"
 #include "../Monitor.hpp"
 
-#include <fstream>
+#include <iostream>
 #include <string>
 #include <unordered_set>
 
@@ -49,26 +50,36 @@
  * being recorded.
  */
 class VbcMonitor : public MonitorBase {
+public:
+    enum class Compression {
+        none = 0,
+        bzip2 = 1,
+        gzip = 2,
+    };
+
 private:
     bool timing_;       ///< Indicates whether timing information is recorded.
     double dilate_;     ///< Factor by which time is dilated.
     TimerPtr timer_;    ///< Timer used for timing.
+    Compression compr_; ///< Type of compression.
 
-    std::string path_;  ///< Path of output file.
-    std::ofstream out_; ///< Output stream.
+    std::string path_;                      ///< Path of output file.
+    std::ostream out_;                      ///< Output stream.
+    std::unique_ptr<std::streambuf> buf_;   ///< Output stream buffer.
 
     std::unordered_set<size_t> cat_;    ///< Set of uncategorized nodes.
 
 public:
     VbcMonitor(CombinaBnBSolver* solver, const std::string& path, bool timing = true);
     VbcMonitor(const VbcMonitor&) = delete;
-    VbcMonitor(VbcMonitor&& monitor);
+    VbcMonitor(VbcMonitor&&) = delete;
     virtual ~VbcMonitor();
 
     bool has_timing() const { return timing_; }                 ///< Indicates whether timing is recorded.
     void set_timing(bool timing) { timing_ = timing; }          ///< Sets the timing flag.
     double get_time_dilation() const { return dilate_; }        ///< Returns the time dilation factor.
     void set_time_dilation(double dilate) { dilate_ = dilate; } ///< Sets the time dilation factor.
+    Compression get_compression() const { return compr_; }      ///< Returns current compression method.
 
     virtual void on_start_search();
     virtual void on_create(Node* node);

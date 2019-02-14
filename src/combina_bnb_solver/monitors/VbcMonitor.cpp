@@ -23,6 +23,7 @@
 #include <chrono>
 #include <iomanip>
 #include <map>
+#include <memory>
 #include <sstream>
 
 #include <pybind11/pybind11.h>
@@ -33,6 +34,111 @@
 
 namespace py = pybind11;
 
+
+#ifdef COMBINA_VBC_USE_BOOST
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/device/file.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+
+namespace bio = boost::iostreams;
+
+
+static std::unique_ptr<std::streambuf> create_buffer() {
+    return std::make_unique<bio::filtering_ostreambuf>();
+}
+
+
+static void open_file(std::ostream& stream, std::string path, VbcMonitor::Compression compr) {
+    using pybind11::operator""_a;
+
+    bio::filtering_ostreambuf* streambuf = reinterpret_cast<bio::filtering_ostreambuf*>(stream.rdbuf());
+
+    // close prior file sinks and reset the device
+    if(streambuf->is_complete()) {
+        streambuf->pop();
+    }
+    streambuf->reset();
+    stream.clear();
+
+    // install a compression filter
+    switch(compr) {
+    case VbcMonitor::Compression::bzip2:
+        if(path.size() < 4 || !std::equal(path.cbegin() + (path.size() - 4), path.cend(), ".bz2")) {
+            path = path + ".bz2";
+        }
+        streambuf->push(bio::bzip2_compressor());
+        break;
+    case VbcMonitor::Compression::gzip:
+        if(path.size() < 3 || !std::equal(path.cbegin() + (path.size() - 3), path.cend(), ".gz")) {
+            path = path + ".gz";
+        }
+        streambuf->push(bio::gzip_compressor());
+        break;
+    case VbcMonitor::Compression::none:
+        break;
+    }
+
+    // open file sink
+    bio::file_sink file(path);
+    if(file.is_open()) {
+        streambuf->push(file);
+        assert(streambuf->is_complete());
+    }
+    else {
+        py::gil_scoped_acquire lock;
+        py::print("WARNING: failed to open VBC file for output", "file"_a=py::module::import("sys").attr("stderr"));
+        return;
+    }
+}
+
+
+static void close_file(std::ostream& stream) {
+    bio::filtering_ostreambuf* streambuf = reinterpret_cast<bio::filtering_ostreambuf*>(stream.rdbuf());
+
+    if(streambuf->is_complete()) {
+        streambuf->pop();
+    }
+}
+#else
+#include <fstream>
+
+static std::unique_ptr<std::streambuf> create_buffer() {
+    return std::make_unique<std::filebuf>();
+}
+
+
+static void open_file(std::ostream& stream, std::string path, VbcMonitor::Compression compr) {
+    using pybind11::operator""_a;
+
+    std::filebuf* streambuf = reinterpret_cast<std::filebuf*>(stream.rdbuf());
+
+    // close prior file sinks and reset the device
+    streambuf->close();
+    stream.clear();
+
+    // install a compression filter
+    if(compr != VbcMonitor::Compression::none) {
+        py::gil_scoped_acquire lock;
+        py::print("WARNING: pycombina was built without compression capability", "file"_a=py::module::import("sys").attr("stderr"));
+        return;
+    }
+
+    // open file sink
+    streambuf->open(path, std::ios_base::out);
+    if(!streambuf->is_open()) {
+        py::gil_scoped_acquire lock;
+        py::print("WARNING: failed to open VBC file for output", "file"_a=py::module::import("sys").attr("stderr"));
+        return;
+    }
+}
+
+
+static void close_file(std::ostream& stream) {
+    std::filebuf* streambuf = reinterpret_cast<std::filebuf*>(stream.rdbuf());
+    streambuf->close();
+}
+#endif
 
 // color code table for node states (adopted from Minotaur)
 static const unsigned int color_codes[] = {
@@ -60,6 +166,24 @@ static const char* const status_messages[] = {
 };
 
 
+// lookup table for file extensions and compression methods
+static const std::map<std::string, VbcMonitor::Compression> compression_table {
+    { ".bz2", VbcMonitor::Compression::bzip2 },
+    { ".gz", VbcMonitor::Compression::gzip }
+};
+
+
+static VbcMonitor::Compression infer_compression_method(const std::string& path) {
+    for(const auto& entry : compression_table) {
+        size_t suffix_size = entry.first.size();
+        if(path.size() >= suffix_size && std::equal(path.cbegin() + (path.size() - suffix_size), path.cend(), entry.first.cbegin())) {
+            return entry.second;
+        }
+    }
+    return VbcMonitor::Compression::none;
+}
+
+
 static std::string vbc_clock_string(double timestamp) {
     std::ostringstream str;
     int hours, minutes;
@@ -85,38 +209,23 @@ VbcMonitor::VbcMonitor(CombinaBnBSolver* solver, const std::string& path, bool t
       dilate_(1.0),
       timer_(nullptr),
       path_(path),
-      out_(),
+      out_(nullptr),
+      buf_(create_buffer()),
       cat_()
-{}
-
-
-VbcMonitor::VbcMonitor(VbcMonitor&& monitor)
-    : MonitorBase(std::forward<MonitorBase>(monitor)),
-      timing_(monitor.timing_),
-      dilate_(monitor.dilate_),
-      timer_(std::move(monitor.timer_)),
-      path_(std::move(monitor.path_)),
-      out_(std::move(monitor.out_)),
-      cat_(std::move(monitor.cat_))
-{}
-
-
-VbcMonitor::~VbcMonitor() {
-    out_.close();
+{
+    out_.rdbuf(buf_.get());
 }
 
 
+VbcMonitor::~VbcMonitor() {}
+
+
 void VbcMonitor::on_start_search() {
-    using pybind11::operator""_a;
+    // infer compression method from path
+    compr_ = infer_compression_method(path_);
 
     // attempt to open file
-    out_.clear();
-    out_.open(path_);
-    if(!out_) {
-        py::gil_scoped_acquire lock;
-        py::print("WARNING: failed to open VBC file for output", "file"_a=py::module::import("sys").attr("stderr"));
-        return;
-    }
+    open_file(out_, path_, compr_);
 
     // write file header
     out_ << "#TYPE: COMPLETE TREE" << std::endl
@@ -240,5 +349,5 @@ void VbcMonitor::on_stop_search() {
     cat_.clear();
 
     // close output file
-    out_.close();
+    close_file(out_);
 }
