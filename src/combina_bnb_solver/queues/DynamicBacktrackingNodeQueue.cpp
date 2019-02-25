@@ -28,6 +28,11 @@
 #include <cmath>
 #include <limits>
 
+
+static bool node_comparator(const NodePtr& lhs, const NodePtr& rhs) {
+    return *rhs < *lhs;
+}
+
 DynamicBacktrackingNodeQueue::DynamicBacktrackingNodeQueue(CombinaBnBSolver* solver)
     : NodeQueue(solver),
       glob_lb(std::numeric_limits<double>::infinity()),
@@ -59,25 +64,25 @@ size_t DynamicBacktrackingNodeQueue::size() const {
     return heap.size() + stack.size();
 }
 
-Node* DynamicBacktrackingNodeQueue::top() const {
+NodePtr DynamicBacktrackingNodeQueue::top() const {
     // rearrange nodes internally
     const_cast<DynamicBacktrackingNodeQueue*>(this)->rearrange_nodes();
 
     // return next node
     if(stack.empty()) {
-        return heap.top();
+        return heap.front();
     }
     else {
         return stack.front();
     }
 }
 
-void DynamicBacktrackingNodeQueue::push(const std::vector<Node*>& nodes) {
-    std::vector<Node*> sorted = nodes;
-    std::sort(sorted.begin(), sorted.end(), [](Node* const lhs, Node* const rhs) {
+void DynamicBacktrackingNodeQueue::push(const std::vector<NodePtr>& nodes) {
+    std::vector<NodePtr> sorted = nodes;
+    std::sort(sorted.begin(), sorted.end(), [](const NodePtr& lhs, const NodePtr& rhs) {
         return *rhs < *lhs;
     });
-    for(Node* node : sorted) {
+    for(const NodePtr& node : sorted) {
         stack.push_front(node);
         if(node->get_lb() < glob_lb) {
             glob_lb = node->get_lb();
@@ -87,10 +92,11 @@ void DynamicBacktrackingNodeQueue::push(const std::vector<Node*>& nodes) {
 
 void DynamicBacktrackingNodeQueue::pop() {
     // remove topmost node from stack
-    Node* node;
+    NodePtr node;
     if(stack.empty()) {
-        node = heap.top();
-	heap.pop();
+        node = heap.front();
+        std::pop_heap(heap.begin(), heap.end(), node_comparator);
+        heap.pop_back();
     }
     else {
         node = stack.front();
@@ -100,13 +106,20 @@ void DynamicBacktrackingNodeQueue::pop() {
     // recalculate global lower bound if necessary
     if(node->get_lb() == glob_lb) {
         glob_lb = solver->get_eta();
-        for(Node* const stack_node : stack) {
+        for(const NodePtr& stack_node : stack) {
             glob_lb = std::min(stack_node->get_lb(), glob_lb);
         }
         if(!heap.empty()) {
-            glob_lb = std::min(heap.top()->get_lb(), glob_lb);
+            glob_lb = std::min(heap.front()->get_lb(), glob_lb);
         }
     }
+}
+
+void DynamicBacktrackingNodeQueue::clear() {
+    glob_lb = std::numeric_limits<double>::infinity();
+    min_beta = 1.0;
+    heap.clear();
+    stack.clear();
 }
 
 double DynamicBacktrackingNodeQueue::calculate_cutoff() {
@@ -134,7 +147,7 @@ double DynamicBacktrackingNodeQueue::calculate_cutoff() {
 void DynamicBacktrackingNodeQueue::rearrange_nodes() {
     const double glob_ub = solver->get_eta();
     const double cutoff = calculate_cutoff();
-    Node* node;
+    NodePtr node;
 
     // process top stack elements, stop early if fathomable
     while(!stack.empty() && (node = stack.front())->get_lb() <= glob_ub) {
@@ -144,7 +157,8 @@ void DynamicBacktrackingNodeQueue::rearrange_nodes() {
         }
 
         // move ignored node to heap
-        heap.push(node);
+        heap.push_back(node);
+        std::push_heap(heap.begin(), heap.end(), node_comparator);
         stack.pop_front();
     }
 }

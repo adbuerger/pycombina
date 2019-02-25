@@ -47,20 +47,24 @@ size_t DepthFirstNodeQueue::size() const {
     return stack.size();
 }
 
-Node* DepthFirstNodeQueue::top() const {
-    return stack.top();
+NodePtr DepthFirstNodeQueue::top() const {
+    return stack.back();
 }
 
-void DepthFirstNodeQueue::push(const std::vector<Node*>& nodes) {
-    std::vector<Node*> sorted = nodes;
-    std::sort(sorted.begin(), sorted.end(), [](Node* const lhs, Node* const rhs) {
+void DepthFirstNodeQueue::push(const std::vector<NodePtr>& nodes) {
+    std::vector<NodePtr> sorted = nodes;
+    std::sort(sorted.begin(), sorted.end(), [](const NodePtr& lhs, const NodePtr& rhs) {
         return *rhs < *lhs;
     });
-    for(Node* node : sorted) {
-        stack.push(node);
+    for(NodePtr& node : sorted) {
+        stack.emplace_back(std::move(node));
     }
 }
 
 void DepthFirstNodeQueue::pop() {
-    stack.pop();
+    stack.pop_back();
+}
+
+void DepthFirstNodeQueue::clear() {
+    stack.clear();
 }

@@ -20,7 +20,14 @@
  *
  */
 
+#include <algorithm>
+
 #include "BestFirstNodeQueue.hpp"
+
+
+static bool node_comparator(const NodePtr& lhs, const NodePtr& rhs) {
+    return *rhs < *lhs;
+}
 
 BestFirstNodeQueue::BestFirstNodeQueue(CombinaBnBSolver* solver)
     : NodeQueue(solver), queue()
@@ -41,16 +48,22 @@ size_t BestFirstNodeQueue::size() const {
     return queue.size();
 }
 
-Node* BestFirstNodeQueue::top() const {
-    return queue.top();
+NodePtr BestFirstNodeQueue::top() const {
+    return queue.front();
 }
 
-void BestFirstNodeQueue::push(const std::vector<Node*>& nodes) {
-    for(Node* node : nodes) {
-        queue.push(node);
+void BestFirstNodeQueue::push(const std::vector<NodePtr>& nodes) {
+    for(NodePtr node : nodes) {
+        queue.push_back(node);
+        std::push_heap(queue.begin(), queue.end(), node_comparator);
     }
 }
 
 void BestFirstNodeQueue::pop() {
-    queue.pop();
+    std::pop_heap(queue.begin(), queue.end(), node_comparator);
+    queue.pop_back();
+}
+
+void BestFirstNodeQueue::clear() {
+    queue.clear();
 }

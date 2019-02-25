@@ -257,7 +257,7 @@ void VbcMonitor::on_start_search() {
 }
 
 
-void VbcMonitor::on_create(Node* node) {
+void VbcMonitor::on_create(const NodePtr& node) {
     size_t node_num, parent_num;
     std::string clock_str;
 
@@ -289,12 +289,12 @@ void VbcMonitor::on_create(Node* node) {
 }
 
 
-void VbcMonitor::on_select(Node* node) {
+void VbcMonitor::on_select(const NodePtr& node) {
     this->on_change(node, NODE_SELECTED);
 }
 
 
-void VbcMonitor::on_change(Node* node, NodeState state) {
+void VbcMonitor::on_change(const NodePtr& node, NodeState state) {
     size_t node_num;
     unsigned int color_code;
     const char* status_msg;
@@ -315,7 +315,7 @@ void VbcMonitor::on_change(Node* node, NodeState state) {
             // write color update, information string extension, and upper bound update
             out_ << clock_str << " P " << node_num << ' ' << color_code << '\n';
             if(status_msg) {
-                out_ << clock_str << " A " << node_num << "\\i\\i\\n" << status_msg << '\n';
+                out_ << clock_str << " A " << node_num << " \\n" << status_msg << '\n';
             }
             if(state == NODE_INTEGER) {
                 out_ << clock_str << " U " << node->get_lb() << '\n';

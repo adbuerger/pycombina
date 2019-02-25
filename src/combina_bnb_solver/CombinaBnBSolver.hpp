@@ -97,7 +97,7 @@ private:
         std::vector<double> & total_up_time_child,
         double const lb_parent, double* lb_child, unsigned int* depth_child);
 
-    Node* create_or_fathom_child_node(Node* const parent_node, 
+    NodePtr create_or_fathom_child_node(const NodePtr& parent_node, 
         unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
         std::vector<double> const & min_down_time_child,
         std::vector<double> const & up_time_child,
@@ -106,12 +106,11 @@ private:
 
     void run_bnb();
     void check_it_termination_criterion_reached(int n_iter, clock_t t_start);
-    void set_new_best_node(Node* active_node);
+    void set_new_best_node(const NodePtr& active_node);
     void display_solution_update(bool solution_update, double runtime);
-    void add_nodes_to_queue(Node* parent_node);
+    void add_nodes_to_queue(const NodePtr& parent_node);
 
     void retrieve_solution();
-    void delete_node(Node *& active_node);
 
 /*
     void clean_up_nodes();
@@ -139,7 +138,7 @@ private:
     std::vector<std::vector<std::vector<double>>> sum_eta;
 
     std::shared_ptr<NodeQueue> node_queue;
-    Node * best_node;
+    NodePtr best_node;
 
     double ub_bnb;
 

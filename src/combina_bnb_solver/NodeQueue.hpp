@@ -36,9 +36,10 @@ protected:
 
 public:
     virtual size_t size() const = 0;
-    virtual Node* top() const = 0;
-    virtual void push(const std::vector<Node*>& nodes) = 0;
+    virtual NodePtr top() const = 0;
+    virtual void push(const std::vector<NodePtr>& nodes) = 0;
     virtual void pop() = 0;
+    virtual void clear() = 0;
 
     bool empty() const { return size() == 0; }
 

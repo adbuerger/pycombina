@@ -23,7 +23,6 @@
 #ifndef __COMBINA_BEST_FIRST_NODE_QUEUE_HPP
 #define __COMBINA_BEST_FIRST_NODE_QUEUE_HPP
 
-#include <queue>
 #include <vector>
 
 #include "../Node.hpp"
@@ -37,19 +36,13 @@ public:
     virtual ~BestFirstNodeQueue();
 
     virtual size_t size() const;
-    virtual Node* top() const;
-    virtual void push(const std::vector<Node*>& node);
+    virtual NodePtr top() const;
+    virtual void push(const std::vector<NodePtr>& node);
     virtual void pop();
-
-protected:
-    struct compare_nodes {
-        bool operator()(Node* const lhs, Node* const rhs) const {
-            return *rhs < *lhs;
-        }
-    };
+    virtual void clear();
 
 private:
-    std::priority_queue<Node*, std::vector<Node*>, compare_nodes> queue;
+    std::vector<NodePtr> queue;
 };
 
 #endif /* end of include guard: __COMBINA_BEST_FIRST_NODE_QUEUE_HPP */

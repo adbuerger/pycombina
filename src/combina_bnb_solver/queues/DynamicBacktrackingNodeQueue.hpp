@@ -26,6 +26,7 @@
 #include <queue>
 #include <deque>
 
+#include "../combina_fwd.hpp"
 #include "../Node.hpp"
 #include "../NodeQueue.hpp"
 
@@ -38,16 +39,10 @@ public:
 
     double get_global_lb() const { return glob_lb; }
     virtual size_t size() const;
-    virtual Node* top() const;
-    virtual void push(const std::vector<Node*>& node);
+    virtual NodePtr top() const;
+    virtual void push(const std::vector<NodePtr>& node);
     virtual void pop();
-
-protected:
-    struct compare_nodes {
-        bool operator()(Node* const lhs, Node* const rhs) const {
-            return *rhs < *lhs;
-        }
-    };
+    virtual void clear();
 
 private:
     double calculate_cutoff();
@@ -55,8 +50,8 @@ private:
 
     double glob_lb;
     double min_beta;
-    std::priority_queue<Node*, std::vector<Node*>, compare_nodes> heap;
-    std::deque<Node*> stack;
+    std::vector<NodePtr> heap;
+    std::deque<NodePtr> stack;
 };
 
 #endif /* end of include guard: __COMBINA_DYNAMIC_BACKTRACKING_NODE_QUEUE_HPP */

@@ -31,7 +31,7 @@
 
 BestThenDiveNodeQueue::BestThenDiveNodeQueue(CombinaBnBSolver* solver)
     : NodeQueue(solver),
-      curtop(nullptr),
+      curtop(),
       limbo(),
       store()
 {}
@@ -57,7 +57,7 @@ size_t BestThenDiveNodeQueue::size() const {
     return curtop ? limbo.size() + store.size() + 1 : limbo.size() + store.size();
 }
 
-Node* BestThenDiveNodeQueue::top() const {
+NodePtr BestThenDiveNodeQueue::top() const {
     if(!limbo.empty()) {
         return limbo.back();
     }
@@ -76,7 +76,7 @@ void BestThenDiveNodeQueue::pop() {
         limbo.pop_back();
     }
     if(curtop) {
-        curtop = nullptr;
+        curtop.reset();
     }
     else {
         std::pop_heap(store.begin(), store.end(), std::bind(&BestThenDiveNodeQueue::later_root, this, _1, _2));
@@ -84,7 +84,7 @@ void BestThenDiveNodeQueue::pop() {
     }
 }
 
-void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
+void BestThenDiveNodeQueue::push(const std::vector<NodePtr>& nodes) {
     using namespace std::placeholders;
 
     // short-circuit for empty lists
@@ -103,7 +103,7 @@ void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
     const double glob_ub = solver->get_eta();
 
     // find preferred diving target
-    std::vector<Node*>::const_iterator tgt_it = nodes.cend();
+    auto tgt_it = nodes.cend();
     for(auto it = nodes.cbegin(); it != nodes.cend(); ++it) {
         if((*it)->get_lb() < glob_ub && (tgt_it == nodes.cend() || prefer_dive(*it, *tgt_it))) {
             tgt_it = it;
@@ -143,7 +143,13 @@ void BestThenDiveNodeQueue::push(const std::vector<Node*>& nodes) {
     }
 }
 
-double BestThenDiveNodeQueue::adjusted_lower_bound(Node* const node) const {
+void BestThenDiveNodeQueue::clear() {
+    curtop.reset();
+    limbo.clear();
+    store.clear();
+}
+
+double BestThenDiveNodeQueue::adjusted_lower_bound(const NodePtr& node) const {
     const std::vector<double>& dt = solver->get_dt();
     const std::vector<unsigned int>& max_sigma = solver->get_num_max_switches();
     const std::vector<unsigned int>& sigma = node->get_sigma();
@@ -159,7 +165,7 @@ double BestThenDiveNodeQueue::adjusted_lower_bound(Node* const node) const {
     return node->get_lb() + rem_time / (3 + 2 * min_rem_sigma);
 }
 
-bool BestThenDiveNodeQueue::later_root(const std::pair<double, Node*>& lhs, const std::pair<double, Node*>& rhs) const {
+bool BestThenDiveNodeQueue::later_root(const std::pair<double, NodePtr>& lhs, const std::pair<double, NodePtr>& rhs) const {
     if(lhs.first != rhs.first) {
         return rhs.first < lhs.first;
     }
@@ -168,7 +174,7 @@ bool BestThenDiveNodeQueue::later_root(const std::pair<double, Node*>& lhs, cons
     }
 }
 
-bool BestThenDiveNodeQueue::prefer_dive(Node* const lhs, Node* const rhs) const {
+bool BestThenDiveNodeQueue::prefer_dive(const NodePtr& lhs, const NodePtr& rhs) const {
     if(lhs->get_lb() != rhs->get_lb()) {
         return lhs->get_lb() < rhs->get_lb();
     }

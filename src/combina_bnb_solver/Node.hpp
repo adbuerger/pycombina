@@ -25,14 +25,15 @@
 
 #include <vector>
 
+#include "combina_fwd.hpp"
+
 class Node {
 public:
 
-    Node(Node* const parent_node,
+    Node(const NodePtr& parent_node,
          size_t seq_num,
 
          unsigned int const b_active,
-         unsigned int const n_c,
          std::vector<unsigned int> const sigma,
 
          std::vector<double> const min_down_time,
@@ -43,14 +44,7 @@ public:
          std::vector<double> const eta,
          double const lb);
 
-    ~Node();
-
-
-    void set_child(Node* child_node, unsigned int b_active);
-    bool no_children_left();
-
-    Node* get_parent();
-    std::vector<Node*> get_child_nodes();
+    NodePtr get_parent() const { return parent_node; }
     size_t get_seq_num() const { return seqnum; }
     
     unsigned int get_b_active();
@@ -74,9 +68,7 @@ public:
 
 
 private:
-
-    Node* parent_node;
-    std::vector<Node*> child_nodes;
+    NodePtr parent_node;
     const size_t seqnum;
 
     unsigned int b_active;

@@ -28,16 +28,49 @@ from pycombina import BinApprox
 
 # parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--max_switches', type=int, default=4, help='maximal number of control switches allowed')
-parser.add_argument('--solver', type=str, choices=['bnb', 'milp', 'sur'], default='bnb', help='specify solver for CIA problem')
+parser.add_argument(
+    '--max_switches', type=int, default=4, metavar='count',
+    help='maximal number of control switches allowed'
+)
+parser.add_argument(
+    '--solver', type=str, choices=['bnb', 'milp', 'sur'], default='bnb',
+    metavar='name', help='specify solver for CIA problem'
+)
+
 if hasattr(pycombina, 'CombinaBnB'):
     bnb_group = parser.add_argument_group('Branch-and-Bound arguments')
-    bnb_group.add_argument('--strategy', type=str, default='dfs', choices=pycombina.CombinaBnB.get_search_strategies(), help='specify tree search strategy')
-    bnb_group.add_argument('--max_iter', type=int, metavar='n', default=5000000, help='maximum number of branch-and-bound iterations')
-    bnb_group.add_argument('--max_cpu_time', type=float, metavar='t', default=3e2, help='maximum number of CPU seconds')
-    bnb_group.add_argument('--vbc_file', type=str, default=None, help='path for VBC output')
-    bnb_group.add_argument('--no_vbc_timing', dest='vbc_timing', default=True, action='store_false', help='remove timing information from VBC output')
-    bnb_group.add_argument('--vbc_time_dilation', type=float, default=60.0, help='stretch times in VBC file by fixed factor')
+    bnb_group.add_argument(
+        '--strategy', type=str, default=None, metavar='name',
+        choices=pycombina.CombinaBnB.get_search_strategies(),
+        help='specify tree search strategy'
+    )
+    bnb_group.add_argument(
+        '--max_iter', type=int, default=None, metavar='count',
+        help='maximum number of branch-and-bound iterations'
+    )
+    bnb_group.add_argument(
+        '--max_cpu_time', type=float, default=None, metavar='secs',
+        help='maximum number of CPU seconds'
+    )
+    bnb_group.add_argument(
+        '--vbc_file', type=str, default=None, metavar='file',
+        help='path for VBC output'
+    )
+    bnb_group.add_argument(
+        '--vbc_time_dilation', type=float, default=None, metavar='factor',
+        help='stretch times in VBC file by fixed factor'
+    )
+
+    timing_args = bnb_group.add_mutually_exclusive_group()
+    timing_args.add_argument(
+        '--vbc_timing', dest='vbc_timing', action='store_true',
+        help='include timing information in VBC output'
+    )
+    timing_args.add_argument(
+        '--no_vbc_timing', dest='vbc_timing', action='store_false',
+        help='remove timing information from VBC output'
+    )
+    timing_args.set_defaults(vbc_timing=None)
 args = parser.parse_args()
 
 pl.close("all")
@@ -57,12 +90,27 @@ binapprox.set_n_max_switches(n_max_switches = max_switches)
 #binapprox.set_cia_norm("column_sum_norm")
 
 if args.solver == 'bnb':
+    # Create CombinaBnB solver object
     from pycombina import CombinaBnB
     combina = CombinaBnB(binapprox)
-    combina.solve(use_warm_start=False, strategy=args.strategy,
-        max_iter=args.max_iter, max_cpu_time=args.max_cpu_time,
-        vbc_file=args.vbc_file, vbc_timing=args.vbc_timing,
-        vbc_time_dilation=args.vbc_time_dilation)
+
+    # Read keyword arguments
+    kwargs = {}
+    if args.strategy is not None:
+        kwargs['strategy'] = args.strategy
+    if args.max_iter is not None:
+        kwargs['max_iter'] = args.max_iter
+    if args.max_cpu_time is not None:
+        kwargs['max_cpu_time'] = args.max_cpu_time
+    if args.vbc_file is not None:
+        kwargs['vbc_file'] = args.vbc_file
+    if args.vbc_timing is not None:
+        kwargs['vbc_timing'] = args.vbc_timing
+    if args.vbc_time_dilation is not None:
+        kwargs['vbc_time_dilation'] = args.vbc_time_dilation
+
+    # Invoke solver
+    combina.solve(use_warm_start=False, **kwargs)
 elif args.solver == 'milp':
     from pycombina import CombinaMILP
     combina = CombinaMILP(binapprox)

@@ -49,11 +49,11 @@ public:
     MonitorBase(const MonitorBase& monitor) : solver(monitor.solver) {}
     virtual ~MonitorBase() = 0;
 
-    virtual void on_start_search();                         ///< Branch-and-bound has been started.
-    virtual void on_create(Node* node);                     ///< Node has been created.
-    virtual void on_select(Node* node);                     ///< Node has been selected.
-    virtual void on_change(Node* node, NodeState state);    ///< Node state has changed.
-    virtual void on_stop_search();                          ///< Branch-and-bound has been stopped.
+    virtual void on_start_search();                                 ///< Branch-and-bound has been started.
+    virtual void on_create(const NodePtr& node);                    ///< Node has been created.
+    virtual void on_select(const NodePtr& node);                    ///< Node has been selected.
+    virtual void on_change(const NodePtr& node, NodeState state);   ///< Node state has changed.
+    virtual void on_stop_search();                                  ///< Branch-and-bound has been stopped.
 };
 
 
@@ -78,9 +78,9 @@ public:
     {}
 
     virtual void on_start_search();
-    virtual void on_create(Node* node);
-    virtual void on_select(Node* node);
-    virtual void on_change(Node* node, NodeState state);
+    virtual void on_create(const NodePtr& node);
+    virtual void on_select(const NodePtr& node);
+    virtual void on_change(const NodePtr& node, NodeState state);
     virtual void on_stop_search();
 };
 

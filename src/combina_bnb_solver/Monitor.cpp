@@ -29,13 +29,13 @@ MonitorBase::~MonitorBase() {}
 void MonitorBase::on_start_search() {}
 
 
-void MonitorBase::on_create(Node* node) {}
+void MonitorBase::on_create(const NodePtr&) {}
 
 
-void MonitorBase::on_select(Node* node) {}
+void MonitorBase::on_select(const NodePtr&) {}
 
 
-void MonitorBase::on_change(Node* node, NodeState state) {}
+void MonitorBase::on_change(const NodePtr&, NodeState) {}
 
 
 void MonitorBase::on_stop_search() {}
@@ -48,21 +48,21 @@ void MultiMonitor::on_start_search() {
 }
 
 
-void MultiMonitor::on_create(Node* node) {
+void MultiMonitor::on_create(const NodePtr& node) {
     for(MonitorPtr p : monitors) {
         p->on_create(node);
     }
 }
 
 
-void MultiMonitor::on_select(Node* node) {
+void MultiMonitor::on_select(const NodePtr& node) {
     for(MonitorPtr p : monitors) {
         p->on_select(node);
     }
 }
 
 
-void MultiMonitor::on_change(Node* node, NodeState state) {
+void MultiMonitor::on_change(const NodePtr& node, NodeState state) {
     for(MonitorPtr p : monitors) {
         p->on_change(node, state);
     }

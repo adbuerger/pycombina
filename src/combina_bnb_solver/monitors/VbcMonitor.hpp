@@ -82,9 +82,9 @@ public:
     Compression get_compression() const { return compr_; }      ///< Returns current compression method.
 
     virtual void on_start_search();
-    virtual void on_create(Node* node);
-    virtual void on_select(Node* node);
-    virtual void on_change(Node* node, NodeState state);
+    virtual void on_create(const NodePtr& node);
+    virtual void on_select(const NodePtr& node);
+    virtual void on_change(const NodePtr& node, NodeState state);
     virtual void on_stop_search();
 };
 

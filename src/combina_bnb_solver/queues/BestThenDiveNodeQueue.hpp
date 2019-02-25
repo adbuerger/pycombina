@@ -37,18 +37,19 @@ public:
     virtual ~BestThenDiveNodeQueue();
 
     virtual size_t size() const;
-    virtual Node* top() const;
+    virtual NodePtr top() const;
     virtual void pop();
-    virtual void push(const std::vector<Node*>& nodes);
+    virtual void push(const std::vector<NodePtr>& nodes);
+    virtual void clear();
 
 private:
-    double adjusted_lower_bound(Node* const node) const;
-    bool prefer_dive(Node* const lhs, Node* const rhs) const;
-    bool later_root(const std::pair<double, Node*>& lhs, const std::pair<double, Node*>& rhs) const;
+    double adjusted_lower_bound(const NodePtr& node) const;
+    bool prefer_dive(const NodePtr& lhs, const NodePtr& rhs) const;
+    bool later_root(const std::pair<double, NodePtr>& lhs, const std::pair<double, NodePtr>& rhs) const;
 
-    Node* curtop;
-    std::vector<Node*> limbo;
-    std::vector<std::pair<double, Node*>> store;
+    NodePtr curtop;
+    std::vector<NodePtr> limbo;
+    std::vector<std::pair<double, NodePtr>> store;
 };
 
 #endif /* end of include guard: __COMBINA_BEST_THEN_DIVE_NODE_QUEUE_HPP */

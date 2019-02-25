@@ -24,11 +24,10 @@
 
 #include "Node.hpp"
 
-Node::Node(Node* const parent_node,
+Node::Node(const NodePtr& parent_node,
            size_t seq_num,
 
            unsigned int const b_active,
-           unsigned int const n_c,
            
            std::vector<unsigned int> const sigma,
 
@@ -53,78 +52,13 @@ Node::Node(Node* const parent_node,
 
       depth(depth),
       eta(eta),
-      lb(lb),
-
-      child_nodes(n_c)
-
-{
-
-    for(unsigned int i = 0; i < n_c; i++) {
-
-        child_nodes[i] = nullptr;
-    }
-
-    if(parent_node) {
-
-        parent_node->set_child(this, b_active);
-    }
-}
-
-
-Node::~Node(){
-
-    if(parent_node) {
-
-        parent_node->set_child(nullptr, b_active);
-    }
-
-}
-
-
-void Node::set_child(Node* child_node, unsigned int b_active) {
-
-    child_nodes[b_active] = child_node;
-
-    if (no_children_left()) {
-
-        delete this;
-
-        #ifndef NDEBUG
-        Node::n_delete_self++;
-        #endif
-    }
-
-}
-
-
-bool Node::no_children_left() {
-
-    for (Node* child: child_nodes) {
-        
-        if (child != nullptr) {
-
-            return false;
-        }
-    }
-
-    return true;
-}
+      lb(lb)
+{}
 
 
 unsigned int Node::get_max_sigma() const {
 
     return * std::max_element(sigma.begin(), sigma.end());
-}
-
-
-Node* Node::get_parent() {
-
-    return parent_node;
-}
-
-std::vector<Node*> Node::get_child_nodes() {
-
-    return child_nodes;
 }
 
 

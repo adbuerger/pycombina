@@ -23,8 +23,9 @@
 #ifndef __COMBINA_DEPTH_FIRST_NODE_QUEUE_HPP
 #define __COMBINA_DEPTH_FIRST_NODE_QUEUE_HPP
 
-#include <stack>
+#include <queue>
 
+#include "../combina_fwd.hpp"
 #include "../NodeQueue.hpp"
 
 class DepthFirstNodeQueue : public NodeQueue {
@@ -35,12 +36,13 @@ public:
     ~DepthFirstNodeQueue();
 
     virtual size_t size() const;
-    virtual Node* top() const;
-    virtual void push(const std::vector<Node*>& nodes);
+    virtual NodePtr top() const;
+    virtual void push(const std::vector<NodePtr>& nodes);
     virtual void pop();
+    virtual void clear();
 
 private:
-    std::stack<Node*> stack;
+    std::deque<NodePtr> stack;
 };
 
 #endif /* end of include guard: __COMBINA_DFS_NODE_QUEUE_HPP */

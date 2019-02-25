@@ -29,12 +29,46 @@ from pycombina import BinApprox
 
 # parse command line arguments
 parser = ap.ArgumentParser()
-parser.add_argument('--solver', type=str, choices=['milp', 'bnb', 'sur'], default='bnb', help='specify CIA solver')
-parser.add_argument('--max_switches', metavar='n', type=int, nargs=3, default=[5, 2, 3], help='specify maximum number of switches')
+parser.add_argument('--max_switches', metavar='count', type=int, nargs=3, default=[5, 2, 3], help='specify maximum number of switches')
+parser.add_argument(
+    '--solver', type=str, choices=['bnb', 'milp', 'sur'], default='bnb',
+    metavar='name', help='specify solver for CIA problem'
+)
+
 if hasattr(pycombina, 'CombinaBnB'):
-    bnb_group = parser.add_argument_group('Branch-and-bound solver')
-    bnb_group.add_argument('--max_iter', metavar='n', type=int, default=5000000, help='specify iteration limit')
-    bnb_group.add_argument('--search_strategy', type=str, choices=pycombina.CombinaBnB.get_search_strategies(), default='dfs', help='specify tree search strategy')
+    bnb_group = parser.add_argument_group('Branch-and-Bound arguments')
+    bnb_group.add_argument(
+        '--strategy', type=str, default=None, metavar='name',
+        choices=pycombina.CombinaBnB.get_search_strategies(),
+        help='specify tree search strategy'
+    )
+    bnb_group.add_argument(
+        '--max_iter', type=int, default=None, metavar='count',
+        help='maximum number of branch-and-bound iterations'
+    )
+    bnb_group.add_argument(
+        '--max_cpu_time', type=float, default=None, metavar='secs',
+        help='maximum number of CPU seconds'
+    )
+    bnb_group.add_argument(
+        '--vbc_file', type=str, default=None, metavar='file',
+        help='path for VBC output'
+    )
+    bnb_group.add_argument(
+        '--vbc_time_dilation', type=float, default=None, metavar='factor',
+        help='stretch times in VBC file by fixed factor'
+    )
+
+    timing_args = bnb_group.add_mutually_exclusive_group()
+    timing_args.add_argument(
+        '--vbc_timing', dest='vbc_timing', action='store_true',
+        help='include timing information in VBC output'
+    )
+    timing_args.add_argument(
+        '--no_vbc_timing', dest='vbc_timing', action='store_false',
+        help='remove timing information from VBC output'
+    )
+    timing_args.set_defaults(vbc_timing=None)
 args = parser.parse_args()
 
 pl.close("all")
@@ -64,11 +98,27 @@ if args.solver == 'milp':
     combina = CombinaMILP(binapprox)
     combina.solve()
 elif args.solver == 'bnb':
+    # Create CombinaBnB solver object
     from pycombina import CombinaBnB
     combina = CombinaBnB(binapprox)
-    combina.solve(use_warm_start=False, bnb_search_strategy=args.search_strategy, bnb_opts={
-        'max_iter': args.max_iter
-    }) #, gurobi_opts = {"TimeLimit": 20, "MIPGap": 0.4})
+
+    # Read keyword arguments
+    kwargs = {}
+    if args.strategy is not None:
+        kwargs['strategy'] = args.strategy
+    if args.max_iter is not None:
+        kwargs['max_iter'] = args.max_iter
+    if args.max_cpu_time is not None:
+        kwargs['max_cpu_time'] = args.max_cpu_time
+    if args.vbc_file is not None:
+        kwargs['vbc_file'] = args.vbc_file
+    if args.vbc_timing is not None:
+        kwargs['vbc_timing'] = args.vbc_timing
+    if args.vbc_time_dilation is not None:
+        kwargs['vbc_time_dilation'] = args.vbc_time_dilation
+
+    # Invoke solver
+    combina.solve(use_warm_start=False, **kwargs)
 elif args.solver == 'sur':
     from pycombina import CombinaSUR
     combina = CombinaSUR(binapprox)
