@@ -39,8 +39,7 @@ namespace py = pybind11;
 
 #ifndef NDEBUG
 unsigned int Node::n_add = 0;
-unsigned int Node::n_delete_self = 0;
-unsigned int Node::n_delete_other = 0;
+unsigned int Node::n_delete = 0;
 #endif
 
 
@@ -617,10 +616,8 @@ void CombinaBnBSolver::retrieve_solution() {
     #ifndef NDEBUG
     py::print("Debug information:");
     py::print("Nodes added:", Node::n_add);
-    py::print("Nodes deleted:", Node::n_delete_self + Node::n_delete_other);
-    py::print("Nodes not deleted:", Node::n_add - (Node::n_delete_self + Node::n_delete_other));
-    py::print("Nodes deleted by themselves:", Node::n_delete_self);
-    py::print("Nodes deleted by BnB:", Node::n_delete_other);
+    py::print("Nodes deleted:", Node::n_delete);
+    py::print("Nodes not deleted:", Node::n_add - Node::n_delete);
     #endif
 
 }

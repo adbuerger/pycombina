@@ -43,6 +43,12 @@ public:
          unsigned int const depth,
          std::vector<double> const eta,
          double const lb);
+    Node(const Node&) = delete;
+    Node(Node&&) = delete;
+    ~Node();
+
+    Node& operator=(const Node&) = delete;
+    Node& operator=(Node&&) = delete;
 
     NodePtr get_parent() const { return parent_node; }
     size_t get_seq_num() const { return seqnum; }
@@ -62,8 +68,7 @@ public:
 
     #ifndef NDEBUG
     static unsigned int n_add;
-    static unsigned int n_delete_self;
-    static unsigned int n_delete_other;
+    static unsigned int n_delete;
     #endif
 
 

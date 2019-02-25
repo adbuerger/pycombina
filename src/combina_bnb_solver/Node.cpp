@@ -53,7 +53,18 @@ Node::Node(const NodePtr& parent_node,
       depth(depth),
       eta(eta),
       lb(lb)
-{}
+{
+#ifndef NDEBUG
+    ++Node::n_add;
+#endif
+}
+
+
+Node::~Node() {
+#ifndef NDEBUG
+    ++Node::n_delete;
+#endif
+}
 
 
 unsigned int Node::get_max_sigma() const {

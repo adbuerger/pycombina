@@ -20,9 +20,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(combina_bnb_solver)
 
-# Export compile commands for autocompletion and linting
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # Find (optional) boost libraries
 find_package(Boost 1.44.0 COMPONENTS iostreams)
 if(Boost_FOUND)
