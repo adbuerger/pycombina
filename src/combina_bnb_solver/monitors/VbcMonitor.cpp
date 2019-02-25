@@ -21,6 +21,7 @@
  */
 
 #include <chrono>
+#include <cmath>
 #include <iomanip>
 #include <map>
 #include <memory>
