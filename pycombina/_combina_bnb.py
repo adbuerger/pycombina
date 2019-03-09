@@ -73,6 +73,9 @@ class CombinaBnB():
             raise RuntimeError("Solver status undefined, this should not happen.\n"
                 + "Please contact the developers.")
 
+    @staticmethod
+    def get_search_strategies():
+        return CombinaBnBSolver.search_strategies
 
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
@@ -128,27 +131,10 @@ class CombinaBnB():
             raise NotImplementedError("Warm-starting not yet implemented.")
 
 
-    def _run_solver(self, use_warm_start: bool, bnb_opts: dict) -> None:
-
-        bnb_opts_default = {
-
-            "max_iter" :  5e6,
-            "max_cpu_time": 3e2,
-        }
-
-        for bnb_opt in bnb_opts.keys():
-
-            try:
-
-                bnb_opts_default.update({bnb_opt: float(bnb_opts[bnb_opt])})
-
-            except ValueError:
-
-                raise ValueError("Values of solver options must be of numerical type.")
-
+    def _run_solver(self, use_warm_start: bool, **kwargs) -> None:
         try:
             
-            self._bnb_solver.run(use_warm_start, bnb_opts_default)
+            self._bnb_solver.run(use_warm_start, **kwargs)
 
         except KeyboardInterrupt:
 
@@ -165,7 +151,7 @@ class CombinaBnB():
         self._binapprox.set_eta(self._binapprox_p.eta)
 
 
-    def solve(self, use_warm_start: bool = False , bnb_opts: dict = {}):
+    def solve(self, use_warm_start: bool = False , **kwargs):
 
         '''
         Solve the combinatorial integral approximation problem.
@@ -174,15 +160,34 @@ class CombinaBnB():
                                given binary approximation problem, use it to
                                warm-start the solver.
 
-        :param bnb_opts: Options to be passed for the branch-and-bound solver:
+        :param strategy: Search strategy to be used in exploring the
+                         branch-and-bound tree. *Default:* **dfs**. *Options:*
+            - **bfs**: best first search,
+            - **btd**: best then dive strategy,
+            - **dfs**: depth first search,
+            - **dbt**: dynamic backtracking tree search.
 
-            - **max_iter**: Maximum number of solver iterations. Once reached,
-              the best solution found so far is returned. *Default:* 5e6.
-            - **max_cpu_time**: Maximum CPU seconds for the solver. Once reached,
-              the best solution found so far is returned. *Default:* 3e2.
+        :param vbc_file: Path of a VBC output file to which the branch-and-bound
+                         tree should be written. **None** indicates that no VBC
+                         file should be written at all. *Default:* **None**.
 
+        :param vbc_timing: Boolean indicating whether the VBC file should contain
+                           timing information. Ignored if no VBC file is written.
+                           *Default:* True.
+
+        :param vbc_time_dilation: Floating point number by which all times
+                                  are multiplied prior to being written to the
+                                  VBC file. Ignored if no VBC file is written.
+                                  *Default:* 1.0.
+
+        :param max_iter: Maximum number of solver iterations. Once reached, the
+                         best solution found so far is returned. *Default:* 5e6.
+
+        :param max_cpu_time: Maximum CPU seconds for the solver. Once reached,
+                             the best solution found so far is returned.
+                             *Default:* 3e2.
         '''
 
         self._setup_warm_start(use_warm_start = use_warm_start)
-        self._run_solver(use_warm_start = use_warm_start, bnb_opts = bnb_opts)
+        self._run_solver(use_warm_start = use_warm_start, **kwargs)
         self._set_solution()

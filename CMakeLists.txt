@@ -20,17 +20,31 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(combina_bnb_solver)
 
+# Find (optional) boost libraries
+find_package(Boost 1.44.0 COMPONENTS iostreams)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
+endif()
+
 # Set source directory
 set(SOURCE_DIR "src/combina_bnb_solver")
 
 # Tell CMake that headers are also in SOURCE_DIR
 include_directories(${SOURCE_DIR})
-file(GLOB SOURCES ${SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/*.cpp)
 set(${SOURCES})
+
+# Configure config.hpp.in
+configure_file(${SOURCE_DIR}/config.hpp.in ${SOURCE_DIR}/config.hpp)
+include_directories(${CMAKE_BINARY_DIR}/${SOURCE_DIR})
 
 # Generate Python module
 add_subdirectory(src/pybind11)
 pybind11_add_module(_combina_bnb_solver ${SOURCES} "${SOURCE_DIR}/PythonBindings.cpp")
+if(Boost_FOUND)
+  target_link_libraries(_combina_bnb_solver PRIVATE Boost::iostreams)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)

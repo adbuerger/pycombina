@@ -20,25 +20,20 @@
  *
  */
 
-#ifndef VECTOR_H
-#define VECTOR_H
-#include <vector>
-#endif
+#ifndef __COMBINA_NODE_HPP
+#define __COMBINA_NODE_HPP
 
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
-#include <algorithm>
-#endif
+#include <vector>
+
+#include "combina_fwd.hpp"
 
 class Node {
-    friend class NodeComparison;
-
 public:
 
-    Node(Node* const parent_node,
+    Node(const NodePtr& parent_node,
+         size_t seq_num,
 
          unsigned int const b_active,
-         unsigned int const n_c,
          std::vector<unsigned int> const sigma,
 
          std::vector<double> const min_down_time,
@@ -48,15 +43,15 @@ public:
          unsigned int const depth,
          std::vector<double> const eta,
          double const lb);
-
+    Node(const Node&) = delete;
+    Node(Node&&) = delete;
     ~Node();
 
+    Node& operator=(const Node&) = delete;
+    Node& operator=(Node&&) = delete;
 
-    void set_child(Node* child_node, unsigned int b_active);
-    bool no_children_left();
-
-    Node* get_parent();
-    std::vector<Node*> get_child_nodes();
+    NodePtr get_parent() const { return parent_node; }
+    size_t get_seq_num() const { return seqnum; }
     
     unsigned int get_b_active();
 
@@ -71,17 +66,15 @@ public:
     std::vector<double> get_eta();
     double get_lb();
 
-
     #ifndef NDEBUG
     static unsigned int n_add;
-    static unsigned int n_delete_self;
-    static unsigned int n_delete_other;
+    static unsigned int n_delete;
     #endif
 
-private:
 
-    Node* parent_node;
-    std::vector<Node*> child_nodes;
+private:
+    NodePtr parent_node;
+    const size_t seqnum;
 
     unsigned int b_active;
 
@@ -96,3 +89,7 @@ private:
     double lb;
 
 };
+
+bool operator<(Node& lhs, Node& rhs);
+
+#endif /* end of include guard: __COMBINA_NODE_HPP */

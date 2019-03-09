@@ -21,43 +21,13 @@
  *
  */
 
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
-#include <algorithm>
-#endif
+#ifndef __COMBINA_BNB_SOLVER_HPP
+#define __COMBINA_BNB_SOLVER_HPP
 
-#ifndef VECTOR_H
-#define VECTOR_H
-#include <vector>
-#endif
- 
-#ifndef MAP_H
-#define MAP_H
 #include <map>
-#endif
+#include <vector>
 
-#ifndef STRING_H
-#define STRING_H
-#include <string>
-#endif
-
-#ifndef NODE_H
-#define NODE_H
-#include "Node.hpp"
-#endif
-
-#ifndef PYBIND11
-#define PYBIND11
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#endif
-
-#include <queue>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
- 
-#include "NodeComparison.hpp"
+#include "combina_fwd.hpp"
 
 
 class CombinaBnBSolver {
@@ -83,12 +53,27 @@ public:
 
     ~CombinaBnBSolver();
 
-    void run(bool use_warm_start, std::map<std::string, double> bnb_opts);
+    MonitorPtr get_monitor() const { return monitor_; }             ///< Returns current monitor.
+    void set_monitor(MonitorPtr monitor) { monitor_ = monitor; }    ///< Replaces current monitor.
+    NodeQueuePtr get_node_queue() const { return node_queue; }      ///< Returns current node queue.
+    void set_node_queue(NodeQueuePtr queue) { node_queue = queue; } ///< Replaces current node queue.
+
+    long get_max_iter() const { return max_iter; }                  ///< Returns current iteration limit.
+    void set_max_iter(long n) { max_iter = n; }                     ///< Sets iteration limit.
+    double get_max_cpu_time() const { return max_cpu_time; }        ///< Returns current CPU time limit.
+    void set_max_cpu_time(double t) { max_cpu_time = t; }           ///< Sets CPU time limit.
+
+    void run(bool use_warm_start);
     void stop();
 
-    double get_eta();
-    std::vector<std::vector<unsigned int>> get_b_bin();
-    unsigned int get_status();
+    double get_eta() const;
+    const std::vector<double>& get_dt() const;
+    std::vector<std::vector<unsigned int>> get_b_bin() const;
+    unsigned int get_status() const;
+    unsigned long get_num_sol() const;
+    unsigned int get_num_time() const;
+    unsigned int get_num_ctrl() const;
+    const std::vector<unsigned int>& get_num_max_switches() const;
 
 
 private:
@@ -96,9 +81,6 @@ private:
     void prepare_bnb();
     void compute_initial_upper_bound();
     void precompute_sum_of_etas();
-
-    void set_solver_settings(std::map<std::string, double> bnb_opts);
-    void add_initial_nodes_to_queue();
 
     bool control_activation_forbidden(unsigned int const b_active_child,
         unsigned int const b_active_parent,
@@ -115,7 +97,7 @@ private:
         std::vector<double> & total_up_time_child,
         double const lb_parent, double* lb_child, unsigned int* depth_child);
 
-    bool add_child_node_to_queue(Node* const parent_node, 
+    NodePtr create_or_fathom_child_node(const NodePtr& parent_node, 
         unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
         std::vector<double> const & min_down_time_child,
         std::vector<double> const & up_time_child,
@@ -124,12 +106,11 @@ private:
 
     void run_bnb();
     void check_it_termination_criterion_reached(int n_iter, clock_t t_start);
-    void set_new_best_node(Node* active_node);
+    void set_new_best_node(const NodePtr& active_node);
     void display_solution_update(bool solution_update, double runtime);
-    void add_nodes_to_queue(Node* parent_node);
+    void add_nodes_to_queue(const NodePtr& parent_node);
 
     void retrieve_solution();
-    void delete_node(Node *& active_node);
 
 /*
     void clean_up_nodes();
@@ -156,9 +137,8 @@ private:
 
     std::vector<std::vector<std::vector<double>>> sum_eta;
 
-    std::priority_queue<Node*, std::vector<Node*>, 
-        NodeComparison> node_queue;
-    Node * best_node;
+    std::shared_ptr<NodeQueue> node_queue;
+    NodePtr best_node;
 
     double ub_bnb;
 
@@ -167,6 +147,8 @@ private:
     long n_iter;
     long n_print;
 
+    unsigned long n_sol;
+
     long max_iter;
     double max_cpu_time;
 
@@ -174,5 +156,8 @@ private:
     bool user_interrupt;
 
     unsigned int status;
-
+    MonitorPtr monitor_;
+    size_t nodeseq;
 };
+
+#endif /* end of include guard: __COMBINA_BNB_SOLVER_HPP */

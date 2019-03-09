@@ -1,6 +1,5 @@
 /*
- *
- * NodeComparison.cpp
+ * BestFirstNodeQueue.hpp
  *
  * This file is part of pycombina.
  *
@@ -21,24 +20,29 @@
  *
  */
 
-#include "NodeComparison.hpp"
+#ifndef __COMBINA_BEST_FIRST_NODE_QUEUE_HPP
+#define __COMBINA_BEST_FIRST_NODE_QUEUE_HPP
 
+#include <vector>
 
-bool NodeComparison::operator() (Node const *node_a, Node const *node_b) const {
+#include "../Node.hpp"
+#include "../NodeQueue.hpp"
 
+class BestFirstNodeQueue : public NodeQueue {
+public:
+    BestFirstNodeQueue(CombinaBnBSolver* solver);
+    BestFirstNodeQueue(const BestFirstNodeQueue& queue);
+    BestFirstNodeQueue(BestFirstNodeQueue&& queue);
+    virtual ~BestFirstNodeQueue();
 
-    if(node_a->depth != node_b->depth) {
+    virtual size_t size() const;
+    virtual NodePtr top() const;
+    virtual void push(const std::vector<NodePtr>& node);
+    virtual void pop();
+    virtual void clear();
 
-        return (node_a->depth < node_b->depth);
-    }
+private:
+    std::vector<NodePtr> queue;
+};
 
-    else if(node_a->lb != node_b->lb) {
-
-        return(node_a->lb > node_b->lb);
-    }
-    
-    else {
-
-        return(node_a->get_max_sigma() > node_b->get_max_sigma());
-    }
-}
+#endif /* end of include guard: __COMBINA_BEST_FIRST_NODE_QUEUE_HPP */

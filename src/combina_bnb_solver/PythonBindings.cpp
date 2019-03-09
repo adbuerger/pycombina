@@ -21,20 +21,34 @@
  *
  */
 
+#include <map>
 #include <vector>
 
-#ifndef PYBIND11
-#define PYBIND11
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#endif
  
 #include "CombinaBnBSolver.hpp"
+#include "NodeQueue.hpp"
+#include "monitors/VbcMonitor.hpp"
 
 namespace py = pybind11;
 
+
+// function prototypes
+static void combina_wrap_run(CombinaBnBSolver& solver, bool use_warm_start, py::kwargs kwargs);
+
+
+// Table of node queue configurators
+static const std::map<std::string, std::function<void (NodeQueuePtr, const py::dict&)>> queue_configurators {
+};
+
+
 PYBIND11_MODULE(_combina_bnb_solver, m)
 {
+    // register default search strategies
+    NodeQueue::register_default_types();
+
+    // set up combina solver interface
     py::class_<CombinaBnBSolver>(m, "CombinaBnBSolver")
         .def(py::init<std::vector<double> const &,
                       std::vector<std::vector<double>> const &,
@@ -57,7 +71,72 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
         .def("get_b_bin", &CombinaBnBSolver::get_b_bin)
         .def("get_status", &CombinaBnBSolver::get_status)
 
-        .def("run", &CombinaBnBSolver::run, py::arg("use_warm_start"),
-                                      py::arg("bnb_opts"))
+        .def_property_readonly_static("search_strategies", [](py::object) { return NodeQueue::get_types(); })
+
+        .def("run", &combina_wrap_run, py::arg("use_warm_start"))
         .def("stop", &CombinaBnBSolver::stop);
+}
+
+
+static void combina_wrap_run(CombinaBnBSolver& solver, bool use_warm_start, py::kwargs kwargs) {
+    // create specialized node queue
+    if(kwargs.contains("strategy")) {
+        const std::string type = py::str(kwargs["strategy"]);
+
+        // create node queue using factory (throws std::out_of_range for
+        // non-existent types)
+        NodeQueuePtr node_queue = NodeQueue::create(&solver, type);
+
+        // configure node queue using remaining arguments
+        auto config = queue_configurators.find(type);
+        if(config != queue_configurators.end()) {
+            config->second(node_queue, kwargs);
+        }
+
+        // install node queue in solver
+        solver.set_node_queue(node_queue);
+    }
+
+    // configure monitor if requested
+    if(kwargs.contains("vbc_file")) {
+        const py::object arg = kwargs["vbc_file"];
+
+        if(arg.is_none() || !py::bool_(arg)) {
+            // remove current monitor if present
+            solver.set_monitor(nullptr);
+        }
+        else {
+            // find the timing flag
+            bool timing = true;
+            if(kwargs.contains("vbc_timing")) {
+                timing = py::bool_(kwargs["vbc_timing"]);
+            }
+
+            // create new VbcMonitor
+            const std::string path = py::str(arg);
+            auto vbc_mon = std::make_shared<VbcMonitor>(&solver, path, timing);
+
+            // configure time dilation
+            if(kwargs.contains("vbc_time_dilation")) {
+                vbc_mon->set_time_dilation(py::float_(kwargs["vbc_time_dilation"]));
+            }
+
+            // install monitor
+            solver.set_monitor(vbc_mon);
+        }
+    }
+
+    // set additional parameters
+    if(kwargs.contains("max_iter")) {
+        solver.set_max_iter(py::cast<long>(kwargs["max_iter"]));
+    }
+    if(kwargs.contains("max_cpu_time")) {
+        solver.set_max_cpu_time(py::cast<double>(kwargs["max_cpu_time"]));
+    }
+
+    // invoke run function
+    {
+        py::gil_scoped_release release;
+        solver.run(use_warm_start);
+    }
 }
