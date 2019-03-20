@@ -23,7 +23,6 @@
 #ifndef __COMBINA_VBC_MONITOR_HPP
 #define __COMBINA_VBC_MONITOR_HPP
 
-#include <config.hpp>
 #include "../combina_fwd.hpp"
 #include "../Monitor.hpp"
 
