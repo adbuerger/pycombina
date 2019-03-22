@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <fstream>
 #include <iomanip>
 #include <map>
 #include <memory>
@@ -35,74 +36,6 @@
 
 namespace py = pybind11;
 
-
-#ifdef COMBINA_VBC_USE_BOOST
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/device/file.hpp>
-#include <boost/iostreams/filter/bzip2.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-
-namespace bio = boost::iostreams;
-
-
-static std::unique_ptr<std::streambuf> create_buffer() {
-    return std::make_unique<bio::filtering_ostreambuf>();
-}
-
-
-static void open_file(std::ostream& stream, std::string path, VbcMonitor::Compression compr) {
-    using pybind11::operator""_a;
-
-    bio::filtering_ostreambuf* streambuf = reinterpret_cast<bio::filtering_ostreambuf*>(stream.rdbuf());
-
-    // close prior file sinks and reset the device
-    if(streambuf->is_complete()) {
-        streambuf->pop();
-    }
-    streambuf->reset();
-    stream.clear();
-
-    // install a compression filter
-    switch(compr) {
-    case VbcMonitor::Compression::bzip2:
-        if(path.size() < 4 || !std::equal(path.cbegin() + (path.size() - 4), path.cend(), ".bz2")) {
-            path = path + ".bz2";
-        }
-        streambuf->push(bio::bzip2_compressor());
-        break;
-    case VbcMonitor::Compression::gzip:
-        if(path.size() < 3 || !std::equal(path.cbegin() + (path.size() - 3), path.cend(), ".gz")) {
-            path = path + ".gz";
-        }
-        streambuf->push(bio::gzip_compressor());
-        break;
-    case VbcMonitor::Compression::none:
-        break;
-    }
-
-    // open file sink
-    bio::file_sink file(path);
-    if(file.is_open()) {
-        streambuf->push(file);
-        assert(streambuf->is_complete());
-    }
-    else {
-        py::gil_scoped_acquire lock;
-        py::print("WARNING: failed to open VBC file for output", "file"_a=py::module::import("sys").attr("stderr"));
-        return;
-    }
-}
-
-
-static void close_file(std::ostream& stream) {
-    bio::filtering_ostreambuf* streambuf = reinterpret_cast<bio::filtering_ostreambuf*>(stream.rdbuf());
-
-    if(streambuf->is_complete()) {
-        streambuf->pop();
-    }
-}
-#else
-#include <fstream>
 
 static std::unique_ptr<std::streambuf> create_buffer() {
     return std::make_unique<std::filebuf>();
@@ -139,7 +72,6 @@ static void close_file(std::ostream& stream) {
     std::filebuf* streambuf = reinterpret_cast<std::filebuf*>(stream.rdbuf());
     streambuf->close();
 }
-#endif
 
 // color code table for node states (adopted from Minotaur)
 static const unsigned int color_codes[] = {
