@@ -106,7 +106,6 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       max_iter(5000000),
       max_cpu_time(3e2),
 
-      terminate(false),
       user_interrupt(false),
 
       status(1),
@@ -159,21 +158,18 @@ void CombinaBnBSolver::precompute_sum_of_etas() {
 
 
 void CombinaBnBSolver::run(bool use_warm_start) {
-    // create node queue if non-existent
+
     if(!node_queue) {
         node_queue = NodeQueue::create(this);
     }
 
-    // Notify monitor of search initiation.
     if(monitor_) {
         monitor_->on_start_search();
     }
 
-    // Add root nodes to queue and run branch-and-bound algorithm
     add_nodes_to_queue(nullptr);
     run_bnb();
 
-    // Notify monitor of search end.
     if(monitor_) {
         monitor_->on_stop_search();
     }
@@ -336,42 +332,35 @@ void CombinaBnBSolver::run_bnb() {
 
     NodePtr active_node;
 
-    while(!node_queue->empty()) {
-        // Check whether a termination criterion has been reached
-        check_it_termination_criterion_reached(n_iter, t_start);
-        if(terminate) {
-            break;
-        }
+    while(!node_queue->empty() && !termination_criterion_reached(n_iter, t_start)) {
+
         ++n_iter;
 
-        // Select next node
         active_node = node_queue->top();
         node_queue->pop();
 
-        // notify monitor of node selection
         if(monitor_) {
             monitor_->on_select(active_node);
         }
 
         if(active_node->get_lb() < ub_bnb) {
             if(active_node->get_depth() == n_t) {
-                // store new best solution
+
                 t_update = clock();
                 set_new_best_node(active_node);
                 display_solution_update(true, double(t_update - t_start) / CLOCKS_PER_SEC);
 
-                // notify monitor of integer solution
                 if(monitor_) {
                     monitor_->on_change(active_node, NODE_INTEGER);
                 }
             }
             else {
-                // branch on non-integer solution
+
                 add_nodes_to_queue(active_node);
             }
         }
         else {
-            // notify monitor of fathoming
+
             if(monitor_) {
                 monitor_->on_change(active_node, NODE_FATHOMED);
             }
@@ -384,7 +373,6 @@ void CombinaBnBSolver::run_bnb() {
         }
     }
 
-    // Clear remaining nodes from the node queue
     node_queue->clear();
 
     t_end = clock();
@@ -440,17 +428,13 @@ void CombinaBnBSolver::run_bnb() {
 }
 
 
-void CombinaBnBSolver::check_it_termination_criterion_reached(int n_iter, clock_t t_start) {
+bool CombinaBnBSolver::termination_criterion_reached(int n_iter, clock_t t_start) {
 
-    if (!terminate) {
+    clock_t t_current = clock();
 
-        clock_t t_current = clock();
-
-        terminate = ((n_iter >= max_iter) || 
-            ((double(t_current - t_start) / CLOCKS_PER_SEC) >= max_cpu_time) ||
-            user_interrupt);
-
-    }
+    return ((n_iter >= max_iter) || 
+        ((double(t_current - t_start) / CLOCKS_PER_SEC) >= max_cpu_time) ||
+        user_interrupt);
 }
 
 
@@ -541,44 +525,38 @@ void CombinaBnBSolver::add_nodes_to_queue(const NodePtr& parent_node) {
             depth_child = 0;
         }
 
-        // exclude any child whose control configuration is forbidden
         if (!control_activation_forbidden(b_active_child,
             b_active_parent, sigma_child, min_down_time_child,
             up_time_child, total_up_time_child, depth_child)) {
 
-            // note existence of feasible child
             node_feasible = true;
 
-            // compute properties of node
             compute_child_node_properties(b_active_child, b_active_parent,
                 eta_child, sigma_child, min_down_time_child, up_time_child,
                 total_up_time_child, lb_parent, &lb_child, &depth_child);
 
-            // decide whether the child should be fathomed
             NodePtr child = create_or_fathom_child_node(parent_node, b_active_child, sigma_child,
                 min_down_time_child, up_time_child, total_up_time_child,
                 depth_child, eta_child, lb_child);
 
             if(child) {
-                // notify monitor of node creation
+
                 if(monitor_) {
+
                     monitor_->on_create(child);
                 }
 
-                // child should be enqueued
                 children.emplace_back(std::move(child));
             }
-	}
+	    }
     }
 
-    // enqueue children all at once (to allow sorting in node queue)
     node_queue->push(children);
 
     #ifndef NDEBUG
     Node::n_add += children.size();
     #endif
 
-    // update status of parent node based on feasibility and fathoming of children
     if(parent_node && monitor_) {
         if(!node_feasible) {
             monitor_->on_change(parent_node, NODE_INFEASIBLE);

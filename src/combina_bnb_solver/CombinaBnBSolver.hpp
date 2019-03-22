@@ -53,15 +53,15 @@ public:
 
     ~CombinaBnBSolver();
 
-    MonitorPtr get_monitor() const { return monitor_; }             ///< Returns current monitor.
-    void set_monitor(MonitorPtr monitor) { monitor_ = monitor; }    ///< Replaces current monitor.
-    NodeQueuePtr get_node_queue() const { return node_queue; }      ///< Returns current node queue.
-    void set_node_queue(NodeQueuePtr queue) { node_queue = queue; } ///< Replaces current node queue.
+    MonitorPtr get_monitor() const { return monitor_; }
+    void set_monitor(MonitorPtr monitor) { monitor_ = monitor; }
+    NodeQueuePtr get_node_queue() const { return node_queue; }
+    void set_node_queue(NodeQueuePtr queue) { node_queue = queue; }
 
-    long get_max_iter() const { return max_iter; }                  ///< Returns current iteration limit.
-    void set_max_iter(long n) { max_iter = n; }                     ///< Sets iteration limit.
-    double get_max_cpu_time() const { return max_cpu_time; }        ///< Returns current CPU time limit.
-    void set_max_cpu_time(double t) { max_cpu_time = t; }           ///< Sets CPU time limit.
+    long get_max_iter() const { return max_iter; }
+    void set_max_iter(long n) { max_iter = n; }
+    double get_max_cpu_time() const { return max_cpu_time; }
+    void set_max_cpu_time(double t) { max_cpu_time = t; }
 
     void run(bool use_warm_start);
     void stop();
@@ -105,7 +105,7 @@ private:
         std::vector<double> const & eta_child, double const lb_child);
 
     void run_bnb();
-    void check_it_termination_criterion_reached(int n_iter, clock_t t_start);
+    bool termination_criterion_reached(int n_iter, clock_t t_start);
     void set_new_best_node(const NodePtr& active_node);
     void display_solution_update(bool solution_update, double runtime);
     void add_nodes_to_queue(const NodePtr& parent_node);
@@ -152,7 +152,6 @@ private:
     long max_iter;
     double max_cpu_time;
 
-    bool terminate;
     bool user_interrupt;
 
     unsigned int status;
