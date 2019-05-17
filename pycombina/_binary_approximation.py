@@ -189,7 +189,7 @@ class BinApproxBase(ABC):
 
         except AttributeError:
 
-            return (self._t[-1] - self._t[0]) * np.ones(self.n_c)
+            return np.full(self.n_c, np.inf)
 
 
     @property
@@ -205,7 +205,7 @@ class BinApproxBase(ABC):
 
         except AttributeError:
 
-            return (self._t[-1] - self._t[0]) * np.ones(self.n_c)
+            return np.full(self.n_c, np.inf)
 
 
     @property
@@ -377,11 +377,11 @@ class BinApprox(BinApproxBase):
 
     def _set_off_state(self, off_state_included: bool) -> None:
 
-        if off_state_included and \
-            not np.all(np.sum(self._b_rel, axis = 0) == 1.0):
+        #if off_state_included and \
+        #    not np.all(np.sum(self._b_rel, axis = 0) == 1.0):
 
-            raise ValueError("The sum of relaxed binary controls per time point " + \
-                "must be exactly 1, or off_state_included must be set to False.")
+        #    raise ValueError("The sum of relaxed binary controls per time point " + \
+        #        "must be exactly 1, or off_state_included must be set to False.")
 
         self._off_state_included = off_state_included
 
