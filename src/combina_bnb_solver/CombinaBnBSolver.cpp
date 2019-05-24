@@ -239,7 +239,7 @@ void CombinaBnBSolver::compute_child_node_properties(
                 
             }
 
-            min_down_time_child[i] -= dt[*depth_child];
+            min_down_time_child[i] = fmax(0, min_down_time_child[i] - dt[*depth_child]);
         }
 
         min_up_time_fulfilled += dt[*depth_child];
@@ -256,6 +256,7 @@ void CombinaBnBSolver::compute_child_node_properties(
 
         sigma_child[b_active_parent]++;
         sigma_child[b_active_child]++;
+        min_down_time_child[b_active_parent]=min_down_time[b_active_parent];
 
         if (sigma_child[b_active_parent] == n_max_switches[b_active_parent]) {
 
