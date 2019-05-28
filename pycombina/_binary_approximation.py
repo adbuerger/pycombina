@@ -19,6 +19,7 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import warnings
 import numpy as np
 import numpy.matlib as npm
 from typing import Union
@@ -377,11 +378,13 @@ class BinApprox(BinApproxBase):
 
     def _set_off_state(self, off_state_included: bool) -> None:
 
-        #if off_state_included and \
-        #    not np.all(np.sum(self._b_rel, axis = 0) == 1.0):
-
-        #    raise ValueError("The sum of relaxed binary controls per time point " + \
-        #        "must be exactly 1, or off_state_included must be set to False.")
+        if off_state_included:
+            sums = np.sum(self._b_rel, axis=0)
+            tol = (self._b_rel.shape[0] + 1) * max(np.finfo(sums.dtype).eps, self._binary_threshold)
+            
+            if np.any(np.logical_or(sums > 1.0 + tol, sums < 1.0 - tol)):
+                warnings.warn("The sum of relaxed binary controls per time point " + \
+                    "must be exactly 1, or off_state_included must be set to False.")
 
         self._off_state_included = off_state_included
 
