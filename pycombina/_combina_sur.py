@@ -107,6 +107,7 @@ class CombinaSUR():
 
         b_bin = np.zeros((self._binapprox_p.n_c, self._binapprox_p.n_t))
         eta_i = np.zeros(self._binapprox_p.n_c)
+        eta = 0.0
 
         for i in range(self._binapprox_p.n_t):
 
@@ -123,7 +124,7 @@ class CombinaSUR():
             b_bin[b_active][i] = 1
 
             eta_i[b_active] =  eta_i[b_active] - 1 * self._binapprox_p.dt[i] 
-            eta = abs(max(eta_i, key = abs))
+            eta = max(eta, np.abs(eta_i).max())
         
         self._binapprox_p._b_bin = b_bin
         self._binapprox_p._eta = eta
