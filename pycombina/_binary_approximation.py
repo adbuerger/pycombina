@@ -360,10 +360,15 @@ class BinApprox(BinApproxBase):
             raise ValueError("All elements of the relaxed binary input " + \
                 "must be 0 <= b <= 1.")
 
-        b_rel[b_rel < self._binary_threshold] = 0
-        b_rel[b_rel > 1.0 - self._binary_threshold] = 1
+        clamped_down = b_rel < self._binary_threshold
+        clamped_up = b_rel > 1.0 - self._binary_threshold
+        clamped_count = np.count_nonzero(np.logical_or(clamped_down, clamped_up), axis=0)
+
+        b_rel[clamped_down] = 0
+        b_rel[clamped_up] = 1
 
         self._b_rel = b_rel
+        self._clamped = clamped_count
 
 
     def _initialize_valid_controls(self) -> None:
@@ -380,7 +385,7 @@ class BinApprox(BinApproxBase):
 
         if off_state_included:
             sums = np.sum(self._b_rel, axis=0)
-            tol = (self._b_rel.shape[0] + 1) * max(np.finfo(sums.dtype).eps, self._binary_threshold)
+            tol = self._clamped * self._binary_threshold + (self._b_rel.shape[0] + 1) * np.finfo(sums.dtype).eps
             
             if np.any(np.logical_or(sums > 1.0 + tol, sums < 1.0 - tol)):
                 warnings.warn("The sum of relaxed binary controls per time point " + \
