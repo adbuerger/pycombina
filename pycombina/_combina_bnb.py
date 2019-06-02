@@ -66,12 +66,26 @@ class CombinaBnB():
     @property
     def status(self):
 
+        '''
+        Exit status of the Branch-and-Bound solver.
+        '''
+
         try:
             return self._solver_status[self._bnb_solver.get_status()]
 
         except KeyError:
             raise RuntimeError("Solver status undefined, this should not happen.\n"
                 + "Please contact the developers.")
+
+    @property
+    def solution_time(self):
+
+        '''
+        Solution time of the Branch-and-Bound solver.
+        '''
+
+        return self._bnb_solver.get_solution_time()
+
 
     @staticmethod
     def get_search_strategies():
@@ -186,6 +200,11 @@ class CombinaBnB():
         :param max_cpu_time: Maximum CPU seconds for the solver. Once reached,
                              the best solution found so far is returned.
                              *Default:* 3e2.
+
+        :param verbosity: Determine how much solver information is written to
+                          the console, possible values are 0 (no output),
+                          1 (show results only), 2 (show iterations). 
+                        *Default:* True.
         '''
 
         self._setup_warm_start(use_warm_start = use_warm_start)

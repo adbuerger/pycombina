@@ -62,6 +62,9 @@ public:
     void set_max_iter(long n) { max_iter = n; }
     double get_max_cpu_time() const { return max_cpu_time; }
     void set_max_cpu_time(double t) { max_cpu_time = t; }
+    int get_verbosity() const { return verbosity; }
+    void set_verbosity(int v) { verbosity = v; }
+    double get_solution_time() const {return solution_time; }
 
     void run(bool use_warm_start);
     void stop();
@@ -151,6 +154,8 @@ private:
 
     long max_iter;
     double max_cpu_time;
+    int verbosity;
+    double solution_time;
 
     bool user_interrupt;
 

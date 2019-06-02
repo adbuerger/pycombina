@@ -105,6 +105,8 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
 
       max_iter(5000000),
       max_cpu_time(3e2),
+      verbosity(2),
+      solution_time(0.0),
 
       user_interrupt(false),
 
@@ -321,7 +323,7 @@ void CombinaBnBSolver::run_bnb() {
     clock_t t_current;
     clock_t t_end;
     
-    {
+    if (verbosity > 0) {
         py::gil_scoped_acquire lock;
         py::print("-----------------------------------------------------------");
         py::print("                                                           ");
@@ -377,7 +379,7 @@ void CombinaBnBSolver::run_bnb() {
     node_queue->clear();
 
     t_end = clock();
-
+    solution_time = double(t_end- t_start) / CLOCKS_PER_SEC;
 
     std::string s_n_iter = std::to_string(n_iter);
     s_n_iter.insert(0, 12 - s_n_iter.length(), ' ');
@@ -389,7 +391,7 @@ void CombinaBnBSolver::run_bnb() {
         streamObj << "\n    Maximum number of iterations exceeded";
         status = 3;
 
-    } else if ((double(t_end- t_start) / CLOCKS_PER_SEC) >= max_cpu_time) {
+    } else if (solution_time >= max_cpu_time) {
 
         streamObj << "\n    Maximum CPU time exceeded";
         status = 4;
@@ -407,10 +409,10 @@ void CombinaBnBSolver::run_bnb() {
 
     streamObj << std::scientific << "\n\n    Best solution:    " << ub_bnb
         << "\n    Total iterations: " << s_n_iter 
-        << "\n    Total runtime:    " << double(t_end - t_start) / CLOCKS_PER_SEC
+        << "\n    Total runtime:    " << solution_time
         << " s";
 
-    {
+    if (verbosity > 0) {
         py::gil_scoped_acquire lock;
         py::print(streamObj.str());
         py::print("\n-----------------------------------------------------------");
@@ -449,7 +451,7 @@ void CombinaBnBSolver::set_new_best_node(const NodePtr& active_node) {
 void CombinaBnBSolver::display_solution_update(bool solution_update, double runtime) {
     py::gil_scoped_acquire lock;
 
-    if (n_print++ % 10 == 0) {
+    if ((verbosity > 1) && (n_print++ % 10 == 0)) {
 
         py::print("-----------------------------------------------------------");
         py::print("    Iteration |  Upper bound |  Branches  |  Runtime (s)   ");
@@ -479,7 +481,10 @@ void CombinaBnBSolver::display_solution_update(bool solution_update, double runt
         << " | " << ub_bnb << " | "
         << s_node_queue_size << " | " << runtime;
     
-    py::print(streamObj.str());
+    if (verbosity > 1) {
+     
+        py::print(streamObj.str());
+    }
 
 }
 

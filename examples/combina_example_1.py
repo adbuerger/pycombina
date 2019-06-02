@@ -35,7 +35,7 @@ binapprox = pycombina.BinApprox(t=t, b_rel=b_rel, \
 binapprox.set_n_max_switches(n_max_switches=max_switches)
 
 combina = pycombina.CombinaBnB(binapprox)
-combina.solve()
+combina.solve(verbosity=2)
 
 b_bin = pl.squeeze(binapprox.b_bin)
 

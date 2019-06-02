@@ -70,6 +70,7 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
         .def("get_eta", &CombinaBnBSolver::get_eta)
         .def("get_b_bin", &CombinaBnBSolver::get_b_bin)
         .def("get_status", &CombinaBnBSolver::get_status)
+        .def("get_solution_time", &CombinaBnBSolver::get_solution_time)
 
         .def_property_readonly_static("search_strategies", [](py::object) { return NodeQueue::get_types(); })
 
@@ -132,6 +133,10 @@ static void combina_wrap_run(CombinaBnBSolver& solver, bool use_warm_start, py::
     }
     if(kwargs.contains("max_cpu_time")) {
         solver.set_max_cpu_time(py::cast<double>(kwargs["max_cpu_time"]));
+    }
+
+    if(kwargs.contains("verbosity")) {
+        solver.set_verbosity(py::cast<int>(kwargs["verbosity"]));
     }
 
     // invoke run function
