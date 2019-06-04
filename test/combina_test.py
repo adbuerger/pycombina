@@ -126,23 +126,24 @@ class CombinaTestSingleInput(object):
         0.3383625190626729, 0.3383625129203459, 0.33836250815864527,
          0.3383625047650565, 0.338362502730721, 0.33836250205035523])
     
+    b_rel = np.vstack([b_rel, 1-b_rel])
 
-    T = 240 * np.arange(0, b_rel.size+1)
-    n_max_switches = 4
+    T = 240 * np.arange(0, b_rel.shape[1]+1)
+    n_max_switches = [4, T.size]
 
-    binapprox = BinApprox(T, b_rel, binary_threshold = 1e-3, off_state_included = False)
+    binapprox = BinApprox(T, b_rel, binary_threshold = 1e-3)
     binapprox.set_n_max_switches(n_max_switches)
 
 
     def test_check_binary_solution(self):
 
         b_bin = self.binapprox.b_bin
-        assert_array_equal(np.squeeze(b_bin), self.b_bin_check)
+        assert_array_equal(np.squeeze(b_bin[0,:]), self.b_bin_check)
 
 
     def test_check_objective(self):
 
-        b_bin = np.squeeze(self.binapprox.b_bin)
+        b_bin = np.squeeze(self.binapprox.b_bin[0,:])
         eta = self.binapprox.eta
 
         Tg = self.T[1:] - self.T[:-1]
@@ -150,7 +151,7 @@ class CombinaTestSingleInput(object):
         
         for k, b_bin_k in enumerate(b_bin):
 
-            eta_check_k = abs(sum([Tg[j] * (self.b_rel[j] - b_bin[j]) for j in range(k)]))
+            eta_check_k = abs(sum([Tg[j] * (self.b_rel[0][j] - b_bin[j]) for j in range(k)]))
 
             if eta_check_k > eta_check:
 
@@ -161,11 +162,11 @@ class CombinaTestSingleInput(object):
 
     def test_check_n_max_switches(self):
 
-        b_bin = np.squeeze(self.binapprox.b_bin)
+        b_bin = np.squeeze(self.binapprox.b_bin[0,:])
 
         n_switches = np.sum(np.absolute(b_bin[1:] - b_bin[:-1]))
 
-        self.assertTrue(n_switches <= self.n_max_switches)
+        self.assertTrue(n_switches <= self.n_max_switches[0])
 
 
 class CombinaTestSingleInputBnB(unittest.TestCase, CombinaTestSingleInput):

@@ -26,23 +26,16 @@ from pycombina._binary_approximation import BinApprox
 
 class InputTest(unittest.TestCase):
 
-    def test_single_control_sos1_fulfilled(self):
-
-        T = np.array([0, 1, 2, 3])
-        b_rel = np.array([0.1, 0.3, 0.2])
-
-        BinApprox(T, b_rel, off_state_included = False)
-
-
     def test_single_control_sos1_violated(self):
 
         with warnings.catch_warnings(record=True) as w:
             T = np.array([0, 1, 2, 3])
             b_rel = np.array([0.1, 0.3, 0.2])
-            BinApprox(T, b_rel, off_state_included = True)
+            BinApprox(T, b_rel)
 
             self.assertEqual(len(w), 1)
             self.assertIs(w[0].category, UserWarning)
+
 
     def test_manual_extend_sos1_fulfilled(self):
         for run_idx in range(50):
@@ -55,8 +48,9 @@ class InputTest(unittest.TestCase):
                 b_rel[i, :] = (1.0 - b_rel[:i, :].sum(0)) * np.random.rand(num_time - 1)
 
             with warnings.catch_warnings(record=True) as w:
-                BinApprox(T, np.vstack([b_rel, 1.0 - b_rel.sum(0)]), off_state_included=True)
+                BinApprox(T, np.vstack([b_rel, 1.0 - b_rel.sum(0)]))
                 self.assertEqual(len(w), 0)
+
 
     def test_manual_scale_sos1_fulfilled(self):
         for run_idx in range(50):
@@ -68,7 +62,7 @@ class InputTest(unittest.TestCase):
             b_rel = np.true_divide(b_rel, b_rel.sum(0))
 
             with warnings.catch_warnings(record=True) as w:
-                BinApprox(T, b_rel, off_state_included=True)
+                BinApprox(T, b_rel)
                 self.assertEqual(len(w), 0)
 
     def test_single_control_invalid_dimensions(self):
@@ -100,15 +94,7 @@ class InputTest(unittest.TestCase):
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([[0.1, 0.3, 0.3], [0.9, 0.7, 0.7]])
 
-        self.assertRaises(ValueError, BinApprox, T, b_rel, off_state_included = True)
-
-
-    def test_multiple_controls_sos1_fulfilled_auto(self):
-
-        T = np.array([0, 2, 1, 3])
-        b_rel = np.array([[0.1, 0.3, 0.3], [0.2, 0.4, 0.5]])
-
-        self.assertRaises(ValueError, BinApprox, T, b_rel, off_state_included = False)
+        self.assertRaises(ValueError, BinApprox, T, b_rel)
 
 
     def test_multiple_controls_sos1_violated(self):
@@ -116,7 +102,7 @@ class InputTest(unittest.TestCase):
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([[0.1, 0.3, 0.3], [0.3, 0.4, 0.5]])
 
-        self.assertRaises(ValueError, BinApprox, T, b_rel,  off_state_included = True)
+        self.assertRaises(ValueError, BinApprox, T, b_rel)
 
 
 if __name__ == '__main__':
