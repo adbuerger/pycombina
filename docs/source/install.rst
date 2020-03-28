@@ -38,21 +38,21 @@ Depending on your setup, you might need root privileges in the following to inst
     python3 setup.py install
 
 
-**Please note:** pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
+Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
 
-For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface ``guropbipy``  [#f4]_ must be installed.
+For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface [#f4]_ must be available.
 
 For running the webserver-example in ``server/server.py``, Flask [#f9]_ is required, which can be installed by running
 
 .. code:: Bash
 
-    pip3 install flask
+    pip3 install Flask
 
 
 Install on Windows 10
 ---------------------
 
-For obtaining Python 3 on Windows, using Anaconda [#f7]_ is recommended. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained free of charge for private and/or academic use within Visual Studio Community [#f8]_.
+For obtaining Python 3 on Windows, Anaconda [#f7]_ can be used. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained, e. g., within Visual Studio Community [#f8]_, which is free for private and/or academic use.
 
 After that, clone or download and unzip the pycombina repository from https://github.com/adbuerger/pycombina, open an Anaconda Prompt an run 
 
@@ -62,40 +62,40 @@ After that, clone or download and unzip the pycombina repository from https://gi
 
 from within the pycombina folder.
 
-For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface ``guropbipy``  [#f4]_ must be installed.
+For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface [#f4]_ must be available.
 
 
 .. [#f5] |linkf5|_
 
 .. _linkf5: https://github.com/pybind/pybind11
 
-.. |linkf5| replace:: pybind11 - Seamless operability between C++11 and Python (website)
+.. |linkf5| replace:: pybind11 at Github
 
 
 .. [#f4] |linkf4|_
 
-.. _linkf4: http://www.gurobi.com/documentation/6.5/quickstart_mac/the_gurobi_python_interfac.html
+.. _linkf4: https://www.gurobi.com/
 
-.. |linkf4| replace:: The Gurobi Python Interface for Python Users (website)
+.. |linkf4| replace:: Gurobi website
 
 .. [#f7] |linkf7|_
 
 
-.. _linkf7: https://www.anaconda.com/download/#windows
+.. _linkf7: https://www.anaconda.com/
 
-.. |linkf7| replace:: Download Anaconda Distribution (website)
+.. |linkf7| replace:: Anaconda website
 
 
 .. [#f8] |linkf8|_
 
-.. _linkf8: https://visualstudio.microsoft.com/de/vs/community/
+.. _linkf8: https://visualstudio.microsoft.com/
 
-.. |linkf8| replace:: Visual Studio Community (website)
+.. |linkf8| replace:: Visual Studio website
 
 
 .. [#f9] |linkf9|_
 
-.. _linkf9: http://flask.pocoo.org/
+.. _linkf9: https://github.com/pallets/flask
 
-.. |linkf9| replace:: Flask - web development, one drop at a time (website)
+.. |linkf9| replace:: Flask at Github
 
