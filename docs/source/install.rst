@@ -54,7 +54,7 @@ Install on Windows 10
 
 For obtaining Python 3 on Windows, Anaconda [#f7]_ can be used. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained, e. g., within Visual Studio Community [#f8]_, which is free for private and/or academic use.
 
-After that, clone or download and unzip the pycombina repository from https://github.com/adbuerger/pycombina, open an Anaconda Prompt an run 
+After that, clone or download and unzip the pycombina repository from https://github.com/adbuerger/pycombina, open an Anaconda Prompt and run 
 
 .. code:: Bash
 
