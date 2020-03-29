@@ -25,10 +25,8 @@ import subprocess
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
-# This installation script is based on ideas presented at:
-# - https://www.benjack.io/2017/06/12/python-cpp-tests.html
+# This installation script is based on:
 # - https://github.com/benjaminjack/python_cpp_example
-# (last visited March 29, 2020) 
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
