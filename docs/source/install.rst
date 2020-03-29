@@ -42,11 +42,7 @@ Please note: pycombina uses features available only from C++11 on and uses pybin
 
 For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface [#f4]_ must be available.
 
-For running the webserver-example in ``server/server.py``, Flask [#f9]_ is required, which can be installed by running
-
-.. code:: Bash
-
-    pip3 install Flask
+For running the webservice-example in ``examples/webservice_example.py``, Flask [#f9]_ is required.
 
 
 Install on Windows 10

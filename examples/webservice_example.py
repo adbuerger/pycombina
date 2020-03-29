@@ -39,9 +39,9 @@ class InvalidUsage(Exception):
         self.payload = payload
 
 
-pycombina_server = Flask(__name__)
+pycombina_service = Flask(__name__)
 
-@pycombina_server.errorhandler(InvalidUsage)
+@pycombina_service.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
     
     response = jsonify({ \
@@ -136,11 +136,11 @@ def set_binapprox_options(binapprox, problem_definition):
     try:
         if ("b_bin_valid" in problem_definition.keys()) or ("dt" in problem_definition.keys()):
             raise NotImplementedError( \
-                "Using set_valid_controls_for_interval not yet supported in server application.")
+                "Using set_valid_controls_for_interval not yet supported in service application.")
 
         if ("b_i" in problem_definition.keys()) or ("b_valid_upcoming" in problem_definition.keys()):
             raise NotImplementedError( \
-                "Using set_valid_control_transitions not yet supported in server application.")
+                "Using set_valid_control_transitions not yet supported in service application.")
 
     except Exception as e:
         raise InvalidUsage(str(e), status_code = 500)
@@ -164,7 +164,7 @@ def setup_solver(problem_definition):
             return CombinaBnB
 
 
-@pycombina_server.route('/api/solve/', methods=['GET', 'POST'])
+@pycombina_service.route('/api/solve/', methods=['GET', 'POST'])
 def solve():
 
     problem_definition = request.json
@@ -186,4 +186,4 @@ def solve():
 
 if __name__ == '__main__':
     
-    pycombina_server.run(host= '0.0.0.0', port=6789, debug=True)
+    pycombina_service.run(host= '0.0.0.0', port=6789, debug=True)
