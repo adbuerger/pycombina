@@ -18,17 +18,17 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import re
 import sys
-import sysconfig
 import platform
 import subprocess
 
-from distutils.version import LooseVersion
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
-# see: http://www.benjack.io/2017/06/12/python-cpp-tests.html
+# This installation script is based on ideas presented at:
+# - https://www.benjack.io/2017/06/12/python-cpp-tests.html
+# - https://github.com/benjaminjack/python_cpp_example
+# (last visited March 29, 2020) 
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -45,8 +45,7 @@ class CMakeBuild(build_ext):
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
             raise RuntimeError(
-                "CMake must be installed to build the following extensions: " +
-                ", ".join(e.name for e in self.extensions))
+                "CMake must be installed to build the BnB solver extension")
 
         for ext in self.extensions:
             self.build_extension(ext)
