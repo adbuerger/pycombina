@@ -34,11 +34,13 @@ Depending on your setup, you might need root privileges in the following to inst
 
     pip3 install setuptools numpy unittest2
     git clone https://github.com/adbuerger/pycombina.git
+    git submodule init
+    git submodule update
     cd pycombina
     python3 setup.py install
 
 
-Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ (a copy of pybind11 is shipped with pycombina).
+Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ .
 
 For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface [#f4]_ must be available.
 
@@ -50,7 +52,7 @@ Install on Windows 10
 
 For obtaining Python 3 on Windows, Anaconda [#f7]_ can be used. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained, e. g., within Visual Studio Community [#f8]_, which is free for private and/or academic use.
 
-After that, clone or download and unzip the pycombina repository from https://github.com/adbuerger/pycombina, open an Anaconda Prompt and run 
+After that, clone the pycombina repository from https://github.com/adbuerger/pycombina as described above, open an Anaconda Prompt and run 
 
 .. code:: Bash
 
