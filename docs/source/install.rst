@@ -34,9 +34,9 @@ Depending on your setup, you might need root privileges in the following to inst
 
     pip3 install setuptools numpy unittest2
     git clone https://github.com/adbuerger/pycombina.git
+    cd pycombina
     git submodule init
     git submodule update
-    cd pycombina
     python3 setup.py install
 
 
