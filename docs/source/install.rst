@@ -19,26 +19,36 @@
 How to install
 ==============
 
+The following sections exemplify how pycombina can be installed on Ubuntu 18.04 / Debian 10 or Windows 10. Depending on your local setup, however, these instructions might need to be adapted.
+
+
 Install on Ubuntu 18.04 / Debian 9
 ----------------------------------
 
-Python version >= 3.5 is required to use pycombina. You might need root privileges to run the following commands:
+First, install the following packages via apt (to install packages via apt, you might need root priviliges):
 
 .. code:: Bash
 
     apt install python3-pip python3-dev cmake g++ git
     
-Depending on your setup, you might need root privileges in the following to install packages via pip and setuptools:
+Please note: Python version >= 3.5 is required to use pycombina. It is also possible to install pycombina in a Python virtual environment. 
+
+Afterwards, clone the pycombina repository and the contained submodules by running: 
 
 .. code:: Bash
 
-    pip3 install setuptools numpy unittest2
     git clone https://github.com/adbuerger/pycombina.git
     cd pycombina
     git submodule init
     git submodule update
-    python3 setup.py install
 
+Finally, pycombina can be installed for your user by running
+
+.. code:: Bash
+
+    python3 setup.py install --user
+
+from within the pycombina folder, which will also attempt to install package dependecies (numpy>=1.13) if not present, and build the BnB solver extension.
 
 Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ .
 
@@ -52,13 +62,15 @@ Install on Windows 10
 
 For obtaining Python 3 on Windows, Anaconda [#f7]_ can be used. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained, e. g., within Visual Studio Community [#f8]_, which is free for private and/or academic use.
 
-After that, clone the pycombina repository from https://github.com/adbuerger/pycombina as described above, open an Anaconda Prompt and run 
+After that, clone the pycombina repository from https://github.com/adbuerger/pycombina as described above, open an Anaconda Prompt, and run 
 
 .. code:: Bash
 
     python setup.py install
 
-from within the pycombina folder.
+from within the pycombina folder, which will also attempt to install package dependecies (numpy>=1.13) if not present, and build the BnB solver extension.
+
+Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ .
 
 For using the MILP-based combinatorial integral approximation solver ``pycombina.CombinaMILP``, Gurobi and it's Python interface [#f4]_ must be available.
 
