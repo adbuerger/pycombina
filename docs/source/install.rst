@@ -22,8 +22,8 @@ How to install
 The following sections exemplify how pycombina can be installed on Ubuntu 18.04 / Debian 10 or Windows 10. Depending on your local setup, however, these instructions might need to be adapted.
 
 
-Install on Ubuntu 18.04 / Debian 9
-----------------------------------
+Install on Ubuntu 18.04 / Debian 10 
+-----------------------------------
 
 First, install the following packages via apt (to install packages via apt, you might need root priviliges):
 
