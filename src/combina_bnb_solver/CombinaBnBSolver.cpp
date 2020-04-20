@@ -346,10 +346,8 @@ void CombinaBnBSolver::run_bnb() {
     
     if (verbosity > 0) {
         py::gil_scoped_acquire lock;
-        py::print("-----------------------------------------------------------");
-        py::print("                                                           ");
-        py::print("                 pycombina Branch and Bound                ");
-        py::print("                                                           ");
+        py::print("Running Branch and Bound ... ");
+        py::print("");
     }
 
     t_start = clock();
@@ -437,7 +435,7 @@ void CombinaBnBSolver::run_bnb() {
     if (verbosity > 0) {
         py::gil_scoped_acquire lock;
         py::print(streamObj.str());
-        py::print("\n-----------------------------------------------------------");
+        py::print("\n");
     }
 
     /*
@@ -475,9 +473,7 @@ void CombinaBnBSolver::display_solution_update(bool solution_update, double runt
 
     if ((verbosity > 1) && (n_print++ % 10 == 0)) {
 
-        py::print("-----------------------------------------------------------");
-        py::print("    Iteration |  Upper bound |  Branches  |  Runtime (s)   ");
-        py::print("-----------------------------------------------------------");
+        py::print("    Iteration   Upper bound    Branches     Runtime (s)    ");
     }
 
     std::string s_n_iter = std::to_string(n_iter);
@@ -500,8 +496,8 @@ void CombinaBnBSolver::display_solution_update(bool solution_update, double runt
     }
 
     streamObj << s_n_iter
-        << " | " << ub_bnb << " | "
-        << s_node_queue_size << " | " << runtime;
+        << "   " << ub_bnb << "   "
+        << s_node_queue_size << "   " << runtime;
     
     if (verbosity > 1) {
      

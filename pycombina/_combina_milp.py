@@ -78,14 +78,6 @@ class CombinaMILP():
         self._model = gp.Model("Combinatorial Integral Approximation MILP")
 
 
-    def _welcome_prompt_milp(self):
-
-        print("-----------------------------------------------------------")
-        print("                                                           ")
-        print("                  pycombina MILP                           ")
-        print("                                                           ")
-
-
     def _setup_model_variables(self):
 
         print("\n  - Optimization variables ... ", end = "", flush = True)
@@ -335,13 +327,11 @@ class CombinaMILP():
 
 
         print("\nModel set up finished after", \
-            round(time.time() - start_time, 2), "seconds")
-        print("\n-----------------------------------------------------------\n")
+            round(time.time() - start_time, 2), "seconds\n")
 
 
     def __init__(self, binapprox: BinApprox) -> None:
 
-        self._welcome_prompt_milp()
         self._apply_preprocessing(binapprox)
         self._initialize_milp()
         self._setup_milp(binapprox)
@@ -415,4 +405,5 @@ class CombinaMILP():
         self._retrieve_solutions()
         self._set_solution()
 
-        print("\n-----------------------------------------------------------")
+        print("\n")
+

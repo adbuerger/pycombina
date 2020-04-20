@@ -210,3 +210,4 @@ class CombinaBnB():
         self._setup_warm_start(use_warm_start = use_warm_start)
         self._run_solver(use_warm_start = use_warm_start, **kwargs)
         self._set_solution()
+

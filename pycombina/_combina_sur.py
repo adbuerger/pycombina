@@ -65,17 +65,8 @@ class CombinaSUR():
         self._sur_status = sur_status
 
 
-    def _welcome_prompt_sur(self):
-
-        print("-----------------------------------------------------------")
-        print("                                                           ")
-        print("                 pycombina Sum-Up-Rounding                 ")
-        print("                                                           ")
-
-
     def _setup_sur(self, binapprox: BinApprox) -> None:
 
-        self._welcome_prompt_sur()
         self._apply_preprocessing(binapprox)
         self._set_sur_status(sur_status = 1)
 
@@ -95,8 +86,6 @@ class CombinaSUR():
         self._run_sur()
         self._set_solution()
         self._set_sur_status(sur_status = 2)
-
-        print("\n-----------------------------------------------------------")
 
 
     def _run_sur(self):
@@ -133,6 +122,7 @@ class CombinaSUR():
 
         print("\n    Best solution: {:.6e}".format(eta))
         print("    Total runtime: {:.6e} s".format(time.time() - start_time))
+        print("\n")
 
 
     def _set_solution(self):
@@ -140,3 +130,4 @@ class CombinaSUR():
         self._binapprox_p.inflate_solution()
         self._binapprox.set_b_bin(self._binapprox_p.b_bin)
         self._binapprox.set_eta(self._binapprox_p.eta)
+
