@@ -192,6 +192,27 @@ bool CombinaBnBSolver::control_activation_forbidden(
     std::vector<double> total_up_time_child_test(total_up_time_parent);
     unsigned int depth_child_test(depth_child);
 
+    if (sigma_child[b_active_child] >= n_max_switches[b_active_child]) {
+
+        return true;
+    }
+        
+    if ((b_active_parent < n_c) && (sigma_child[b_active_parent] >= n_max_switches[b_active_parent])) {
+
+        return true;
+    }
+        
+
+    if (min_down_time_parent[b_active_child] > 0.0) {
+
+        return true;
+    }
+        
+    if ((b_active_parent < n_c) && (b_adjacencies[b_active_child][b_active_parent] == 0)) {
+
+        return true;
+    }
+
     do {
 
         if (b_valid[b_active_child][depth_child_test] != 1) {
@@ -206,13 +227,7 @@ bool CombinaBnBSolver::control_activation_forbidden(
 
     } while((min_up_time[b_active_child] > min_up_time_fulfilled) && (depth_child_test < n_t));
 
-    return (sigma_child[b_active_child] >= n_max_switches[b_active_child] ||
-        (b_active_parent < n_c &&
-            sigma_child[b_active_parent] >= n_max_switches[b_active_parent]) ||
-        min_down_time_parent[b_active_child] > 0.0 ||
-        (b_active_parent < n_c &&
-            b_adjacencies[b_active_child][b_active_parent] == 0) ||
-        up_time_child_test[b_active_child] > max_up_time[b_active_child] ||
+    return (up_time_child_test[b_active_child] > max_up_time[b_active_child] ||
         total_up_time_child_test[b_active_child] > total_max_up_time[b_active_child]);
 }
 
@@ -258,7 +273,7 @@ void CombinaBnBSolver::compute_child_node_properties(
 
         sigma_child[b_active_parent]++;
         sigma_child[b_active_child]++;
-        min_down_time_child[b_active_parent]=min_down_time[b_active_parent];
+        min_down_time_child[b_active_parent]= fmax(0, min_down_time[b_active_parent] - dt[*depth_child]);
 
         if (sigma_child[b_active_parent] == n_max_switches[b_active_parent]) {
 
@@ -268,13 +283,19 @@ void CombinaBnBSolver::compute_child_node_properties(
         if (sigma_child[b_active_child] == n_max_switches[b_active_child]) {
 
             eta_child[b_active_child] += sum_eta[1][b_active_child][*depth_child];
-        }
 
-        if (sigma_child == n_max_switches) {
+            for (unsigned int i; i < n_c; i++) {
+
+                if (sigma_child[i] < n_max_switches[i]) {
+
+                    eta_child[i] += sum_eta[0][i][*depth_child];
+                }
+            }
 
             *depth_child = n_t;
         }
     }
+
 
     for(unsigned int j = 0; j < n_c; j++){
 
@@ -347,6 +368,7 @@ void CombinaBnBSolver::run_bnb() {
         }
 
         if(active_node->get_lb() < ub_bnb) {
+
             if(active_node->get_depth() == n_t) {
 
                 t_update = clock();
