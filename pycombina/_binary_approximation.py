@@ -19,6 +19,7 @@
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import warnings
 import numpy as np
 import numpy.matlib as npm
 from typing import Union
@@ -189,7 +190,7 @@ class BinApproxBase(ABC):
 
         except AttributeError:
 
-            return (self._t[-1] - self._t[0]) * np.ones(self.n_c)
+            return np.full(self.n_c, np.inf)
 
 
     @property
@@ -205,7 +206,7 @@ class BinApproxBase(ABC):
 
         except AttributeError:
 
-            return (self._t[-1] - self._t[0]) * np.ones(self.n_c)
+            return np.full(self.n_c, np.inf)
 
 
     @property
@@ -359,10 +360,15 @@ class BinApprox(BinApproxBase):
             raise ValueError("All elements of the relaxed binary input " + \
                 "must be 0 <= b <= 1.")
 
-        b_rel[b_rel < self._binary_threshold] = 0
-        b_rel[b_rel > 1.0 - self._binary_threshold] = 1
+        clamped_down = b_rel < self._binary_threshold
+        clamped_up = b_rel > 1.0 - self._binary_threshold
+        clamped_count = np.count_nonzero(np.logical_or(clamped_down, clamped_up), axis=0)
+
+        b_rel[clamped_down] = 0
+        b_rel[clamped_up] = 1
 
         self._b_rel = b_rel
+        self._clamped = clamped_count
 
 
     def _initialize_valid_controls(self) -> None:
@@ -377,11 +383,13 @@ class BinApprox(BinApproxBase):
 
     def _set_off_state(self, off_state_included: bool) -> None:
 
-        if off_state_included and \
-            not np.all(np.sum(self._b_rel, axis = 0) == 1.0):
-
-            raise ValueError("The sum of relaxed binary controls per time point " + \
-                "must be exactly 1, or off_state_included must be set to False.")
+        if off_state_included:
+            sums = np.sum(self._b_rel, axis=0)
+            tol = self._clamped * self._binary_threshold + (self._b_rel.shape[0] + 1) * np.finfo(sums.dtype).eps
+            
+            if np.any(np.logical_or(sums > 1.0 + tol, sums < 1.0 - tol)):
+                warnings.warn("The sum of relaxed binary controls per time point " + \
+                    "must be exactly 1, or off_state_included must be set to False.")
 
         self._off_state_included = off_state_included
 

@@ -20,19 +20,14 @@
  *
  */
 
-#ifndef NODE_H
-#define NODE_H
+#include <algorithm>
+
 #include "Node.hpp"
-#endif
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-namespace py = pybind11;
-
-Node::Node(Node* const parent_node,
+Node::Node(const NodePtr& parent_node,
+           size_t seq_num,
 
            unsigned int const b_active,
-           unsigned int const n_c,
            
            std::vector<unsigned int> const sigma,
 
@@ -45,6 +40,7 @@ Node::Node(Node* const parent_node,
            double const lb)
 
     : parent_node(parent_node),
+      seqnum(seq_num),
 
       b_active(b_active),
 
@@ -56,78 +52,24 @@ Node::Node(Node* const parent_node,
 
       depth(depth),
       eta(eta),
-      lb(lb),
-
-      child_nodes(n_c)
-
+      lb(lb)
 {
-
-    for(unsigned int i = 0; i < n_c; i++) {
-
-        child_nodes[i] = nullptr;
-    }
-
-    if(parent_node) {
-
-        parent_node->set_child(this, b_active);
-    }
+#ifndef NDEBUG
+    ++Node::n_add;
+#endif
 }
 
 
-Node::~Node(){
-
-    if(parent_node) {
-
-        parent_node->set_child(nullptr, b_active);
-    }
-
-}
-
-
-void Node::set_child(Node* child_node, unsigned int b_active) {
-
-    child_nodes[b_active] = child_node;
-
-    if (no_children_left()) {
-
-        delete this;
-
-        #ifndef NDEBUG
-        Node::n_delete_self++;
-        #endif
-    }
-
-}
-
-
-bool Node::no_children_left() {
-
-    for (Node* child: child_nodes) {
-        
-        if (child != nullptr) {
-
-            return false;
-        }
-    }
-
-    return true;
+Node::~Node() {
+#ifndef NDEBUG
+    ++Node::n_delete;
+#endif
 }
 
 
 unsigned int Node::get_max_sigma() const {
 
     return * std::max_element(sigma.begin(), sigma.end());
-}
-
-
-Node* Node::get_parent() {
-
-    return parent_node;
-}
-
-std::vector<Node*> Node::get_child_nodes() {
-
-    return child_nodes;
 }
 
 
@@ -176,4 +118,18 @@ std::vector<double> Node::get_eta() {
 double Node::get_lb() {
 
     return lb;
+}
+
+bool operator<(Node& lhs, Node& rhs) {
+    unsigned int lhs_depth = lhs.get_depth(), rhs_depth = rhs.get_depth();
+    double lhs_lb = lhs.get_lb(), rhs_lb = rhs.get_lb();
+    if(lhs_depth != rhs_depth) {
+        return(rhs_depth < lhs_depth);
+    }
+    else if(lhs_lb != rhs_lb) {
+        return(lhs_lb < rhs_lb);
+    }
+    else {
+        return(lhs.get_max_sigma() < rhs.get_max_sigma());
+    }
 }
