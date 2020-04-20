@@ -284,7 +284,7 @@ void CombinaBnBSolver::compute_child_node_properties(
 
             eta_child[b_active_child] += sum_eta[1][b_active_child][*depth_child];
 
-            for (unsigned int i; i < n_c; i++) {
+            for (unsigned int i = 0; i < n_c; i++) {
 
                 if (sigma_child[i] < n_max_switches[i]) {
 
