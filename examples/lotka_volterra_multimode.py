@@ -32,17 +32,16 @@ b_rel = data[:-1:dN, 3:]
 
 max_switches = [5, 2, 3]
 
-binapprox = pycombina.BinApprox(t=t, b_rel=b_rel, \
-    binary_threshold=1e-3, off_state_included=True)
+binapprox = pycombina.BinApprox(t=t, b_rel=b_rel, binary_threshold=1e-3)
 
 binapprox.set_n_max_switches(n_max_switches=max_switches)
-#binapprox.set_valid_controls_for_interval((0, 2), [1,0,0])
+# binapprox.set_valid_controls_for_interval((0, 2), [0,0,1])
 #binapprox.set_valid_control_transitions(0, [1,0,1])
 #binapprox.set_min_up_times([2.0, 2.0, 2.0])
 #binapprox.set_cia_norm("row_sum_norm")
 
 combina = pycombina.CombinaBnB(binapprox)
-combina.solve()
+combina.solve(max_iter= int(5e6), max_cpu_time=3.6e3)
 
 b_bin = pl.asarray(binapprox.b_bin)
 

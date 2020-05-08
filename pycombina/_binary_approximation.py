@@ -45,14 +45,6 @@ class BinApproxBase(ABC):
 
 
     @property
-    def off_state_included(self) -> bool:
-
-        '''Get flag whether the off-state is included in the problem definition.'''
-
-        return self._off_state_included
-
-
-    @property
     def reduce_problem_size_before_solve(self) -> bool:
 
         '''Get flag whether problem size is reduced prior to solving by merging certain time intervals.'''
@@ -295,17 +287,12 @@ class BinApprox(BinApproxBase):
     :param b_rel: Two-dimensional array that contains the relaxed binary
                   controls to be approximated. One dimension of the array
                   must be of size len(t)-1 and all entries of the array 
-                  must be 0 <= b_k,i <= 1.
+                  must be 0 <= b_k,i <= 1. The sum of relaxed binaries per time
+                  point must be sum(b[i])=1 to fulfill the SOS1-constraint.
 
     :param binary_threshold: If a value b_rel,k,i is smaller than binary_threshold
                              it is considered 0, and if it is bigger than
                              1-binary_threshold it is considered 1.
-
-    :param off_state_included: If the sum of the relaxed binaries per time point i
-                               is sum(b[i])<1, this flag must be set to True
-                               to automatically include an artificial off-state to
-                               fulfill the SOS1-constraint sum(b[i])=1. This does
-                               not change the problem dimension for the user.
 
     :param reduce_problem_size_before_solve: If set to True, the size of the
                                              binary approximation problem is
@@ -381,17 +368,15 @@ class BinApprox(BinApproxBase):
         self._b_adjacencies = np.ones((self.n_c, self.n_c), dtype = int)
 
 
-    def _set_off_state(self, off_state_included: bool) -> None:
+    def _check_sos1_constraint_fulfilled(self) -> None:
 
-        if off_state_included:
-            sums = np.sum(self._b_rel, axis=0)
-            tol = self._clamped * self._binary_threshold + (self._b_rel.shape[0] + 1) * np.finfo(sums.dtype).eps
-            
-            if np.any(np.logical_or(sums > 1.0 + tol, sums < 1.0 - tol)):
-                warnings.warn("The sum of relaxed binary controls per time point " + \
-                    "must be exactly 1, or off_state_included must be set to False.")
-
-        self._off_state_included = off_state_included
+        sums = np.sum(self._b_rel, axis=0)
+        tol = self._clamped * self._binary_threshold + (self._b_rel.shape[0] + 1) * np.finfo(sums.dtype).eps
+        
+        if np.any(np.logical_or(sums > 1.0 + tol, sums < 1.0 - tol)):
+            warnings.warn("The sum of relaxed binary controls per time point " + \
+                "must be exactly 1\n.This seems not to be the case for the data " + \
+                " you provided.\npycombina might not work as expected.")
 
 
     def _set_problem_size_reduction(self, reduce_problem_size_before_solve: bool) -> None:
@@ -400,8 +385,7 @@ class BinApprox(BinApproxBase):
 
 
     def __init__(self, t: Union[list, np.ndarray], b_rel: Union[list, np.ndarray], \
-        binary_threshold: float = 1e-3, off_state_included: bool = True, \
-        reduce_problem_size_before_solve: bool = False) -> None:
+        binary_threshold: float = 1e-3, reduce_problem_size_before_solve: bool = False) -> None:
 
         self._set_time_points_t(t = t)
         self._set_relaxed_binaries_b_rel(b_rel = b_rel, \
@@ -414,7 +398,7 @@ class BinApprox(BinApproxBase):
         self._initialize_valid_controls()
         self._initialize_control_adjacency()
 
-        self._set_off_state(off_state_included = off_state_included)
+        self._check_sos1_constraint_fulfilled()
         self._set_problem_size_reduction(reduce_problem_size_before_solve = \
             reduce_problem_size_before_solve)
 
@@ -849,38 +833,6 @@ class BinApproxPreprocessed(BinApproxBase):
         self._cia_norm = self._binapprox.cia_norm
 
 
-
-    def _append_off_state(self) -> None:
-
-        if not self._binapprox.off_state_included:
-
-            self._b_rel = np.vstack([self._b_rel, \
-                np.atleast_2d(1 - np.sum(self._binapprox.b_rel, axis = 0))])
-
-            self._b_valid = np.vstack([self._b_valid, \
-                np.ones(self._binapprox.n_t, dtype = int)])
-
-            b_adjacencies = np.ones((self._binapprox.n_c + 1, \
-                self._binapprox.n_c + 1), dtype = int)
-            b_adjacencies[:self._binapprox.n_c, :self._binapprox.n_c] = \
-                self._binapprox.b_adjacencies
-            self._b_adjacencies = b_adjacencies
-
-            self._n_max_switches = np.append(self._n_max_switches, \
-                self._binapprox.n_t)
-
-            self._min_up_times = np.append(self._min_up_times, 0.0)
-            self._min_down_times = np.append(self._min_down_times, 0.0)
-            self._max_up_times = \
-                np.append(self._max_up_times,
-                    (self._binapprox.t[-1] - self._binapprox.t[0]))
-            self._total_max_up_times = \
-                np.append(self._total_max_up_times,
-                    (self._binapprox.t[-1] - self._binapprox.t[0]))
-
-            self._b_bin_pre = np.append(self._b_bin_pre, 0)
-
-
     def _determine_active_controls(self) -> None:
 
         b_active = []
@@ -939,7 +891,6 @@ class BinApproxPreprocessed(BinApproxBase):
 
         self._set_orignal_binapprox_problem(binapprox)
         self._copy_problem_information()
-        self._append_off_state()
         self._determine_active_controls()
         self._determine_active_time_points()
         self._remove_inactive_controls()
@@ -967,15 +918,7 @@ class BinApproxPreprocessed(BinApproxBase):
         pass
 
 
-    def _remove_off_state(self) -> None:
-
-        if not self._binapprox.off_state_included:
-
-            self._b_bin = self._b_bin[:-1, :]
-
-
     def inflate_solution(self) -> None:
 
         self._add_inactive_controls()
         self._add_inactive_time_points()
-        self._remove_off_state()
