@@ -294,21 +294,11 @@ class BinApprox(BinApproxBase):
                              it is considered 0, and if it is bigger than
                              1-binary_threshold it is considered 1.
 
-    :param reduce_problem_size_before_solve: If set to True, the size of the
-                                             binary approximation problem is
-                                             reduced according to the methods
-                                             described in [#f6]_. This can be
-                                             beneficial if the problem has many
-                                             binaries and time points and takes
-                                             a long time to solve.
+    :param reduce_problem_size_before_solve: Setting this flag has no effect in
+                                             the current version of pycombina.
 
     :raises: ValueError, AttributeError, RuntimeError
 
-    .. rubric:: References
-    .. [#f6] |linkf6|_
-    
-    .. _linkf6:  http://www.optimization-online.org/DB_HTML/2018/07/6713.html,
-    .. |linkf6| replace:: Bürger A, Zeile C, Altmann-Dieses A, Sager S, Diehl M: Design, Implementation and Simulation of an MPC algorithm for Switched Nonlinear Systems under Combinatorial Constraints, 2018.
     '''
 
 
