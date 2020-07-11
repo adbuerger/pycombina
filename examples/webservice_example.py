@@ -21,7 +21,7 @@
 import os
 from flask import Flask, request, jsonify
 
-from pycombina import BinApprox, CombinaBnB, CombinaMILP, CombinaSUR
+import pycombina
 
 class InvalidUsage(Exception):
 
@@ -70,19 +70,13 @@ def initialize_binapprox(problem_definition):
         pass
 
     try:
-        binapprox_init_optional_args["off_state_included"] = \
-            problem_definition["off_state_included"]
-    except KeyError:
-        pass
-
-    try:
         binapprox_init_optional_args["reduce_problem_size_before_solve"] = \
             problem_definition["reduce_problem_size_before_solve"]
     except KeyError:
         pass
 
     try:
-        binapprox = BinApprox(t = t, b_rel = b_rel, **binapprox_init_optional_args)
+        binapprox = pycombina.BinApprox(t = t, b_rel = b_rel, **binapprox_init_optional_args)
     except Exception as e:
         raise InvalidUsage(str(e), status_code = 500)
 
@@ -151,17 +145,17 @@ def set_binapprox_options(binapprox, problem_definition):
 def setup_solver(problem_definition):
 
     if not "solver" in problem_definition.keys():
-        return CombinaBnB
+        return pycombina.CombinaBnB
 
     else:
         if problem_definition["solver"] == "CombinaMILP":
-            return CombinaMILP
+            return pycombina.CombinaMILP
         
         elif problem_definition["solver"] == "CombinaSUR":
-            return CombinaSUR
+            return pycombina.CombinaSUR
 
         else:
-            return CombinaBnB
+            return pycombina.CombinaBnB
 
 
 @pycombina_service.route('/api/solve/', methods=['GET', 'POST'])
