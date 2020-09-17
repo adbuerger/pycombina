@@ -88,7 +88,7 @@ class CMakeBuild(build_ext):
 setup(
 
     name='pycombina',
-    version='0.3.1',
+    version='0.3.2',
 
     author='Adrian Buerger, Clemens Zeile',
     author_email='adrian.buerger@hs-karlsruhe.de, clemens.zeile@ovgu.de',
