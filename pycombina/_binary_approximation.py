@@ -540,7 +540,7 @@ class BinApprox(BinApproxBase):
                 "must be equal to the number of binary controls.")
 
         # Modify the min down time durations by the dwell time tolerance, see issue #7
-        self._min_down_times = min_down_times - self.dwell_time_tolerance*np.ones(min_up_times.size)
+        self._min_down_times = min_down_times - self.dwell_time_tolerance*np.ones(min_down_times.size)
 
 
     def set_max_up_times(self, max_up_times: Union[float, list, np.ndarray]) -> None:
@@ -582,7 +582,7 @@ class BinApprox(BinApproxBase):
                 "must be equal to the number of binary controls.")
 
         # Modify the max up time durations by the dwell time tolerance, see issue #7
-        self._max_up_times = max_up_times + self.dwell_time_tolerance*np.ones(min_up_times.size)
+        self._max_up_times = max_up_times + self.dwell_time_tolerance*np.ones(max_up_times.size)
 
 
     def set_total_max_up_times(self, total_max_up_times: Union[float, list, np.ndarray]) -> None:
@@ -624,7 +624,7 @@ class BinApprox(BinApproxBase):
                 "must be equal to the number of binary controls.")
 
         # Modify the total max up time durations by the dwell time tolerance, see issue #7
-        self._total_max_up_times = total_max_up_times + self.dwell_time_tolerance*np.ones(min_up_times.size)
+        self._total_max_up_times = total_max_up_times + self.dwell_time_tolerance*np.ones(total_max_up_times.size)
 
 
     def set_b_bin_pre(self, b_bin_pre: Union[list, np.ndarray]) -> None:
