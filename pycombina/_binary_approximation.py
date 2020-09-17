@@ -107,6 +107,17 @@ class BinApproxBase(ABC):
 
 
     @property
+    def dwell_time_tolerance(self) -> float:
+
+        '''
+        Get the tolerance value needed to modify dwell time constraint duration parameters 
+        in order to prevent over-fulfillment of dwell time constraints, see issue #7.
+        '''
+
+        return self._dwell_time_tolerance
+
+
+    @property
     def eta(self) -> float:
 
         '''Get the objective value of the binary approximation problem.'''
@@ -239,6 +250,16 @@ class BinApproxBase(ABC):
     def _compute_time_grid_from_time_points(self) -> None:
 
         self._dt = self._t[1:] - self._t[:-1]
+
+
+    def _compute_dwell_time_tolerance(self) -> None:
+
+        if max(self.dt)-min(self.dt) > 1e10:
+
+            warnings.warn("Grid interval lengths differ extremely. " + \
+                "This might result in dwell time constraint violation" )
+
+        self._dwell_time_tolerance = min(self.dt)*1e-5
 
 
     def set_b_bin(self, b_bin: Union[list, np.ndarray]) -> None:
@@ -384,6 +405,7 @@ class BinApprox(BinApproxBase):
         self._determine_number_of_control_intervals()
         self._determine_number_of_controls()
         self._compute_time_grid_from_time_points()
+        self._compute_dwell_time_tolerance()
 
         self._initialize_valid_controls()
         self._initialize_control_adjacency()
@@ -475,7 +497,8 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in min_up_times " + \
                 "must be equal to the number of binary controls.")
 
-        self._min_up_times = min_up_times
+        # Modify the min up time durations by the dwell time tolerance, see issue #7
+        self._min_up_times = min_up_times - self.dwell_time_tolerance*np.ones(min_up_times.size)
 
 
     def set_min_down_times(self, min_down_times: Union[float, list, np.ndarray]) -> None:
@@ -516,7 +539,8 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in min_down_times " + \
                 "must be equal to the number of binary controls.")
 
-        self._min_down_times = min_down_times
+        # Modify the min down time durations by the dwell time tolerance, see issue #7
+        self._min_down_times = min_down_times - self.dwell_time_tolerance*np.ones(min_down_times.size)
 
 
     def set_max_up_times(self, max_up_times: Union[float, list, np.ndarray]) -> None:
@@ -557,7 +581,8 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in max_up_times " + \
                 "must be equal to the number of binary controls.")
 
-        self._max_up_times = max_up_times
+        # Modify the max up time durations by the dwell time tolerance, see issue #7
+        self._max_up_times = max_up_times + self.dwell_time_tolerance*np.ones(max_up_times.size)
 
 
     def set_total_max_up_times(self, total_max_up_times: Union[float, list, np.ndarray]) -> None:
@@ -598,7 +623,8 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in total_max_up_times " + \
                 "must be equal to the number of binary controls.")
 
-        self._total_max_up_times = total_max_up_times
+        # Modify the total max up time durations by the dwell time tolerance, see issue #7
+        self._total_max_up_times = total_max_up_times + self.dwell_time_tolerance*np.ones(total_max_up_times.size)
 
 
     def set_b_bin_pre(self, b_bin_pre: Union[list, np.ndarray]) -> None:
