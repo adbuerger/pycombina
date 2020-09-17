@@ -107,6 +107,17 @@ class BinApproxBase(ABC):
 
 
     @property
+    def dwell_time_tolerance(self) -> float:
+
+        '''
+        Get the tolerance value needed to modify dwell time constraint duration parameters 
+        in order to prevent over-fulfillment of dwell time constraints, see issue #7.
+        '''
+
+        return self._dwell_time_tolerance
+
+
+    @property
     def eta(self) -> float:
 
         '''Get the objective value of the binary approximation problem.'''
@@ -128,21 +139,6 @@ class BinApproxBase(ABC):
 
         except:
            raise AttributeError("b_bin not yet available.")
-
-
-    @property
-    def dwell_time_tolerance(self) -> float:
-
-        '''
-        Get the tolerance value needed to modify dwell time constraint duration parameters 
-        in order to prevent over-fulfillment of dwell time constraints, see issue #7.
-        '''
-
-        try:
-            return self._dwell_time_tolerance
-
-        except:
-           raise AttributeError("dwell_time_tolerance not yet available.")
 
 
     @property
