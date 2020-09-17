@@ -133,8 +133,10 @@ class BinApproxBase(ABC):
     @property
     def dwell_time_tolerance(self) -> float:
 
-        '''Get the tolerance value needed to modify dwell time constraint duration parameters 
-        in order to prevent over-fulfillment of dwell time constraints, see issue 7 .'''
+        '''
+        Get the tolerance value needed to modify dwell time constraint duration parameters 
+        in order to prevent over-fulfillment of dwell time constraints, see issue #7.
+        '''
 
         try:
             return self._dwell_time_tolerance
@@ -499,7 +501,7 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in min_up_times " + \
                 "must be equal to the number of binary controls.")
 
-        # modify the min up time durations by the dwell time tolerance, see issue 7
+        # Modify the min up time durations by the dwell time tolerance, see issue #7
         self._min_up_times = min_up_times - self.dwell_time_tolerance*np.ones(min_up_times.size)
 
 
@@ -541,7 +543,7 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in min_down_times " + \
                 "must be equal to the number of binary controls.")
 
-        # modify the min up time durations by the dwell time tolerance, see issue 7
+        # Modify the min down time durations by the dwell time tolerance, see issue #7
         self._min_down_times = min_down_times - self.dwell_time_tolerance*np.ones(min_up_times.size)
 
 
@@ -583,7 +585,7 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in max_up_times " + \
                 "must be equal to the number of binary controls.")
 
-        # modify the min up time durations by the dwell time tolerance, see issue 7
+        # Modify the max up time durations by the dwell time tolerance, see issue #7
         self._max_up_times = max_up_times + self.dwell_time_tolerance*np.ones(min_up_times.size)
 
 
@@ -625,7 +627,7 @@ class BinApprox(BinApproxBase):
             raise ValueError("The number of values in total_max_up_times " + \
                 "must be equal to the number of binary controls.")
 
-        # modify the min up time durations by the dwell time tolerance, see issue 7
+        # Modify the total max up time durations by the dwell time tolerance, see issue #7
         self._total_max_up_times = total_max_up_times + self.dwell_time_tolerance*np.ones(min_up_times.size)
 
 
