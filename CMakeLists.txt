@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1)
 project(combina_bnb_solver)
+set (CMAKE_CXX_STANDARD 14)
 
 # Set source directory
 set(SOURCE_DIR "src/combina_bnb_solver")
