@@ -39,6 +39,9 @@ class CMakeBuild(build_ext):
         if sys.version_info < (3,5):
             raise RuntimeError(
                 "Python 3.5 or higher is required for using pycombina.")            
+        if sys.version_info > (3,9):
+            raise RuntimeError(
+                "Python 3.9 not yet supported.")
         try:
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
