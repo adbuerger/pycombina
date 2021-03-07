@@ -1,0 +1,25 @@
+name: Build and test
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.5]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages via apt
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++
+    - name: Python setup
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install packages via pip
+      run: pip install numpy unittest2
+    - name: Build and test
+      run: python setup.py test
