@@ -33,11 +33,11 @@ Multi-dimensional binary approximation problems can be formulated including
 a variety of combinatorial constraints (such as maximum number of switches,
 dwell times and switching adjacencies) and solved using different methods.
 
-|travis-ci| |rtd|
+|github-workflow| |rtd|
 
-.. |travis-ci| image:: https://travis-ci.org/adbuerger/pycombina.svg?branch=master
-    :target: https://travis-ci.org/adbuerger/pycombina
-    :alt: Travis CI pipeline status master branch
+.. |github-workflow| image:: https://github.com/adbuerger/pycombina/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/adbuerger/pycombina/actions/workflows/main.yml
+    :alt: Github workflow status
 
 .. |rtd| image:: https://readthedocs.org/projects/pycombina/badge/?version=latest
     :target: https://pycombina.readthedocs.io/en/latest/?badge=latest
