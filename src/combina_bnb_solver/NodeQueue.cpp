@@ -21,7 +21,11 @@
  */
 
 #include <algorithm>
+#include <iterator>
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "NodeQueue.hpp"
 #include "queues/BestFirstNodeQueue.hpp"

@@ -318,10 +318,10 @@ NodePtr CombinaBnBSolver::create_or_fathom_child_node(const NodePtr& parent_node
 
 void CombinaBnBSolver::run_bnb() {
 
-    clock_t t_start;
-    clock_t t_update;
-    clock_t t_current;
-    clock_t t_end;
+    std::clock_t t_start;
+    std::clock_t t_update;
+    std::clock_t t_current;
+    std::clock_t t_end;
     
     if (verbosity > 0) {
         py::gil_scoped_acquire lock;
@@ -431,9 +431,9 @@ void CombinaBnBSolver::run_bnb() {
 }
 
 
-bool CombinaBnBSolver::termination_criterion_reached(int n_iter, clock_t t_start) {
+bool CombinaBnBSolver::termination_criterion_reached(int n_iter, std::clock_t t_start) {
 
-    clock_t t_current = clock();
+    std::clock_t t_current = clock();
 
     return ((n_iter >= max_iter) || 
         ((double(t_current - t_start) / CLOCKS_PER_SEC) >= max_cpu_time) ||
