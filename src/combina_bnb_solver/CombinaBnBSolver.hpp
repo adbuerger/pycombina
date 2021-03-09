@@ -24,6 +24,7 @@
 #ifndef __COMBINA_BNB_SOLVER_HPP
 #define __COMBINA_BNB_SOLVER_HPP
 
+#include <ctime>
 #include <map>
 #include <vector>
 
@@ -108,7 +109,7 @@ private:
         std::vector<double> const & eta_child, double const lb_child);
 
     void run_bnb();
-    bool termination_criterion_reached(int n_iter, clock_t t_start);
+    bool termination_criterion_reached(int n_iter, std::clock_t t_start);
     void set_new_best_node(const NodePtr& active_node);
     void display_solution_update(bool solution_update, double runtime);
     void add_nodes_to_queue(const NodePtr& parent_node);
