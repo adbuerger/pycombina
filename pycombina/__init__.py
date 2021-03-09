@@ -20,31 +20,6 @@
 
 import os
 
-try:
-
-    if os.environ["PYCOMBINA_PROMPTS_SHOWN"] == "True":
-        
-        prompt_init_message = False
-
-except KeyError:
-    
-    os.environ["PYCOMBINA_PROMPTS_SHOWN"] = "True"
-    prompt_init_message = True
-            
-if prompt_init_message:
-
-    print("\n-----------------------------------------------------------")
-    print("|                                                         |")
-    print("|                     You are using                       |")
-    print("|                                                         |")
-    print("|                       pycombina                         |")
-    print("|                                                         |")
-    print("|     A collection of methods for binary approximation    |")
-    print("|       by A. Buerger, C. Zeile, S. Sager, M. Diehl       |")
-    print("|                                                         |")
-    print("-----------------------------------------------------------\n")
-
-
 from ._binary_approximation import BinApprox
 
 try:
@@ -66,3 +41,4 @@ try:
     from ._combina_sur import CombinaSUR
 except ImportError:
     print("- Sum-Up-Rounding solver extension not found, CombinaSUR disabled.\n")
+

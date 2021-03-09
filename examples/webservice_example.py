@@ -1,9 +1,27 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# This file is part of pycombina.
+#
+# Copyright 2017-2020 Adrian Bürger, Clemens Zeile, Sebastian Sager, Moritz Diehl
+#
+# pycombina is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pycombina is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with pycombina. If not, see <http://www.gnu.org/licenses/>.
+
 import os
 from flask import Flask, request, jsonify
 
-from pycombina import BinApprox, CombinaBnB, CombinaMILP, CombinaSUR
-
-import ipdb
+import pycombina
 
 class InvalidUsage(Exception):
 
@@ -21,9 +39,9 @@ class InvalidUsage(Exception):
         self.payload = payload
 
 
-pycombina_server = Flask(__name__)
+pycombina_service = Flask(__name__)
 
-@pycombina_server.errorhandler(InvalidUsage)
+@pycombina_service.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
     
     response = jsonify({ \
@@ -52,19 +70,13 @@ def initialize_binapprox(problem_definition):
         pass
 
     try:
-        binapprox_init_optional_args["off_state_included"] = \
-            problem_definition["off_state_included"]
-    except KeyError:
-        pass
-
-    try:
         binapprox_init_optional_args["reduce_problem_size_before_solve"] = \
             problem_definition["reduce_problem_size_before_solve"]
     except KeyError:
         pass
 
     try:
-        binapprox = BinApprox(t = t, b_rel = b_rel, **binapprox_init_optional_args)
+        binapprox = pycombina.BinApprox(t = t, b_rel = b_rel, **binapprox_init_optional_args)
     except Exception as e:
         raise InvalidUsage(str(e), status_code = 500)
 
@@ -118,11 +130,11 @@ def set_binapprox_options(binapprox, problem_definition):
     try:
         if ("b_bin_valid" in problem_definition.keys()) or ("dt" in problem_definition.keys()):
             raise NotImplementedError( \
-                "Using set_valid_controls_for_interval not yet supported in server application.")
+                "Using set_valid_controls_for_interval not yet supported in service application.")
 
         if ("b_i" in problem_definition.keys()) or ("b_valid_upcoming" in problem_definition.keys()):
             raise NotImplementedError( \
-                "Using set_valid_control_transitions not yet supported in server application.")
+                "Using set_valid_control_transitions not yet supported in service application.")
 
     except Exception as e:
         raise InvalidUsage(str(e), status_code = 500)
@@ -133,20 +145,20 @@ def set_binapprox_options(binapprox, problem_definition):
 def setup_solver(problem_definition):
 
     if not "solver" in problem_definition.keys():
-        return CombinaBnB
+        return pycombina.CombinaBnB
 
     else:
         if problem_definition["solver"] == "CombinaMILP":
-            return CombinaMILP
+            return pycombina.CombinaMILP
         
         elif problem_definition["solver"] == "CombinaSUR":
-            return CombinaSUR
+            return pycombina.CombinaSUR
 
         else:
-            return CombinaBnB
+            return pycombina.CombinaBnB
 
 
-@pycombina_server.route('/api/solve/', methods=['GET', 'POST'])
+@pycombina_service.route('/api/solve/', methods=['GET', 'POST'])
 def solve():
 
     problem_definition = request.json
@@ -168,4 +180,4 @@ def solve():
 
 if __name__ == '__main__':
     
-    pycombina_server.run(host= '0.0.0.0', port=6789, debug=True)
+    pycombina_service.run(host= '0.0.0.0', port=6789, debug=True)

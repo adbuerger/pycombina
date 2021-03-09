@@ -27,10 +27,11 @@ data = pl.loadtxt("data/data_example_1.csv", delimiter=" ", skiprows=1)
 
 t = data[:,0]
 b_rel = data[:-1, 1]
-max_switches = [4]
+b_rel = pl.vstack([b_rel, 1-b_rel])
 
-binapprox = pycombina.BinApprox(t=t, b_rel=b_rel, \
-    binary_threshold=1e-3, off_state_included=False)
+max_switches = [4, t.size]
+
+binapprox = pycombina.BinApprox(t=t, b_rel=b_rel, binary_threshold=1e-3)
 
 binapprox.set_n_max_switches(n_max_switches=max_switches)
 
@@ -40,8 +41,8 @@ combina.solve(verbosity=2)
 b_bin = pl.squeeze(binapprox.b_bin)
 
 pl.figure()
-pl.step(t[:-1], b_rel, label="b_rel", color="C0", linestyle="dashed", where="post")
-pl.step(t[:-1], b_bin, label="b_bin", color="C0", where="post")
+pl.step(t[:-1], b_rel[0,:], label="b_rel", color="C0", linestyle="dashed", where="post")
+pl.step(t[:-1], b_bin[0,:], label="b_bin", color="C0", where="post")
 pl.xlabel("t")
 pl.ylabel("b")
 pl.legend(loc="upper left")

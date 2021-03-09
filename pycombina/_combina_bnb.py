@@ -105,7 +105,8 @@ class CombinaBnB():
 
         else:
 
-            b_bin_pre = int(self._binapprox_p.b_bin_pre[np.where(self._binapprox_p.b_bin_pre == 1)])
+            b_bin_pre = int(np.where(self._binapprox_p.b_bin_pre == 1)[0])
+
         self._bnb_solver = CombinaBnBSolver( \
                 self._binapprox_p.dt.tolist(), \
                 self._binapprox_p.b_rel.tolist(), \
@@ -210,3 +211,4 @@ class CombinaBnB():
         self._setup_warm_start(use_warm_start = use_warm_start)
         self._run_solver(use_warm_start = use_warm_start, **kwargs)
         self._set_solution()
+

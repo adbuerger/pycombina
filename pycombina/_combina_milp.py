@@ -78,14 +78,6 @@ class CombinaMILP():
         self._model = gp.Model("Combinatorial Integral Approximation MILP")
 
 
-    def _welcome_prompt_milp(self):
-
-        print("-----------------------------------------------------------")
-        print("                                                           ")
-        print("                  pycombina MILP                           ")
-        print("                                                           ")
-
-
     def _setup_model_variables(self):
 
         print("\n  - Optimization variables ... ", end = "", flush = True)
@@ -266,21 +258,21 @@ class CombinaMILP():
 
         for i in range(self._binapprox_p.n_c):
 
-            for k in range(self._binapprox_p.n_t):
+            for k in range(1,self._binapprox_p.n_t):
 
-                if dt_sums[0][k] <= self._binapprox_p.min_up_times[i]:  
+                if dt_sums[0][k-1] < self._binapprox_p.min_up_times[i]:  
                     self._model.addLConstr(gp.LinExpr([1.0, -1.0], [self._b_bin_sym[(i,k)], \
                         self._b_bin_sym[(i,0)]]), gp.GRB.GREATER_EQUAL, 0.0)
 
             for j in range(1,self._binapprox_p.n_t):
 
-                for k in range(j,self._binapprox_p.n_t):
+                for k in range(j+1,self._binapprox_p.n_t):
 
-                    if dt_sums[j][k] <= self._binapprox_p.min_up_times[i]:  
+                    if dt_sums[j][k-1] < self._binapprox_p.min_up_times[i]:  
                         self._model.addLConstr(gp.LinExpr([1.0, -1.0, 1.0], [self._b_bin_sym[(i,k)], \
                             self._b_bin_sym[(i,j)], self._b_bin_sym[(i,j-1)]]), gp.GRB.GREATER_EQUAL, 0.0)
 
-                    if dt_sums[j][k] <= self._binapprox_p.min_down_times[i]:
+                    if dt_sums[j][k-1] < self._binapprox_p.min_down_times[i]:
                         self._model.addLConstr(gp.LinExpr([1.0, 1.0, -1.0], [self._b_bin_sym[(i,k)], \
                             self._b_bin_sym[(i,j-1)], self._b_bin_sym[(i,j)]]), gp.GRB.LESS_EQUAL, 1.0)
 
@@ -335,13 +327,11 @@ class CombinaMILP():
 
 
         print("\nModel set up finished after", \
-            round(time.time() - start_time, 2), "seconds")
-        print("\n-----------------------------------------------------------\n")
+            round(time.time() - start_time, 2), "seconds\n")
 
 
     def __init__(self, binapprox: BinApprox) -> None:
 
-        self._welcome_prompt_milp()
         self._apply_preprocessing(binapprox)
         self._initialize_milp()
         self._setup_milp(binapprox)
@@ -415,4 +405,5 @@ class CombinaMILP():
         self._retrieve_solutions()
         self._set_solution()
 
-        print("\n-----------------------------------------------------------")
+        print("\n")
+
