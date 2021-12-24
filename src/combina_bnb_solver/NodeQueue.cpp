@@ -20,19 +20,18 @@
  *
  */
 
-#include <algorithm>
-#include <iterator>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "NodeQueue.hpp"
 #include "queues/BestFirstNodeQueue.hpp"
 #include "queues/BestThenDiveNodeQueue.hpp"
 #include "queues/DepthFirstNodeQueue.hpp"
 #include "queues/DynamicBacktrackingNodeQueue.hpp"
 
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 // data structures for type registry
 static std::map<std::string, NodeQueueFactory> type_registry;
@@ -74,7 +73,7 @@ NodeQueuePtr NodeQueue::create(CombinaBnBSolver* solver, std::string type) {
  * \param [in] factory factory function for the new type.
  * \param [in] make_default indicates that the new type should be made
  *      the new default type.
- * 
+ *
  * \note The first type to be registered is always made the default
  *      type, regardless of whether make_default is set.
  */
@@ -83,7 +82,7 @@ void NodeQueue::register_type(const std::string& type, const NodeQueueFactory& f
     if(make_default || default_type_name.empty()) {
         default_type_name = type;
     }
-    
+
     type_names.clear();
     std::transform(type_registry.cbegin(), type_registry.cend(), std::back_inserter(type_names), [](const auto& entry) {
         return entry.first;
