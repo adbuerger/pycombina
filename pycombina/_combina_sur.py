@@ -20,6 +20,7 @@
 
 import numpy as np
 import time
+from typing import Any, Dict
 
 from ._binary_approximation import BinApprox, BinApproxPreprocessed
 
@@ -36,15 +37,20 @@ class CombinaSUR():
 
     '''
 
-    _solver_status = {
+    _solver_status: Dict[int, str] = {
 
         1: "Initialized",
         2: "Optimal solution found",
     }
 
 
+    def __init__(self, binapprox: BinApprox) -> None:
+
+        self._setup_sur(binapprox)
+
+
     @property
-    def status(self):
+    def status(self) -> str:
 
         try:
             return self._solver_status[self._sur_status]
@@ -60,7 +66,7 @@ class CombinaSUR():
         self._binapprox_p = BinApproxPreprocessed(binapprox)
 
 
-    def _set_sur_status(self, sur_status):
+    def _set_sur_status(self, sur_status) -> None:
 
         self._sur_status = sur_status
 
@@ -71,12 +77,7 @@ class CombinaSUR():
         self._set_sur_status(sur_status = 1)
 
 
-    def __init__(self, binapprox: BinApprox) -> None:
-
-        self._setup_sur(binapprox)
-
- 
-    def solve(self, *args, **kwargs):
+    def solve(self, *args: Any, **kwargs: Any) -> None:
 
         '''
         Solve the combinatorial integral approximation problem.
@@ -88,7 +89,7 @@ class CombinaSUR():
         self._set_sur_status(sur_status = 2)
 
 
-    def _run_sur(self):
+    def _run_sur(self) -> None:
 
         print("Running Sum-up-rounding ... ", end = "", flush = True)
 
@@ -104,7 +105,7 @@ class CombinaSUR():
 
             for j in range(self._binapprox_p.n_c):
 
-                eta_i[j] = eta_i[j] + self._binapprox_p.b_rel[j][i] * self._binapprox_p.dt[i] 
+                eta_i[j] = eta_i[j] + self._binapprox_p.b_rel[j][i] * self._binapprox_p.dt[i]
 
                 if (eta_i[j] > eta_i[b_active]):
 
@@ -112,9 +113,9 @@ class CombinaSUR():
 
             b_bin[b_active][i] = 1
 
-            eta_i[b_active] =  eta_i[b_active] - 1 * self._binapprox_p.dt[i] 
+            eta_i[b_active] =  eta_i[b_active] - 1 * self._binapprox_p.dt[i]
             eta = max(eta, np.abs(eta_i).max())
-        
+
         self._binapprox_p._b_bin = b_bin
         self._binapprox_p._eta = eta
 
@@ -125,9 +126,8 @@ class CombinaSUR():
         print("\n")
 
 
-    def _set_solution(self):
+    def _set_solution(self) -> None:
 
         self._binapprox_p.inflate_solution()
         self._binapprox.set_b_bin(self._binapprox_p.b_bin)
         self._binapprox.set_eta(self._binapprox_p.eta)
-
