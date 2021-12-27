@@ -24,6 +24,6 @@ jobs:
     - name: Install packages via pip
       run: pip install numpy pytest
     - name: Build and install
-      run: python setup.py install
+      run: pip install -e .
     - name: Test
       run: pytest -v test
