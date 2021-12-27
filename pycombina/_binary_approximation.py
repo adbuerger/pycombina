@@ -21,7 +21,6 @@
 import os
 import warnings
 import numpy as np
-import numpy.matlib as npm
 from typing import Union
 
 from abc import ABC
@@ -726,8 +725,7 @@ class BinApprox(BinApproxBase):
             b_bin_valid = b_bin_valid.T
 
         idx_interval = np.logical_and(self.t[:-1] >= dt[0], self.t[:-1] < dt[1])
-        self._b_valid[:, idx_interval] = \
-            npm.repmat(b_bin_valid, 1, np.sum(idx_interval))
+        self._b_valid[:, idx_interval] = b_bin_valid
 
 
     def set_valid_control_transitions(self, b_i: int, \
