@@ -88,10 +88,10 @@ class CMakeBuild(build_ext):
 setup(
 
     name='pycombina',
-    version='0.3.2',
+    version='0.3.3',
 
     author='Adrian Buerger, Clemens Zeile',
-    author_email='adrian.buerger@hs-karlsruhe.de, clemens.zeile@ovgu.de',
+    author_email='adrian.buerger@h-ka.de, clemens.zeile@ovgu.de',
     
     description='Python module for solving Combinatorial Integral Approximation problems',
 
