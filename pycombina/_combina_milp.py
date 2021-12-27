@@ -32,7 +32,7 @@ class CombinaMILP():
     using mixed-integer linear programming and Gurobi.
 
     The following options of :class:`pycombina.BinApprox` are supported:
-    
+
     - Maximum number of switches
     - Minimum up-times
     - Minimum down-times
@@ -85,7 +85,7 @@ class CombinaMILP():
         self._eta_sym = self._model.addVar(vtype = "C", name = "eta")
 
         if (self._binapprox_p.cia_norm == "column_sum_norm") or (self._binapprox_p.cia_norm == "row_sum_norm"):
-            
+
             self._eta_sym_indiv = {}
 
             for i in range(self._binapprox_p.n_c):
@@ -94,12 +94,12 @@ class CombinaMILP():
 
                     self._eta_sym_indiv[(i,j)] = self._model.addVar( \
                         vtype = "C", name = "eta_sym_indiv".format((i,j)))
-                 
+
         self._b_bin_sym = {}
         self._s = {}
 
         for i in range(self._binapprox_p.n_c):
-        
+
             for j in range(-1,self._binapprox_p.n_t-1):
 
                 self._s[(i,j)] = self._model.addVar(vtype = "C", \
@@ -118,11 +118,11 @@ class CombinaMILP():
 
         for i in range(self._binapprox_p.n_c):
 
-            if self._binapprox_p.b_bin_pre.sum() == 1: 
+            if self._binapprox_p.b_bin_pre.sum() == 1:
 
                 self._model.addConstr(self._b_bin_sym[(i,-1)] == int(self._binapprox_p.b_bin_pre[i]))
 
-        
+
     def _setup_objective(self):
 
         print("  - Objective ... ", end = "", flush = True)
@@ -209,7 +209,7 @@ class CombinaMILP():
 
         print("done")
 
-         
+
     def _setup_maximum_switching_constraints(self):
 
         print("  - Maximum switching constraints ... ", end = "", flush = True)
@@ -230,14 +230,14 @@ class CombinaMILP():
                 self._model.addConstr((self._b_bin_sym[(i,-1)] - self._b_bin_sym[(i,self._binapprox_p.n_t-1)] + \
                     gp.quicksum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i)
                 self._model.addConstr((self._b_bin_sym[(i,self._binapprox_p.n_t-1)] - self._b_bin_sym[(i,-1)] + \
-                    gp.quicksum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i) 
+                    gp.quicksum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i)
 
             else:
 
                 self._model.addConstr((1 - self._b_bin_sym[(i,-1)] - self._b_bin_sym[(i,self._binapprox_p.n_t-1)] + \
                     gp.quicksum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)
                 self._model.addConstr((self._b_bin_sym[(i,-1)] + self._b_bin_sym[(i,self._binapprox_p.n_t-1)] - 1 + \
-                    gp.quicksum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)  
+                    gp.quicksum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)
 
         print("done")
 
@@ -246,7 +246,7 @@ class CombinaMILP():
 
         print("  - Dwell time constraints ... ", end = "", flush = True)
 
-        dt_sums = np.zeros((self._binapprox_p.n_t, self._binapprox_p.n_t)) 
+        dt_sums = np.zeros((self._binapprox_p.n_t, self._binapprox_p.n_t))
 
         for j in range(self._binapprox_p.n_t):
 
@@ -254,13 +254,13 @@ class CombinaMILP():
 
                 for k in range(j+1,self._binapprox_p.n_t):
 
-                    dt_sums[j][k] =  dt_sums[j][k-1] + self._binapprox_p.dt[k] 
+                    dt_sums[j][k] =  dt_sums[j][k-1] + self._binapprox_p.dt[k]
 
         for i in range(self._binapprox_p.n_c):
 
             for k in range(1,self._binapprox_p.n_t):
 
-                if dt_sums[0][k-1] < self._binapprox_p.min_up_times[i]:  
+                if dt_sums[0][k-1] < self._binapprox_p.min_up_times[i]:
                     self._model.addLConstr(gp.LinExpr([1.0, -1.0], [self._b_bin_sym[(i,k)], \
                         self._b_bin_sym[(i,0)]]), gp.GRB.GREATER_EQUAL, 0.0)
 
@@ -268,7 +268,7 @@ class CombinaMILP():
 
                 for k in range(j+1,self._binapprox_p.n_t):
 
-                    if dt_sums[j][k-1] < self._binapprox_p.min_up_times[i]:  
+                    if dt_sums[j][k-1] < self._binapprox_p.min_up_times[i]:
                         self._model.addLConstr(gp.LinExpr([1.0, -1.0, 1.0], [self._b_bin_sym[(i,k)], \
                             self._b_bin_sym[(i,j)], self._b_bin_sym[(i,j-1)]]), gp.GRB.GREATER_EQUAL, 0.0)
 
@@ -288,7 +288,7 @@ class CombinaMILP():
             for j in range(1,self._binapprox_p.n_t):
 
                 self._model.addConstr(1 >= self._b_bin_sym[(i,j)] + \
-                    gp.quicksum(self._b_bin_sym[(l,j-1)] for l in range(self._binapprox_p.n_c) if self._binapprox_p.b_adjacencies[l][i] == 0)) 
+                    gp.quicksum(self._b_bin_sym[(l,j-1)] for l in range(self._binapprox_p.n_c) if self._binapprox_p.b_adjacencies[l][i] == 0))
 
         print("done")
 
@@ -314,7 +314,7 @@ class CombinaMILP():
         print("Setting up MILP model for Gurobi:")
 
         start_time = time.time()
-        
+
         self._setup_model_variables()
         self._setup_b_bin_pre_variables()
         self._setup_objective()
@@ -406,4 +406,3 @@ class CombinaMILP():
         self._set_solution()
 
         print("\n")
-

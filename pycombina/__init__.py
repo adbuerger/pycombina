@@ -41,4 +41,3 @@ try:
     from ._combina_sur import CombinaSUR
 except ImportError:
     print("- Sum-Up-Rounding solver extension not found, CombinaSUR disabled.\n")
-
