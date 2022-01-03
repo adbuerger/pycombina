@@ -74,7 +74,7 @@ static void close_file(std::ostream& stream) {
 }
 
 // color code table for node states (adopted from Minotaur)
-static const unsigned int color_codes[] = {
+static constexpr unsigned int color_codes[] = {
     4,  // NODE_ACTIVE
     8,  // NODE_SELECTED
     6,  // NODE_FATHOMED
@@ -83,13 +83,18 @@ static const unsigned int color_codes[] = {
     2,  // NODE_INTEGER
 };
 
+constexpr unsigned int to_color_code(const NodeState &ns){
+    const auto idx = static_cast<typename std::underlying_type<NodeState>::type>(ns);
+    return color_codes[idx];
+}
+
 
 // macro determining whether node state is terminal
-#define NODE_STATE_TERMINAL(x) (x >= NODE_FATHOMED)
+#define NODE_STATE_TERMINAL(x) (x >= NodeState::NODE_FATHOMED)
 
 
 // informative message for each status
-static const char* const status_messages[] = {
+static constexpr const char* const status_messages[] = {
     nullptr,                    // NODE_ACTIVE
     nullptr,                    // NODE_SELECTED
     "fathomed by upper bound",  // NODE_FATHOMED
@@ -97,6 +102,11 @@ static const char* const status_messages[] = {
     "branching performed",      // NODE_SOLVED
     "solution found",           // NODE_INTEGER
 };
+
+constexpr const char* to_status_message(const NodeState &ns){
+    const auto idx = static_cast<typename std::underlying_type<NodeState>::type>(ns);
+    return status_messages[idx];
+}
 
 
 // lookup table for file extensions and compression methods
@@ -169,7 +179,7 @@ void VbcMonitor::on_start_search() {
 
     // create fake root node to satisfy VBC's need for a single root
     if(timing_) {
-        out_ << "00:00:00.00 N 0 1 " << color_codes[NODE_SOLVED] << std::endl
+        out_ << "00:00:00.00 N 0 1 " << to_color_code(NodeState::NODE_SOLVED) << std::endl
              << "00:00:00.00 I 1 \\ivirtual root node" << std::endl;
     }
     else {
@@ -201,7 +211,7 @@ void VbcMonitor::on_create(const NodePtr& node) {
         if(timing_) {
             clock_str = vbc_clock_string(timer_->secs() * dilate_);
 
-            out_ << clock_str << " N " << parent_num << ' ' << node_num << ' ' << color_codes[NODE_ACTIVE] << '\n'
+            out_ << clock_str << " N " << parent_num << ' ' << node_num << ' ' << to_color_code(NodeState::NODE_ACTIVE) << '\n'
                  << clock_str << " I " << node_num << ' '
                  << "\\inode " << node->get_seq_num()
                  << "\\nlower bound: " << node->get_lb()
@@ -223,7 +233,7 @@ void VbcMonitor::on_create(const NodePtr& node) {
 
 
 void VbcMonitor::on_select(const NodePtr& node) {
-    this->on_change(node, NODE_SELECTED);
+    this->on_change(node, NodeState::NODE_SELECTED);
 }
 
 
@@ -238,19 +248,19 @@ void VbcMonitor::on_change(const NodePtr& node, NodeState state) {
         node_num = node->get_seq_num() + 2;
 
         // determine color code and status message
-        color_code = color_codes[state];
-        status_msg = status_messages[state];
+        color_code = to_color_code(state);
+        status_msg = to_status_message(state);
 
         if(timing_) {
             // generate clock string
             clock_str = vbc_clock_string(timer_->secs() * dilate_);
-            
+
             // write color update, information string extension, and upper bound update
             out_ << clock_str << " P " << node_num << ' ' << color_code << '\n';
             if(status_msg) {
                 out_ << clock_str << " A " << node_num << " \\n" << status_msg << '\n';
             }
-            if(state == NODE_INTEGER) {
+            if(state == NodeState::NODE_INTEGER) {
                 out_ << clock_str << " U " << node->get_lb() << '\n';
             }
             out_.flush();
@@ -275,7 +285,7 @@ void VbcMonitor::on_stop_search() {
     // categorize remaining uncategorized nodes as active
     if(out_ && !timing_ && !cat_.empty()) {
         for(size_t node_num : cat_) {
-            out_ << "c " << node_num << ' ' << color_codes[NODE_ACTIVE] << '\n';
+            out_ << "c " << node_num << ' ' << to_color_code(NodeState::NODE_ACTIVE) << '\n';
         }
         out_.flush();
     }
