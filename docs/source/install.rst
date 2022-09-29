@@ -31,7 +31,7 @@ First, install the following packages via apt (to install packages via apt, you 
 
     apt install python3-pip python3-dev cmake g++ git
     
-Please note: Python version >= 3.5 is required to use pycombina. It is also possible to install pycombina in a Python virtual environment. 
+Please note: Python version >= 3.6 is required to use pycombina. It is also possible to install pycombina in a Python virtual environment. 
 
 Afterwards, clone the pycombina repository and the contained submodules by running: 
 
