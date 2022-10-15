@@ -18,9 +18,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with pycombina. If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np
-import gurobipy as gp
 import time
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import pulp
 
 from ._binary_approximation import BinApprox, BinApproxPreprocessed
 
@@ -32,7 +34,7 @@ class CombinaMILP():
     using mixed-integer linear programming and Gurobi.
 
     The following options of :class:`pycombina.BinApprox` are supported:
-    
+
     - Maximum number of switches
     - Minimum up-times
     - Minimum down-times
@@ -55,6 +57,12 @@ class CombinaMILP():
         11: "User interrupt"
     }
 
+    def __init__(self, binapprox: BinApprox) -> None:
+
+        self._model = pulp.LpProblem("CIA-MILP", pulp.LpMinimize)
+        self._apply_preprocessing(binapprox)
+        self._setup_milp(binapprox)
+
 
     @property
     def status(self):
@@ -66,6 +74,9 @@ class CombinaMILP():
             raise RuntimeError("Solver status undefined, this should not happen.\n"
                 + "Please contact the developers.")
 
+    @staticmethod
+    def _ij_names(imax: int, jmax: int, jmin: int = 0) -> List[str]:
+        return [(i,j) for i in range(imax) for j in range(jmin, jmax)]
 
     def _apply_preprocessing(self, binapprox: BinApprox) -> None:
 
@@ -75,41 +86,34 @@ class CombinaMILP():
 
     def _initialize_milp(self):
 
-        self._model = gp.Model("Combinatorial Integral Approximation MILP")
+        self._model = pulp.LpProblem("CIA-MILP")
 
 
     def _setup_model_variables(self):
 
         print("\n  - Optimization variables ... ", end = "", flush = True)
 
-        self._eta_sym = self._model.addVar(vtype = "C", name = "eta")
+        self._eta_sym = pulp.LpVariable(name="eta")
 
         if (self._binapprox_p.cia_norm == "column_sum_norm") or (self._binapprox_p.cia_norm == "row_sum_norm"):
-            
-            self._eta_sym_indiv = {}
 
-            for i in range(self._binapprox_p.n_c):
+            self._eta_sym_indiv = pulp.LpVariable.dicts(
+                "eta_sym_indiv_",
+                self._ij_names(self._binapprox_p.n_c, self._binapprox_p.n_t),
+            )
 
-                for j in range(self._binapprox_p.n_t):
-
-                    self._eta_sym_indiv[(i,j)] = self._model.addVar( \
-                        vtype = "C", name = "eta_sym_indiv".format((i,j)))
-                 
         self._b_bin_sym = {}
         self._s = {}
 
-        for i in range(self._binapprox_p.n_c):
-        
-            for j in range(-1,self._binapprox_p.n_t-1):
-
-                self._s[(i,j)] = self._model.addVar(vtype = "C", \
-                    name = "s_{0}".format((i,j)))
-
-                self._b_bin_sym[(i,j)] = self._model.addVar( \
-                    vtype = "B", name = "b_bin_{0}".format((i,j)))
-
-            self._b_bin_sym[(i, self._binapprox_p.n_t-1)] = self._model.addVar( \
-                vtype = "B", name = "b_bin_{0}".format((i,self._binapprox_p.n_t-1)))
+        self._s = pulp.LpVariable.dicts(
+            "s_",
+            self._ij_names(self._binapprox_p.n_c, self._binapprox_p.n_t-1, jmin=-1)
+        )
+        self._b_bin_sym = pulp.LpVariable.dicts(
+            "b_bin",
+            self._ij_names(self._binapprox_p.n_c, self._binapprox_p.n_t, jmin=-1),
+            cat=pulp.constants.LpBinary
+        )
 
         print("done")
 
@@ -118,16 +122,16 @@ class CombinaMILP():
 
         for i in range(self._binapprox_p.n_c):
 
-            if self._binapprox_p.b_bin_pre.sum() == 1: 
+            if self._binapprox_p.b_bin_pre.sum() == 1:
 
-                self._model.addConstr(self._b_bin_sym[(i,-1)] == int(self._binapprox_p.b_bin_pre[i]))
+                self._model += (self._b_bin_sym[(i,-1)] == int(self._binapprox_p.b_bin_pre[i]))
 
-        
+
     def _setup_objective(self):
 
         print("  - Objective ... ", end = "", flush = True)
 
-        self._model.setObjective(self._eta_sym)
+        self._model += self._eta_sym
 
         print("done")
 
@@ -140,16 +144,16 @@ class CombinaMILP():
 
             for i in range(self._binapprox_p.n_c):
 
-                lhs = gp.LinExpr()
+                lhs = 0.0
                 rhs = 0.0
 
                 for j in range(self._binapprox_p.n_t):
 
-                    lhs.addTerms(self._binapprox_p.dt[j], self._b_bin_sym[(i,j)])
+                    lhs += self._binapprox_p.dt[j] * self._b_bin_sym[(i,j)]
                     rhs += self._binapprox_p.dt[j] * self._binapprox_p.b_rel[i][j]
 
-                    self._model.addLConstr(lhs + self._eta_sym, gp.GRB.GREATER_EQUAL, rhs)
-                    self._model.addLConstr(lhs - self._eta_sym, gp.GRB.LESS_EQUAL, rhs)
+                    self._model += (lhs + self._eta_sym >= rhs)
+                    self._model += (lhs - self._eta_sym <= rhs)
 
                     # self._model.addConstr(self._eta_sym >= sum( \
                     #     [self._binapprox_p.dt[k] * (self._binapprox_p.b_rel[i][k] - self._b_bin_sym[(i,k)]) for k in range(j+1)]))
@@ -160,41 +164,43 @@ class CombinaMILP():
 
             for i in range(self._binapprox_p.n_c):
 
-                lhs = gp.LinExpr()
+                lhs = 0.0
                 rhs = 0.0
 
                 for j in range(self._binapprox_p.n_t):
 
-                    lhs.addTerms(self._binapprox_p.dt[j], self._b_bin_sym[(i,j)])
+                    lhs += self._binapprox_p.dt[j] * self._b_bin_sym[(i,j)]
                     rhs += self._binapprox_p.dt[j] * self._binapprox_p.b_rel[i][j]
 
-                    self._model.addLConstr(lhs + self._eta_sym_indiv[(i,j)], gp.GRB.GREATER_EQUAL, rhs)
-                    self._model.addLConstr(lhs - self._eta_sym_indiv[(i,j)], gp.GRB.LESS_EQUAL, rhs)
+                    self._model += (lhs + self._eta_sym_indiv[(i,j)] >= rhs)
+                    self._model += (lhs - self._eta_sym_indiv[(i,j)] <= rhs)
 
             for j in range(self._binapprox_p.n_t):
 
-                self._model.addConstr(self._eta_sym >= gp.quicksum( \
-                        [self._eta_sym_indiv[(i,j)]  for i in range(self._binapprox_p.n_c)]))
+                self._model += (
+                    self._eta_sym >= pulp.lpSum([self._eta_sym_indiv[(i,j)] for i in range(self._binapprox_p.n_c)])
+                )
 
         elif self._binapprox_p.cia_norm == "row_sum_norm":
 
             for i in range(self._binapprox_p.n_c):
 
-                lhs = gp.LinExpr()
+                lhs = 0.0
                 rhs = 0.0
 
                 for j in range(self._binapprox_p.n_t):
 
-                    lhs.addTerms(self._binapprox_p.dt[j], self._b_bin_sym[(i,j)])
+                    lhs += self._binapprox_p.dt[j] * self._b_bin_sym[(i,j)]
                     rhs += self._binapprox_p.dt[j] * self._binapprox_p.b_rel[i][j]
 
-                    self._model.addLConstr(lhs + self._eta_sym_indiv[(i,j)], gp.GRB.GREATER_EQUAL, rhs)
-                    self._model.addLConstr(lhs - self._eta_sym_indiv[(i,j)], gp.GRB.LESS_EQUAL, rhs)
+                    self._model += (lhs + self._eta_sym_indiv[(i,j)] >= rhs)
+                    self._model += (lhs - self._eta_sym_indiv[(i,j)] <= rhs)
 
             for i in range(self._binapprox_p.n_c):
 
-                self._model.addConstr(self._eta_sym >= gp.quicksum( \
-                        [self._eta_sym_indiv[(i,j)]  for j in range(self._binapprox_p.n_t)]))
+                self._model += (
+                    self._eta_sym >= pulp.lpSum([self._eta_sym_indiv[(i,j)] for j in range(self._binapprox_p.n_t)])
+                )
 
         print("done")
 
@@ -205,11 +211,13 @@ class CombinaMILP():
 
         for j in range(self._binapprox_p.n_t):
 
-            self._model.addConstr(gp.quicksum([self._b_bin_sym[(i,j)] for i in range(self._binapprox_p.n_c)]) == 1)
+            self._model += (
+                pulp.lpSum([self._b_bin_sym[(i,j)] for i in range(self._binapprox_p.n_c)]) == 1
+            )
 
         print("done")
 
-         
+
     def _setup_maximum_switching_constraints(self):
 
         print("  - Maximum switching constraints ... ", end = "", flush = True)
@@ -218,26 +226,22 @@ class CombinaMILP():
 
             for j in range(-1,self._binapprox_p.n_t-1):
 
-                self._model.addConstr(self._s[(i,j)] >= self._b_bin_sym[(i,j)] - self._b_bin_sym[(i,j+1)])
-                self._model.addConstr(self._s[(i,j)] >= -self._b_bin_sym[(i,j)] + self._b_bin_sym[(i,j+1)])
-                self._model.addConstr(self._s[(i,j)] <= self._b_bin_sym[(i,j)] + self._b_bin_sym[(i,j+1)])
-                self._model.addConstr(self._s[(i,j)] <= 2 - self._b_bin_sym[(i,j)] - self._b_bin_sym[(i,j+1)])
+                self._model += (self._s[(i,j)] >= self._b_bin_sym[(i,j)] - self._b_bin_sym[(i,j+1)])
+                self._model += (self._s[(i,j)] >= -self._b_bin_sym[(i,j)] + self._b_bin_sym[(i,j+1)])
+                self._model += (self._s[(i,j)] <= self._b_bin_sym[(i,j)] + self._b_bin_sym[(i,j+1)])
+                self._model += (self._s[(i,j)] <= 2 - self._b_bin_sym[(i,j)] - self._b_bin_sym[(i,j+1)])
 
         for i, sigma_max_i in enumerate(self._binapprox_p.n_max_switches):
 
             if sigma_max_i % 2 == 0:
 
-                self._model.addConstr((self._b_bin_sym[(i,-1)] - self._b_bin_sym[(i,self._binapprox_p.n_t-1)] + \
-                    gp.quicksum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i)
-                self._model.addConstr((self._b_bin_sym[(i,self._binapprox_p.n_t-1)] - self._b_bin_sym[(i,-1)] + \
-                    gp.quicksum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i) 
+                self._model += ((self._b_bin_sym[(i,-1)] - self._b_bin_sym[(i,self._binapprox_p.n_t-1)] + pulp.lpSum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i)
+                self._model += ((self._b_bin_sym[(i,self._binapprox_p.n_t-1)] - self._b_bin_sym[(i,-1)] + pulp.lpSum([self._s[(i,j)] for j in range(-1,self._binapprox_p.n_t-1)])) <= sigma_max_i)
 
             else:
 
-                self._model.addConstr((1 - self._b_bin_sym[(i,-1)] - self._b_bin_sym[(i,self._binapprox_p.n_t-1)] + \
-                    gp.quicksum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)
-                self._model.addConstr((self._b_bin_sym[(i,-1)] + self._b_bin_sym[(i,self._binapprox_p.n_t-1)] - 1 + \
-                    gp.quicksum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)  
+                self._model += ((1 - self._b_bin_sym[(i,-1)] - self._b_bin_sym[(i,self._binapprox_p.n_t-1)] + pulp.lpSum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)
+                self._model += ((self._b_bin_sym[(i,-1)] + self._b_bin_sym[(i,self._binapprox_p.n_t-1)] - 1 + pulp.lpSum([self._s[(i,j)] for j in range(-1, self._binapprox_p.n_t-1)])) <= sigma_max_i)
 
         print("done")
 
@@ -246,7 +250,7 @@ class CombinaMILP():
 
         print("  - Dwell time constraints ... ", end = "", flush = True)
 
-        dt_sums = np.zeros((self._binapprox_p.n_t, self._binapprox_p.n_t)) 
+        dt_sums = np.zeros((self._binapprox_p.n_t, self._binapprox_p.n_t))
 
         for j in range(self._binapprox_p.n_t):
 
@@ -254,27 +258,24 @@ class CombinaMILP():
 
                 for k in range(j+1,self._binapprox_p.n_t):
 
-                    dt_sums[j][k] =  dt_sums[j][k-1] + self._binapprox_p.dt[k] 
+                    dt_sums[j][k] =  dt_sums[j][k-1] + self._binapprox_p.dt[k]
 
         for i in range(self._binapprox_p.n_c):
 
             for k in range(1,self._binapprox_p.n_t):
 
-                if dt_sums[0][k-1] < self._binapprox_p.min_up_times[i]:  
-                    self._model.addLConstr(gp.LinExpr([1.0, -1.0], [self._b_bin_sym[(i,k)], \
-                        self._b_bin_sym[(i,0)]]), gp.GRB.GREATER_EQUAL, 0.0)
+                if dt_sums[0][k-1] < self._binapprox_p.min_up_times[i]:
+                    self._model += (self._b_bin_sym[(i,k)] - self._b_bin_sym[(i,0)] >= 0.0)
 
             for j in range(1,self._binapprox_p.n_t):
 
                 for k in range(j+1,self._binapprox_p.n_t):
 
-                    if dt_sums[j][k-1] < self._binapprox_p.min_up_times[i]:  
-                        self._model.addLConstr(gp.LinExpr([1.0, -1.0, 1.0], [self._b_bin_sym[(i,k)], \
-                            self._b_bin_sym[(i,j)], self._b_bin_sym[(i,j-1)]]), gp.GRB.GREATER_EQUAL, 0.0)
+                    if dt_sums[j][k-1] < self._binapprox_p.min_up_times[i]:
+                        self._model += (self._b_bin_sym[(i,k)] - self._b_bin_sym[(i,j)] + self._b_bin_sym[(i,j-1)] >= 0.0)
 
                     if dt_sums[j][k-1] < self._binapprox_p.min_down_times[i]:
-                        self._model.addLConstr(gp.LinExpr([1.0, 1.0, -1.0], [self._b_bin_sym[(i,k)], \
-                            self._b_bin_sym[(i,j-1)], self._b_bin_sym[(i,j)]]), gp.GRB.LESS_EQUAL, 1.0)
+                        self._model += (self._b_bin_sym[(i,k)] + self._b_bin_sym[(i,j-1)] - self._b_bin_sym[(i,j)] <= 1.0)
 
         print("done")
 
@@ -287,8 +288,8 @@ class CombinaMILP():
 
             for j in range(1,self._binapprox_p.n_t):
 
-                self._model.addConstr(1 >= self._b_bin_sym[(i,j)] + \
-                    gp.quicksum(self._b_bin_sym[(l,j-1)] for l in range(self._binapprox_p.n_c) if self._binapprox_p.b_adjacencies[l][i] == 0)) 
+                self._model += (1 >= self._b_bin_sym[(i,j)] +
+                    pulp.lpSum([self._b_bin_sym[(l,j-1)] for l in range(self._binapprox_p.n_c) if self._binapprox_p.b_adjacencies[l][i] == 0]))
 
         print("done")
 
@@ -303,7 +304,7 @@ class CombinaMILP():
 
                 if self._binapprox_p.b_valid[i][j] == 0:
 
-                    self._model.addConstr(self._b_bin_sym[(i,j)]  == 0)
+                    self._model += (self._b_bin_sym[(i,j)] == 0)
 
         print("done")
 
@@ -314,7 +315,7 @@ class CombinaMILP():
         print("Setting up MILP model for Gurobi:")
 
         start_time = time.time()
-        
+
         self._setup_model_variables()
         self._setup_b_bin_pre_variables()
         self._setup_objective()
@@ -351,30 +352,21 @@ class CombinaMILP():
             #         self._b_bin_sym[(i,j)].start = self._binapprox_p._b_bin[i][j]
 
 
-    def _run_solver(self, gurobi_opts: dict) -> None:
+    def _run_solver(self, solver: str, opts: Dict[str, Any]) -> None:
 
-        for gurobi_opt in gurobi_opts.keys():
-
-            try:
-
-                self._model.setParam(gurobi_opt, gurobi_opts[gurobi_opt])
-
-            except ValueError:
-
-                raise ValueError("Values of solver options must be of numerical type.")
-
-        self._model.optimize()
+        solver = pulp.getSolver(solver)
+        self._model.solve(solver)
 
 
     def _retrieve_solutions(self):
 
-        self._binapprox_p._eta = self._model.getVarByName(self._eta_sym.VarName).x
+        self._binapprox_p._eta = self._eta_sym.varValue
         self._binapprox_p._b_bin = []
 
         for i in range(self._binapprox_p.n_c):
 
-            self._binapprox_p._b_bin.append([abs(round(self._model.getVarByName( \
-                self._b_bin_sym[(i,j)].VarName).x)) for j in range(self._binapprox_p.n_t)])
+            self._binapprox_p._b_bin.append([np.abs(np.round(
+                self._b_bin_sym[(i,j)].varValue)) for j in range(self._binapprox_p.n_t)])
 
 
     def _set_solution(self):
@@ -384,15 +376,19 @@ class CombinaMILP():
         self._binapprox.set_eta(self._binapprox_p.eta)
 
 
-    def solve(self, use_warm_start: bool = False , gurobi_opts: dict = {}):
-
+    def solve(
+        self,
+        solver: str = "PULP_CBC_CMD",
+        use_warm_start: bool = False,
+        opts: Optional[Dict[str, Any]] = None
+    ) -> None:
         '''
         Solve the combinatorial integral approximation problem.
 
         :param use_warm_start: If a binary solution is already contained in the
                                given binary approximation problem, use it to
                                warm-start the solver.
-        :param gurobi_opts: Gurobi solver options (cf. Gurobi manual), examples are:
+        :param opts: Solver options. Examples for Gurobi are:
 
             - **MIPGap**: relative MIP optimality gap; when solution found fulfilling
               the gap, Gurobi stops. Default: 0.0001
@@ -400,10 +396,12 @@ class CombinaMILP():
 
         '''
 
+        if opts is None:
+            opts = {}
+
         self._setup_warm_start(use_warm_start = use_warm_start)
-        self._run_solver(gurobi_opts = gurobi_opts)
+        self._run_solver(solver=solver, opts = opts)
         self._retrieve_solutions()
         self._set_solution()
 
         print("\n")
-

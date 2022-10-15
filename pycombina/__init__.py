@@ -23,14 +23,11 @@ import os
 from ._binary_approximation import BinApprox
 
 try:
-    import gurobipy
-
-    if gurobipy.gurobi.version() < (8, 0, 0):
-        raise ImportError
+    import pulp
 
     from ._combina_milp import CombinaMILP
 except ImportError:
-    print("- gurobipy version > 8.0.0 not found, CombinaMILP disabled.\n")
+    print("- pulp not found, CombinaMILP disabled.\n")
 
 try:
     from ._combina_bnb import CombinaBnB
@@ -41,4 +38,3 @@ try:
     from ._combina_sur import CombinaSUR
 except ImportError:
     print("- Sum-Up-Rounding solver extension not found, CombinaSUR disabled.\n")
-
