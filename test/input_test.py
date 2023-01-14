@@ -26,7 +26,7 @@ from pycombina._binary_approximation import BinApprox
 
 class InputTest(unittest.TestCase):
 
-    def test_single_control_sos1_violated(self):
+    def test_single_control_sos1_violated(self) -> None:
 
         with warnings.catch_warnings(record=True) as w:
             T = np.array([0, 1, 2, 3])
@@ -37,7 +37,7 @@ class InputTest(unittest.TestCase):
             self.assertIs(w[0].category, UserWarning)
 
 
-    def test_manual_extend_sos1_fulfilled(self):
+    def test_manual_extend_sos1_fulfilled(self) -> None:
         for run_idx in range(50):
             num_ctrl = np.random.randint(1, 100)
             num_time = np.random.randint(10, 1000)
@@ -52,7 +52,7 @@ class InputTest(unittest.TestCase):
                 self.assertEqual(len(w), 0)
 
 
-    def test_manual_scale_sos1_fulfilled(self):
+    def test_manual_scale_sos1_fulfilled(self) -> None:
         for run_idx in range(50):
             num_ctrl = np.random.randint(2, 100)
             num_time = np.random.randint(10, 1000)
@@ -65,15 +65,15 @@ class InputTest(unittest.TestCase):
                 BinApprox(T, b_rel)
                 self.assertEqual(len(w), 0)
 
-    def test_single_control_invalid_dimensions(self):
+    def test_single_control_invalid_dimensions(self) -> None:
 
         T = np.array([0, 1, 2, 3])
         b_rel = np.array([0.1, 0.3, 0.2, 0.5])
 
         self.assertRaises(ValueError, BinApprox, T, b_rel)
 
-        
-    def test_single_control_T_not_increasing(self):
+
+    def test_single_control_T_not_increasing(self) -> None:
 
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([0.1, 0.3, 0.2])
@@ -81,7 +81,7 @@ class InputTest(unittest.TestCase):
         self.assertRaises(ValueError, BinApprox, T, b_rel)
 
 
-    def test_single_control_b_rel_not_relaxed_binary_solution(self):
+    def test_single_control_b_rel_not_relaxed_binary_solution(self) -> None:
 
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([0.1, 0.3, 1.2])
@@ -89,7 +89,7 @@ class InputTest(unittest.TestCase):
         self.assertRaises(ValueError, BinApprox, T, b_rel)
 
 
-    def test_multiple_controls_sos1_fulfilled_manual(self):
+    def test_multiple_controls_sos1_fulfilled_manual(self) -> None:
 
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([[0.1, 0.3, 0.3], [0.9, 0.7, 0.7]])
@@ -97,7 +97,7 @@ class InputTest(unittest.TestCase):
         self.assertRaises(ValueError, BinApprox, T, b_rel)
 
 
-    def test_multiple_controls_sos1_violated(self):
+    def test_multiple_controls_sos1_violated(self) -> None:
 
         T = np.array([0, 2, 1, 3])
         b_rel = np.array([[0.1, 0.3, 0.3], [0.3, 0.4, 0.5]])
@@ -108,4 +108,3 @@ class InputTest(unittest.TestCase):
 if __name__ == '__main__':
 
     unittest.main()
-

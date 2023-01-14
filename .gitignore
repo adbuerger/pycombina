@@ -13,3 +13,5 @@ doc/build/*
 dist/
 callgrind.out*
 massif.out*
+.vscode/
+

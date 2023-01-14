@@ -20,17 +20,18 @@
 
 import signal
 import numpy as np
+from typing import Any, Dict, Optional
 
 from ._binary_approximation import BinApprox, BinApproxPreprocessed
 from ._combina_bnb_solver import CombinaBnBSolver
 
 
 def handle_interrupt(signum, frame):
-    
+
     # pretty hacky, should be improved
 
     if signum == signal.SIGINT:
-    
+
         a.stop()
 
 
@@ -53,7 +54,7 @@ class CombinaBnB():
 
     '''
 
-    _solver_status = {
+    _solver_status: Dict[int, str] = {
 
         1: "Initialized",
         2: "Optimal solution found",
@@ -63,8 +64,14 @@ class CombinaBnB():
     }
 
 
+    def __init__(self, binapprox: BinApprox) -> None:
+
+        self._bnb_solver: Optional[CombinaBnBSolver] = None
+        self._setup_bnb(binapprox)
+
+
     @property
-    def status(self):
+    def status(self) -> str:
 
         '''
         Exit status of the Branch-and-Bound solver.
@@ -78,13 +85,14 @@ class CombinaBnB():
                 + "Please contact the developers.")
 
     @property
-    def solution_time(self):
+    def solution_time(self) -> float:
 
         '''
         Solution time of the Branch-and-Bound solver.
         '''
+        assert (solver := self._bnb_solver) is not None
 
-        return self._bnb_solver.get_solution_time()
+        return solver.get_solution_time()
 
 
     @staticmethod
@@ -134,11 +142,6 @@ class CombinaBnB():
         self._initialize_bnb()
 
 
-    def __init__(self, binapprox: BinApprox) -> None:
-
-        self._setup_bnb(binapprox)
-
-
     def _setup_warm_start(self, use_warm_start: bool) -> None:
 
         if use_warm_start:
@@ -146,17 +149,19 @@ class CombinaBnB():
             raise NotImplementedError("Warm-starting not yet implemented.")
 
 
-    def _run_solver(self, use_warm_start: bool, **kwargs) -> None:
+    def _run_solver(self, use_warm_start: bool, **kwargs: Any) -> None:
+        assert (solver := self._bnb_solver) is not None
+
         try:
-            
-            self._bnb_solver.run(use_warm_start, **kwargs)
+
+            solver.run(use_warm_start, **kwargs)
 
         except KeyboardInterrupt:
 
-            self._bnb_solver.stop()
+            solver.stop()
 
-        self._binapprox_p.set_b_bin(self._bnb_solver.get_b_bin())
-        self._binapprox_p.set_eta(self._bnb_solver.get_eta())
+        self._binapprox_p.set_b_bin(solver.get_b_bin())
+        self._binapprox_p.set_eta(solver.get_eta())
 
 
     def _set_solution(self):
@@ -166,7 +171,7 @@ class CombinaBnB():
         self._binapprox.set_eta(self._binapprox_p.eta)
 
 
-    def solve(self, use_warm_start: bool = False , **kwargs):
+    def solve(self, use_warm_start: bool = False, **kwargs: Any):
 
         '''
         Solve the combinatorial integral approximation problem.
@@ -204,11 +209,10 @@ class CombinaBnB():
 
         :param verbosity: Determine how much solver information is written to
                           the console, possible values are 0 (no output),
-                          1 (show results only), 2 (show iterations). 
+                          1 (show results only), 2 (show iterations).
                         *Default:* True.
         '''
 
         self._setup_warm_start(use_warm_start = use_warm_start)
         self._run_solver(use_warm_start = use_warm_start, **kwargs)
         self._set_solution()
-
