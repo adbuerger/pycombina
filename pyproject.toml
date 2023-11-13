@@ -1,0 +1,43 @@
+[project]
+name = "pycombina"
+version = "0.3.3"
+authors = [
+  { name="Adrian Bürger", email="adrian.buerger@hs-karlsruhe.de" },
+  { name="Clemens Zeile", email="clemens.zeile@ovgu.de" },
+]
+description = "Python module for solving Combinatorial Integral Approximation problems"
+readme = "README.rst"
+requires-python = ">= 3.5"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy>=1.13"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/adbuerger/pycombina"
+"Bug Tracker" = "https://github.com/adbuerger/pycombina/issues"
+"Documentation" = "https://pycombina.readthedocs.org"
+
+[project.optional-dependencies]
+milp = ["gurobipy>=8.0.0"]
+
+[build-system]
+requires = ["setuptools>=42", "pybind11>=2.10.0", "GitPython>=3.1"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pycombina*"]
+exclude = ["combina_bnb_solver*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+  "test",
+]
