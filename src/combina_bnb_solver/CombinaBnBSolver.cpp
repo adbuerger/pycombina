@@ -232,6 +232,32 @@ bool CombinaBnBSolver::control_activation_forbidden(
 }
 
 
+/**
+ * @brief Compute the node properties of a child node.
+ *
+ * At the beginning of this function, the input data are pre-populated
+ * with the parent's data or an appropriate "zero" for the given value
+ * if this is the root node.
+ *
+ * @param [in] b_active_child Index of active control for child.
+ * @param [in] b_active_parent Index of active control for parent.
+ * @param [inout] eta_child Vector of cumulative control deviations
+ *     for each control.
+ * @param [inout] sigma_child Number of switches into or out of each
+ *     control.
+ * @param [inout] min_down_time_child Remaining downtime per control
+ *     until min-downtime constraint is satisfied.
+ * @param [inout] up_time_child Uptime accumulated in current phase
+ *     of activity.
+ * @param [inout] total_up_time_child Total uptime accumulated for
+ *     each control.
+ * @param [in] lb_parent Lower bound of parent node.
+ * @param [out] lb_child Lower bound of child node.
+ * @param [inout] depth_child Depth of child node.
+ *
+ * @note `b_active_parent` takes an arbitrary default value (passed via
+ * constructor) for the root node.
+ */
 void CombinaBnBSolver::compute_child_node_properties(
     unsigned int const b_active_child, unsigned int const b_active_parent,
     std::vector<double> & eta_child, std::vector<unsigned int> & sigma_child,
@@ -239,16 +265,27 @@ void CombinaBnBSolver::compute_child_node_properties(
     std::vector<double> & total_up_time_child,
     double const lb_parent, double* lb_child, unsigned int* depth_child) {
 
-    double min_up_time_fulfilled(0.0);
 
-    if (b_active_child == b_active_parent) {
-        min_up_time_fulfilled = min_up_time[b_active_child];
-    }
+    // Determine uptime thus far for min_up_time constraint.
+    double min_up_time_fulfilled = (
+        b_active_child == b_active_parent ?
+        this->min_up_time[b_active_child] :
+        0.0
+    );
 
+    // Accelerated downward propagation:
+    // If the node has yet to satisfy its min_up_time, it cannot switch
+    // out of this control for several levels. Therefore, we immediately
+    // evaluate multiple levels and consider only the first descendant
+    // that is allowed to switch control again.
+    // FIXME: This seems very inefficient. We should have a look at this.
     do {
-
+        // On each level, all controls must have their cumulative deviation
+        // updated.
         for(unsigned int i = 0; i < n_c; i++){
-
+            // Only update for controls that have not exhausted their
+            // n_max_switches.
+            // NOTE: This seems wrong. Should we even be doing this check?
             if(sigma_child[i] < n_max_switches[i]) {
             
                 eta_child[i] += dt[*depth_child] * 
@@ -256,6 +293,8 @@ void CombinaBnBSolver::compute_child_node_properties(
                 
             }
 
+            // Update min_down_times
+            // NOTE: This does not seem to exclude the active control.
             min_down_time_child[i] = fmax(0, min_down_time_child[i] - dt[*depth_child]);
         }
 
@@ -270,6 +309,8 @@ void CombinaBnBSolver::compute_child_node_properties(
 
 
     if ((b_active_child != b_active_parent) && (b_active_parent < n_c)) {
+        // Reset max_up_time tracker if control has switched.
+        up_time_child[b_active_parent] = 0.0;
 
         sigma_child[b_active_parent]++;
         sigma_child[b_active_child]++;
@@ -616,10 +657,13 @@ void CombinaBnBSolver::retrieve_solution() {
     best_node.reset();
 
     #ifndef NDEBUG
-    py::print("Debug information:");
-    py::print("Nodes added:", Node::n_add);
-    py::print("Nodes deleted:", Node::n_delete);
-    py::print("Nodes not deleted:", Node::n_add - Node::n_delete);
+    {
+        py::gil_scoped_acquire lock;
+        py::print("Debug information:");
+        py::print("Nodes added:", Node::n_add);
+        py::print("Nodes deleted:", Node::n_delete);
+        py::print("Nodes not deleted:", Node::n_add - Node::n_delete);
+    }
     #endif
 
 }
