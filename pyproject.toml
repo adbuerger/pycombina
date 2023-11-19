@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 milp = ["gurobipy>=8.0.0"]
+dev = ["pytest"]
 
 [build-system]
 requires = ["setuptools>=42", "pybind11>=2.10.0"]
