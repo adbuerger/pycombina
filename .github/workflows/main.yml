@@ -5,10 +5,10 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.9, 3.10, 3.11, 3.12]
     steps:
     - uses: actions/checkout@v2
       with:
@@ -16,14 +16,14 @@ jobs:
     - name: Install packages via apt
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake g++
+        sudo apt-get install -y g++
     - name: Python setup
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install packages via pip
-      run: pip install numpy pytest
     - name: Build and install
-      run: pip install -e .
+      run: pip install .
     - name: Test
-      run: pytest -v test
+      run: |
+        pip install .[test]
+        pytest -v test
