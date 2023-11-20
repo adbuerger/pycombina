@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 import sphinx_rtd_theme
 
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 def return_gurobipy_version(*args):
 
