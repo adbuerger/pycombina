@@ -22,11 +22,11 @@
  */
 
 #include <algorithm>
-#include <queue>
 #include <iostream>
+#include <queue>
 #include <sstream>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include <pybind11/pybind11.h>
 
@@ -55,9 +55,9 @@ static Value get_with_default(const Map& map, const Key& key, const Value& def) 
 }
 
 
-CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt, 
+CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
                        std::vector<std::vector<double>> const & b_rel,
-                       
+
                        unsigned int const & n_c,
                        unsigned int const & n_t,
 
@@ -89,7 +89,7 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
 
       b_active_pre(b_active_pre),
 
-      sum_eta(2, std::vector<std::vector<double>> (b_rel.size(), 
+      sum_eta(2, std::vector<std::vector<double>> (b_rel.size(),
         std::vector<double> (b_rel[0].size()))),
 
       node_queue(nullptr),
@@ -97,7 +97,7 @@ CombinaBnBSolver::CombinaBnBSolver(std::vector<double> const & dt,
       ub_bnb(0.0),
 
       b_bin(b_rel.size(), std::vector<unsigned int>(b_rel[0].size(), 0)),
-  
+
       n_iter(0),
       n_print(0),
 
@@ -196,18 +196,18 @@ bool CombinaBnBSolver::control_activation_forbidden(
 
         return true;
     }
-        
+
     if ((b_active_parent < n_c) && (sigma_child[b_active_parent] >= n_max_switches[b_active_parent])) {
 
         return true;
     }
-        
+
 
     if (min_down_time_parent[b_active_child] > 0.0) {
 
         return true;
     }
-        
+
     if ((b_active_parent < n_c) && (b_adjacencies[b_active_child][b_active_parent] == 0)) {
 
         return true;
@@ -219,7 +219,7 @@ bool CombinaBnBSolver::control_activation_forbidden(
 
             return true;
         }
-        
+
         min_up_time_fulfilled += dt[depth_child_test];
         up_time_child_test[b_active_child] += dt[depth_child_test];
         total_up_time_child_test[b_active_child] += dt[depth_child_test];
@@ -250,10 +250,10 @@ void CombinaBnBSolver::compute_child_node_properties(
         for(unsigned int i = 0; i < n_c; i++){
 
             if(sigma_child[i] < n_max_switches[i]) {
-            
-                eta_child[i] += dt[*depth_child] * 
+
+                eta_child[i] += dt[*depth_child] *
                     (b_rel[i][*depth_child] - double(b_active_child == i));
-                
+
             }
 
             min_down_time_child[i] = fmax(0, min_down_time_child[i] - dt[*depth_child]);
@@ -262,7 +262,7 @@ void CombinaBnBSolver::compute_child_node_properties(
         min_up_time_fulfilled += dt[*depth_child];
         up_time_child[b_active_child] += dt[*depth_child];
         total_up_time_child[b_active_child] += dt[*depth_child];
-        
+
         (*depth_child)++;
 
 
@@ -306,7 +306,7 @@ void CombinaBnBSolver::compute_child_node_properties(
 }
 
 
-NodePtr CombinaBnBSolver::create_or_fathom_child_node(const NodePtr& parent_node, 
+NodePtr CombinaBnBSolver::create_or_fathom_child_node(const NodePtr& parent_node,
     unsigned int const b_active_child, std::vector<unsigned int> const & sigma_child,
     std::vector<double> const & min_down_time_child,
     std::vector<double> const & up_time_child,
@@ -319,8 +319,8 @@ NodePtr CombinaBnBSolver::create_or_fathom_child_node(const NodePtr& parent_node
 
         if(sigma_child[i] > n_max_switches[i]) {
 
-            throw std::runtime_error( 
-                std::string("Node switches exceeds n_max-switches, this should not happen.") 
+            throw std::runtime_error(
+                std::string("Node switches exceeds n_max-switches, this should not happen.")
                 + std::string("\n Please contact the developers."));
         }
     }
@@ -343,7 +343,7 @@ void CombinaBnBSolver::run_bnb() {
     std::clock_t t_update;
     std::clock_t t_current;
     std::clock_t t_end;
-    
+
     if (verbosity > 0) {
         py::gil_scoped_acquire lock;
         py::print("Running Branch and Bound ... ");
@@ -428,7 +428,7 @@ void CombinaBnBSolver::run_bnb() {
     }
 
     streamObj << std::scientific << "\n\n    Best solution:    " << ub_bnb
-        << "\n    Total iterations: " << s_n_iter 
+        << "\n    Total iterations: " << s_n_iter
         << "\n    Total runtime:    " << solution_time
         << " s";
 
@@ -445,7 +445,7 @@ void CombinaBnBSolver::run_bnb() {
     user_interrupt = false;
     terminate = false;
     n_print = 0;
-    
+
     */
 
 }
@@ -455,7 +455,7 @@ bool CombinaBnBSolver::termination_criterion_reached(int n_iter, std::clock_t t_
 
     std::clock_t t_current = clock();
 
-    return ((n_iter >= max_iter) || 
+    return ((n_iter >= max_iter) ||
         ((double(t_current - t_start) / CLOCKS_PER_SEC) >= max_cpu_time) ||
         user_interrupt);
 }
@@ -487,7 +487,7 @@ void CombinaBnBSolver::display_solution_update(bool solution_update, double runt
     streamObj << std::scientific;
 
     if (solution_update) {
-        
+
         streamObj << " U ";
 
     } else {
@@ -498,9 +498,9 @@ void CombinaBnBSolver::display_solution_update(bool solution_update, double runt
     streamObj << s_n_iter
         << "   " << ub_bnb << "   "
         << s_node_queue_size << "   " << runtime;
-    
+
     if (verbosity > 1) {
-     
+
         py::print(streamObj.str());
     }
 
@@ -612,7 +612,7 @@ void CombinaBnBSolver::retrieve_solution() {
 
         active_node = std::move(parent_node);
     }
-   
+
     best_node.reset();
 
     #ifndef NDEBUG

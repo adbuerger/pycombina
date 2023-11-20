@@ -21,15 +21,16 @@
  *
  */
 
-#include <map>
-#include <vector>
-
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
- 
 #include "CombinaBnBSolver.hpp"
 #include "NodeQueue.hpp"
 #include "monitors/VbcMonitor.hpp"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#include <map>
+#include <vector>
+
 
 namespace py = pybind11;
 
@@ -61,7 +62,7 @@ PYBIND11_MODULE(_combina_bnb_solver, m)
                       std::vector<double> const &,
                       std::vector<double> const &,
                       std::vector<double> const &,
-                      
+
                       std::vector<std::vector<unsigned int>> &,
                       std::vector<std::vector<unsigned int>> &,
 
