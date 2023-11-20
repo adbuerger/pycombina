@@ -19,36 +19,43 @@
 How to install
 ==============
 
-The following sections exemplify how pycombina can be installed on Ubuntu 18.04 / Debian 10 or Windows 10. Depending on your local setup, however, these instructions might need to be adapted.
+The following sections exemplify how pycombina can be installed on Ubuntu 22.04 / Debian 12 or Windows 10. Depending on your local setup, however, these instructions might need to be adapted.
 
 
-Install on Ubuntu 18.04 / Debian 10 
+Install on Ubuntu 22.04 / Debian 12
 -----------------------------------
 
 First, install the following packages via apt (to install packages via apt, you might need root priviliges):
 
 .. code:: Bash
 
-    apt install python3-pip python3-dev cmake g++ git
+    apt install python3-venv python3-dev g++ git
     
-Please note: Python version >= 3.6 is required to use pycombina. It is also possible to install pycombina in a Python virtual environment. 
+Please note: Python version >= 3.8 is required to use pycombina.
 
-Afterwards, clone the pycombina repository and the contained submodules by running: 
+Then, set up and activate a Python virtual environment for installing pycombina:
+
+.. code:: Bash
+
+    python3 -m venv --upgrade-deps pycombina-env
+    source pycombina-env/bin/activate
+
+(Alternatively, you can chose a different name for the environment if you like, or install pycombina in an existing virtual environment.)
+
+Afterwards, clone the pycombina repository by running:
 
 .. code:: Bash
 
     git clone https://github.com/adbuerger/pycombina.git
-    cd pycombina
-    git submodule init
-    git submodule update
 
-Finally, pycombina can be installed for your user by running
+Finally, navigate into the cloned directory and install pycombina by running:
 
 .. code:: Bash
 
-    python3 setup.py install --user
+    cd pycombina
+    pip install .
 
-from within the pycombina folder, which will also attempt to install package dependecies (numpy>=1.13) if not present, and build the BnB solver extension.
+This will attempt to install package dependencies and build the BnB solver extension.
 
 Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ .
 
@@ -60,15 +67,30 @@ For running the webservice-example in ``examples/webservice_example.py``, Flask 
 Install on Windows 10
 ---------------------
 
+.. note::
+
+    As an alternative to the instructions provided below, you could consider to setup Windows Subsystem for Linux (WSL) on your Windows machine, and then refer to the Linux installation instructions provided above to install pycombina. Instructions on how to set up WSL, however, are out of scope of this documentation.
+
 For obtaining Python 3 on Windows, Anaconda [#f7]_ can be used. For building the C++ extensions of pycombina, a 64 bit Visual C++ compiler is required, which can be obtained, e. g., within Visual Studio Community [#f8]_, which is free for private and/or academic use.
 
-After that, clone the pycombina repository from https://github.com/adbuerger/pycombina as described above, open an Anaconda Prompt, and run 
+Consider to set up a separate Conda environment for pycombina. Then, open an Anaconda Prompt and activate the environment that you want to install pycombina in.
+
+If you have git installed, you can clone the pycombina repository by running:
 
 .. code:: Bash
 
-    python setup.py install
+    git clone https://github.com/adbuerger/pycombina.git
 
-from within the pycombina folder, which will also attempt to install package dependecies (numpy>=1.13) if not present, and build the BnB solver extension.
+or alternatively your can download the latest version from https://github.com/adbuerger/pycombina using your web browser and extract the files afterwards. 
+
+Finally, navigate into the cloned directory and install pycombina by running:
+
+.. code:: Bash
+
+    cd pycombina
+    pip install .
+
+This will attempt to install package dependencies and build the BnB solver extension.
 
 Please note: pycombina uses features available only from C++11 on and uses pybind11 [#f5]_ .
 
