@@ -1,13 +1,13 @@
 [project]
 name = "pycombina"
-version = "0.3.3"
+version = "0.3.4"
 authors = [
   { name="Adrian Bürger", email="adrian.buerger@hs-karlsruhe.de" },
   { name="Clemens Zeile", email="clemens.zeile@ovgu.de" },
 ]
 description = "Python module for solving Combinatorial Integral Approximation problems"
 readme = "README.rst"
-requires-python = ">= 3.5"
+requires-python = ">= 3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
