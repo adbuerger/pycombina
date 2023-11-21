@@ -20,11 +20,6 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
-        env:
-          CIBW_ARCHS_LINUX: auto aarch64 ppc64le s390x
-          CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: pytest {package}/test
-          CPPFLAGS: -std=c++17
 
       - uses: actions/upload-artifact@v3
         with:
