@@ -39,10 +39,7 @@ namespaces = false
 [tool.cibuildwheel]
 test-command = "pytest {project}/."
 test-requires = "pytest"
-skip = [
-  "cp38-*",
-  "pp*",
-]
+skip = "cp38-* pp*"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64"]
