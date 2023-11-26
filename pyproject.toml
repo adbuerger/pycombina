@@ -36,6 +36,23 @@ include = ["pycombina*"]
 exclude = ["combina_bnb_solver*"]
 namespaces = false
 
+[tool.cibuildwheel]
+test-command = "pytest {project}/."
+test-requires = "pytest"
+skip = "cp38-* pp*"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64"]
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.macos.environment]
+CPPFLAGS = "-std=c++17"
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64", "x86"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
