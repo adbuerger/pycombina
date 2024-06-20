@@ -29,7 +29,7 @@
 
 
 /// Node states for monitor notification.
-enum NodeState {
+enum class NodeState {
     NODE_ACTIVE,
     NODE_SELECTED,
     NODE_FATHOMED,
